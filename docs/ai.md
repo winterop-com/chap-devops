@@ -766,7 +766,7 @@ varde chap plot-backtest eval.nc --output-file eval.html
 ```
 
 Use their model's GitHub URL in `--model-name`, or a marketplace id such as
-`chapkit_simple_multistep_model`: varde starts that model by itself, and they need no
+`auto_arima_chapkit`: varde starts that model by itself, and they need no
 `varde up`. Never give a `localhost` URL. The first run pulls
 an image of about 12 GB, so tell them it takes some minutes. If varde stops with
 `runs in docker`, run the same command with `varde chap --docker` and tell

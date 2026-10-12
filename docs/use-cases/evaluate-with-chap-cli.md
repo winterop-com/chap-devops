@@ -272,7 +272,7 @@ More messages are in [Troubleshooting](../troubleshooting.md).
 
 - To evaluate the models of a [deployment](../concepts.md), run `varde chap`
   in a subdirectory of it (`mkdir eval && cd eval`), and give the model id:
-  `varde chap eval --model-name chapkit_ewars_model ...`. The deployment does
+  `varde chap eval --model-name auto_arima_chapkit ...`. The deployment does
   not need to run: varde starts only that model, without chap-core.
 - To use another chap-core version, add `--tag`, for example
   `varde chap --tag master eval ...`.

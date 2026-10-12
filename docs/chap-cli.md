@@ -116,25 +116,25 @@ need chap-core, its database or its worker. So you do not run `varde up` for
 an evaluation. Give the model's id, and varde starts the model:
 
 ```sh
-varde chap eval --model-name chapkit_ewars_model \
-  --dataset-csv laos_subset.csv --output-file ewars.nc
+varde chap eval --model-name auto_arima_chapkit \
+  --dataset-csv laos_subset.csv --output-file arima.nc
 ```
 
 What varde does with the id:
 
 | Where you are | The id | What varde does |
 | --- | --- | --- |
-| In a deployment that has the model | `chapkit_ewars_model` | Starts only that model's container, with no chap-core, if it does not run. |
-| In a deployment that does not have it | `auto_arima_chapkit` | Stops, and names `varde models enable auto_arima_chapkit`. varde does not change the deployment's models for an evaluation. |
+| In a deployment that has the model | `auto_arima_chapkit` | Starts only that model's container, with no chap-core, if it does not run. |
+| In a deployment that does not have it | `chapkit_ghr_model` | Stops, and names `varde models enable chapkit_ghr_model`. varde does not change the deployment's models for an evaluation. |
 | Outside a deployment | any marketplace id | Starts the model in a `varde run` group, as `varde run ID` does, and joins that group's network. `--group NAME` selects the group. |
 
 Before the run, varde checks that the model answers. Then it gives chap the
-model's URL on the network, for example `http://chapkit-ewars-model:8000`,
+model's URL on the network, for example `http://auto-arima-chapkit:8000`,
 and writes:
 
 ```text
-starting chapkit-ewars-model for this run, without chap-core
-model: chapkit_ewars_model at http://chapkit-ewars-model:8000 answers
+starting auto-arima-chapkit for this run, without chap-core
+model: auto_arima_chapkit at http://auto-arima-chapkit:8000 answers
 ```
 
 A model that varde started keeps running, so the next evaluation starts at
@@ -162,7 +162,7 @@ error: the model server at http://nothing:8000 is not running (no answer on /api
 ```
 
 The URL of a model of the deployment or group, such as
-`http://chapkit-ewars-model:8000`, works like its id: varde starts the model
+`http://auto-arima-chapkit:8000`, works like its id: varde starts the model
 if it does not run.
 
 Do not use the `http://localhost:PORT` URL that `varde ps` or `varde status`
