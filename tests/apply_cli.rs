@@ -5,6 +5,9 @@
 //! marketplace snapshot is what the CLI sees and no test touches the network
 //! or the developer's real cache.
 
+#[path = "support/marketplace.rs"]
+mod marketplace;
+
 use assert_cmd::Command;
 use predicates::prelude::PredicateBooleanExt;
 use std::path::{Path, PathBuf};
@@ -47,8 +50,10 @@ struct Sandbox {
 
 impl Sandbox {
     fn new() -> Sandbox {
+        let cache = tempfile::tempdir().unwrap();
+        marketplace::seed_registry_cache(cache.path());
         Sandbox {
-            cache: tempfile::tempdir().unwrap(),
+            cache,
             home: tempfile::tempdir().unwrap(),
         }
     }

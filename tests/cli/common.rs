@@ -12,6 +12,9 @@ use std::sync::atomic::AtomicU16;
 use std::sync::atomic::Ordering;
 use tempfile::TempDir;
 
+#[path = "../support/marketplace.rs"]
+mod marketplace;
+
 mod chap_core;
 mod configured;
 mod hub;
@@ -32,8 +35,10 @@ pub(crate) struct Sandbox {
 
 impl Sandbox {
     pub(crate) fn new() -> Sandbox {
+        let cache = tempfile::tempdir().unwrap();
+        marketplace::seed_registry_cache(cache.path());
         Sandbox {
-            cache: tempfile::tempdir().unwrap(),
+            cache,
             home: tempfile::tempdir().unwrap(),
         }
     }
@@ -284,15 +289,16 @@ pub(crate) fn includes(dir: &Path) -> Vec<String> {
     }
 }
 
-/// The version and image tag the vendored snapshot's `stable` channel pins
-/// for one marketplace id.
+/// The version and image tag the frozen marketplace data's `stable` channel
+/// pins for one marketplace id.
 ///
-/// Read off `vendor/marketplace/` rather than written out here, so refreshing
-/// the snapshot moves these assertions with it instead of failing them. The
-/// tests run `--offline`, which is exactly what the CLI resolves against.
+/// Read off `tests/fixtures/marketplace/` rather than written out here, so a
+/// change there moves these assertions with it. The tests run `--offline`
+/// with that data in their cache, which is what the CLI resolves against.
 pub(crate) fn stable_pin(id: &str) -> (String, String) {
     let path = Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join("vendor")
+        .join("tests")
+        .join("fixtures")
         .join("marketplace")
         .join("models")
         .join(format!("{id}.yaml"));

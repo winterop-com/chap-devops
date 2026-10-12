@@ -25,18 +25,11 @@ source:
   runtime_image: ghcr.io/dhis2-chap/chapkit-r-inla
 
 attribution:
-  author: Similien NDAGIJIMANA
-  organization: HISP Centre, University of Oslo
-  contact: knut.rand@dhis2.org
+  author: Similien NDAGIJIMANA (adapted by Chap team)
+  organization: HISP Rwanda
   citation: >-
     Climate Health Analytics Platform. 2025. "Kigali Malaria BYM Model". HISP
-    Centre, University of Oslo.
-
-# GitHub handles responsible for this listing — backfilled from the source
-# repository's contributors; corrections welcome by PR.
-maintainers:
-  - mortenoh
-  - edvinstava
+    Rwanda.
 
 compatibility:
   period_types: [monthly]

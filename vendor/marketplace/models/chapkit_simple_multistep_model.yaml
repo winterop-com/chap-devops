@@ -23,16 +23,7 @@ source:
   runtime_image: ghcr.io/dhis2-chap/chapkit-py
 
 attribution:
-  author: Chap team
-  organization: HISP Centre, University of Oslo
-  contact: morten@dhis2.org
-
-# GitHub handles responsible for this listing — backfilled from the source
-# repository's contributors; corrections welcome by PR.
-maintainers:
-  - mortenoh
-  - knutdrand
-  - edvinstava
+  author: HISP Oslo and HISP West and Central Africa
 
 compatibility:
   period_types: [monthly]

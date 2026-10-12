@@ -1,8 +1,8 @@
 //! End-to-end tests for the commands that write a deployment directory.
 //!
-//! Every run is `--offline` with its own cache directory, so the embedded
-//! marketplace snapshot is what the CLI sees and no test touches the network
-//! or the developer's real cache.
+//! Every run is `--offline` with its own cache directory, which starts with
+//! the frozen marketplace data of `tests/fixtures/marketplace/`, so no test
+//! touches the network or the developer's real cache.
 
 mod auth;
 mod backup;

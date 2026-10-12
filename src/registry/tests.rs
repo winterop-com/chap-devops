@@ -14,6 +14,35 @@ fn embedded_snapshot_parses_into_a_registry() {
     assert_eq!(r.models[0].id, "chapkit_ewars_model");
 }
 
+/// The unit tests embed the frozen copy in `tests/fixtures/marketplace/`, so
+/// this reads the snapshot the binary ships, `vendor/marketplace/`, from disk:
+/// every file the index lists is there, and the whole set parses.
+#[test]
+fn the_vendored_snapshot_parses_into_a_registry() {
+    let vendor = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("vendor/marketplace");
+    let read = |rel: &str| {
+        std::fs::read_to_string(vendor.join(rel))
+            .unwrap_or_else(|e| panic!("reading vendor/marketplace/{rel}: {e}"))
+    };
+    let index_yaml = read("registry.yaml");
+    let index: model::RegistryIndex =
+        serde_yaml_ng::from_str(&index_yaml).expect("the vendored registry.yaml parses");
+    let files: Vec<(String, String)> = index
+        .models
+        .iter()
+        .map(|rel| (rel.clone(), read(rel)))
+        .collect();
+    let r = Registry::parse(
+        DEFAULT_REGISTRY_URL,
+        Provenance::Embedded,
+        &index_yaml,
+        &files,
+    )
+    .expect("the vendored snapshot parses");
+    assert_eq!(r.models.len(), index.models.len());
+    assert!(r.models.iter().any(|m| !m.is_template()));
+}
+
 /// The fields the configured models of a model are made from: the
 /// configurations and the default covariates of the entry.
 #[test]

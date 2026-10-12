@@ -23,19 +23,13 @@ source:
   runtime_image: ghcr.io/dhis2-chap/chapkit-r-inla
 
 attribution:
-  author: Global Health Resilience group, BSC (wrapped for Chap by HISP Centre)
+  author: Global Health Resilience group, BSC (adapted by Chap team)
   organization: Barcelona Supercomputing Center
-  # The wrapper's maintainer, not BSC: they authored the model but do not
-  # support this service.
-  contact: morten@dhis2.org
   citation: >-
     Lowe R, Lee SA, O'Reilly KM et al. (2021) Combined effects of
     hydrometeorological hazards and urbanisation on dengue risk in Brazil: a
     spatiotemporal modelling study. The Lancet Planetary Health.
     https://doi.org/10.1016/S2542-5196(20)30292-8
-
-maintainers:
-  - mortenoh
 
 compatibility:
   period_types: [monthly]

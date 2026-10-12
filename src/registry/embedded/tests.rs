@@ -22,12 +22,14 @@ fn nothing_is_empty() {
     }
 }
 
-/// The generated table is the vendor directory, not a snapshot of it: the
-/// index comes first, every model file the index lists is present in the
-/// same order, and each body is byte for byte what is on disk.
+/// The generated table is the directory, not a snapshot of it: the index
+/// comes first, every model file the index lists is present in the same
+/// order, and each body is byte for byte what is on disk. Under test the
+/// directory is the frozen copy in `tests/fixtures/marketplace/`.
 #[test]
-fn the_generated_table_is_the_vendor_directory() {
-    let vendor = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("vendor/marketplace");
+fn the_generated_table_is_the_fixture_directory() {
+    let vendor =
+        std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/marketplace");
     assert_eq!(FILES[0].0, "registry.yaml");
 
     for (rel, body) in files() {
@@ -45,7 +47,7 @@ fn the_generated_table_is_the_vendor_directory() {
 
     // Nothing on disk is silently left out.
     let mut on_disk: Vec<String> = std::fs::read_dir(vendor.join("models"))
-        .expect("vendor/marketplace/models exists")
+        .expect("tests/fixtures/marketplace/models exists")
         .flatten()
         .filter_map(|e| e.file_name().into_string().ok())
         .filter(|name| name.ends_with(".yaml") || name.ends_with(".yml"))

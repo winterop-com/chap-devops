@@ -36,8 +36,9 @@ module split by concern, `foo.rs` with the module doc, the `mod` lines and the
 re-exports, and `foo/<concern>.rs` beside it. Modules are `foo.rs` + `foo/`,
 never `foo/mod.rs`. `tests/cli/` is the end-to-end suite: it runs the built binary
 against temporary directories, and every run is `--offline` with its own cache
-directory, so the embedded marketplace snapshot is what the CLI sees and no
-test touches the network or the developer's real cache. It is one test binary
+directory. That cache starts with the frozen marketplace data of
+`tests/fixtures/marketplace/` (`tests/support/marketplace.rs`), so no test
+touches the network or the developer's real cache. It is one test binary
 with a module per concern (`init.rs`, `models.rs`, `dhis2.rs`, ...);
 `common/` holds the sandbox every test runs in and the stand-in servers for
 GitHub, ghcr, the marketplace and chap-core, and `dhis2_stand_in.rs` the one
@@ -201,6 +202,12 @@ the result; a snapshot change is compiled in, so it is a code change.
 
 The vendored layout is the same as the on-disk cache layout, so
 `vendor/marketplace/` and a cache entry are interchangeable.
+
+The tests do not use this snapshot. The unit tests embed
+`tests/fixtures/marketplace/`, a frozen copy from before the marketplace
+removed CHAP-EWARS, and the CLI tests start with it in their registry cache.
+So a refresh changes no test result. Change the frozen copy only on purpose,
+with the reason in the commit.
 
 ## The documentation
 

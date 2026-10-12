@@ -23,16 +23,8 @@ source:
   runtime_image: ghcr.io/dhis2-chap/chapkit-r-tidyverse
 
 attribution:
-  author: Harsha (adapted to chapkit by Halvard)
+  author: Harsha Halgamuwe Hewage (adapted by Chap team)
   organization: Cardiff University
-  contact: halvares@uio.no
-
-# GitHub handles responsible for this listing — backfilled from the source
-# repository's contributors; corrections welcome by PR.
-maintainers:
-  - Halvardgithub
-  - mortenoh
-  - edvinstava
 
 compatibility:
   period_types: [monthly]

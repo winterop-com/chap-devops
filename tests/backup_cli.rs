@@ -6,6 +6,9 @@
 //! are `--files-only`. What is tested here is what the archive holds and what
 //! a restore does to the deployment it is restored into.
 
+#[path = "support/marketplace.rs"]
+mod marketplace;
+
 use assert_cmd::Command;
 use serde_json::Value as Json;
 use serde_yaml_ng::Value as Yaml;
@@ -21,8 +24,10 @@ struct Sandbox {
 
 impl Sandbox {
     fn new() -> Sandbox {
+        let cache = tempfile::tempdir().unwrap();
+        marketplace::seed_registry_cache(cache.path());
         Sandbox {
-            cache: tempfile::tempdir().unwrap(),
+            cache,
             home: tempfile::tempdir().unwrap(),
         }
     }

@@ -14,7 +14,12 @@
 // script. The first entry is always `registry.yaml`; the rest are the model
 // files keyed by the same relative paths the index lists, in index order. A
 // doc comment cannot sit on a macro invocation, so this one is a plain one.
+#[cfg(not(test))]
 include!(concat!(env!("OUT_DIR"), "/embedded_files.rs"));
+// The unit tests embed `tests/fixtures/marketplace/`, a frozen copy, so a
+// model the marketplace drops does not break a test that names it.
+#[cfg(test)]
+include!(concat!(env!("OUT_DIR"), "/fixture_files.rs"));
 
 /// The embedded snapshot: `registry.yaml` first, then the model files.
 #[cfg(test)]

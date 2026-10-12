@@ -1,0 +1,83 @@
+schema_version: 2
+
+id: auto_arima_chapkit
+service_id: auto-arima-chapkit
+display_name: Auto-ARIMA
+kind: model
+
+# The author's own chapkit AssessedStatus, copied from the service — not a
+# marketplace verdict. red = highly experimental prototype, not validated.
+assessed_status: red
+
+summary: >-
+  Univariate ARIMA with automatic order selection, via the ARIMA() function
+  in R's fable package. Reads nothing but the case series — no covariates, no
+  geometry — which makes it the natural weak baseline to compare a
+  covariate-driven model against.
+
+source:
+  repository: https://github.com/chap-models/auto_arima_chapkit
+  image: ghcr.io/chap-models/auto_arima_chapkit
+  # R + fable on the chapkit tidyverse base (fable, tsibble, feasts,
+  # forecast). No INLA, no spatial stack.
+  runtime_image: ghcr.io/dhis2-chap/chapkit-r-tidyverse
+
+attribution:
+  author: Harsha (adapted to chapkit by Halvard)
+  organization: Cardiff University
+  contact: halvares@uio.no
+
+# GitHub handles responsible for this listing — backfilled from the source
+# repository's contributors; corrections welcome by PR.
+maintainers:
+  - Halvardgithub
+  - mortenoh
+  - edvinstava
+
+compatibility:
+  period_types: [monthly]
+  min_prediction_periods: 0
+  max_prediction_periods: 12
+  requires_geo: false
+
+covariates:
+  required: []
+  defaults: []
+  # The service declares allow_free_additional_continuous_covariates=False:
+  # it is univariate and ignores anything but the case series.
+  allow_free_additional: false
+
+channels:
+  stable: 1.0.2
+  latest: 1.0.2
+
+versions:
+  - version: 1.0.2
+    commit: e9047d405050869a8918ba55ddca95d271961a00
+    image_tag: sha-e9047d4
+    chapkit: ">=2.2.0,<3"
+    status: verified
+    # Pinned by the maintainers without the three-approval round.
+    verified_by: []
+    changelog: >-
+      Exposes the service's metrics on /metrics (Prometheus format, OpenTelemetry). Built on chapkit 2.2.0 and servicekit 3.0.0. No change to the model.
+  - version: 1.0.1
+    commit: 5adf3a8329f58764956c4df0584a549d16bcf119
+    image_tag: sha-5adf3a8
+    chapkit: ">=2.1.2,<3"
+    status: verified
+    # Verified by the merge gate. Part of the chapkit 2.0.0 seed import.
+    verified_by: []
+    changelog: >-
+      Require chapkit 2.1.2, whose failure messages keep the R error line
+      instead of trailing warnings, and which applies the model
+      configurations chap-core sends.
+
+configurations:
+  monthly:
+    description: >-
+      The only configuration the service exposes. ARIMA() selects the orders
+      itself, so prediction_periods is the single option — and the reason
+      this model is a useful reference point rather than a tunable one.
+    config:
+      prediction_periods: 3

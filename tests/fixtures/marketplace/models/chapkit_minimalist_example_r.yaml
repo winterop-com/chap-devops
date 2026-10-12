@@ -1,0 +1,88 @@
+schema_version: 2
+
+id: chapkit_minimalist_example_r
+service_id: chapkit-minimalist-example-r
+display_name: Minimalist Example (R)
+kind: template
+
+# The author's own chapkit AssessedStatus, copied from the service — not a
+# marketplace verdict. red = highly experimental prototype, not validated.
+# For a template that is the honest reading: it is scaffolding, and its lm()
+# is a placeholder for a real model.
+assessed_status: red
+
+summary: >-
+  Scaffolding, not a forecasting model. The canonical R starting point for
+  chapkit model authors: a base-R lm() served as a chapkit ML service. Copy
+  the repository and replace the lm() in scripts/train.R with the real model.
+
+source:
+  repository: https://github.com/chap-models/chapkit_minimalist_example_r
+  image: ghcr.io/chap-models/chapkit_minimalist_example_r
+  # R on the chapkit R-INLA base, so a copied template can reach for INLA
+  # without swapping the base image first. amd64 only.
+  runtime_image: ghcr.io/dhis2-chap/chapkit-r-inla
+
+attribution:
+  author: DHIS2 Chap
+  organization: HISP Centre, University of Oslo
+  contact: chap@dhis2.org
+
+# GitHub handles responsible for this listing — backfilled from the source
+# repository's contributors; corrections welcome by PR.
+maintainers:
+  - mortenoh
+  - ivargr
+  - edvinstava
+
+compatibility:
+  period_types: [monthly]
+  min_prediction_periods: 0
+  max_prediction_periods: 100
+  requires_geo: false
+
+covariates:
+  # The service declares no required covariates and refuses free-form extras.
+  # Its scripts do read rainfall and mean_temperature when the columns are
+  # present — a template under-declaring its inputs is exactly the kind of
+  # thing to fix when you copy it.
+  required: []
+  defaults: []
+  allow_free_additional: false
+
+channels:
+  stable: 1.0.2
+  latest: 1.0.2
+
+versions:
+  - version: 1.0.2
+    commit: 4349892df6986a7943f2804e6c14801b865ba96a
+    image_tag: sha-4349892
+    chapkit: ">=2.2.0,<3"
+    status: verified
+    # Pinned by the maintainers without the three-approval round.
+    verified_by: []
+    changelog: >-
+      Metrics on /metrics now use the stable OpenTelemetry names (http_server_request_duration_seconds_*). Built on chapkit 2.2.0 and servicekit 3.0.0. No change to the model.
+  - version: 1.0.1
+    commit: 9fbdd09494fd74d6a55b1c9bef33a2d479cdb402
+    image_tag: sha-9fbdd09
+    chapkit: ">=2.1.2,<3"
+    status: verified
+    # Verified by the merge gate. Part of the chapkit 2.0.0 seed import.
+    verified_by: []
+    changelog: >-
+      Require chapkit 2.1.2, whose failure messages keep the R error line
+      instead of trailing warnings, and which applies the model
+      configurations chap-core sends.
+    notes: >-
+      Supersedes the MLproject-based minimalist_example_r entry in chap's
+      model-repositories whitelist.
+
+configurations:
+  monthly:
+    description: >-
+      The only configuration the template exposes. Add your own options to
+      the config class in main.py as you replace the model.
+    config:
+      prediction_periods: 3
