@@ -115,17 +115,17 @@ as an image in the local image store:
 If the model is one the marketplace already lists (you are working on it),
 give the local build the marketplace model's service id, so it registers
 under the name chap-core expects. Build the image in the model's checkout,
-for example `chapkit_ewars_model`:
+for example `chapkit_simple_multistep_model`:
 
 ```sh
-docker build --platform linux/amd64 --build-arg GIT_REVISION=$(git rev-parse HEAD) -t ewars:dev .
+docker build --platform linux/amd64 --build-arg GIT_REVISION=$(git rev-parse HEAD) -t multistep:dev .
 ```
 
 Then, in the deployment:
 
 ```sh
-varde models disable chapkit_ewars_model          # if it is enabled
-varde models add ewars:dev --service-id chapkit-ewars-model
+varde models disable chapkit_simple_multistep_model          # if it is enabled
+varde models add multistep:dev --service-id chapkit-simple-multistep-model
 varde up
 ```
 
@@ -133,16 +133,16 @@ The two cannot run at the same time. If the marketplace model is enabled,
 `varde models add` refuses:
 
 ```text
-error: the marketplace model chapkit_ewars_model is enabled as the compose service `chapkit-ewars-model`; disable it with `varde models disable chapkit_ewars_model` to run this local build in its place
+error: the marketplace model chapkit_simple_multistep_model is enabled as the compose service `chapkit-simple-multistep-model`; disable it with `varde models disable chapkit_simple_multistep_model` to run this local build in its place
 ```
 
-In the same way, `varde models enable chapkit_ewars_model` refuses while the
-local build holds the service, and names `varde models disable ewars`. To go
+In the same way, `varde models enable chapkit_simple_multistep_model` refuses while the
+local build holds the service, and names `varde models disable multistep`. To go
 back to the published image:
 
 ```sh
-varde models remove ewars
-varde models enable chapkit_ewars_model
+varde models remove multistep
+varde models enable chapkit_simple_multistep_model
 varde up
 ```
 
