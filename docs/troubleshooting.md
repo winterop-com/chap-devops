@@ -43,7 +43,7 @@ it also removes the chap-core database. See
 `varde up` refuses before it calls Docker, with one line per conflict:
 
 ```text
-2 host ports this deployment needs are already in use; nothing was started
+error: 2 host ports this deployment needs are already in use; nothing was started
   port 8700 is already in use on this machine (needed by chap); free it, or set CHAP_API_PORT=8701 in `.env`
   port 5001 is already in use on this machine (needed by chapkit-simple-multistep-model); free it, or run `varde models unexpose chapkit-simple-multistep-model` (the model stays reachable through chap-core) / `varde models expose chapkit-simple-multistep-model --port auto`
   or run `varde up --no-preflight` to hand the conflict to Docker

@@ -12,7 +12,7 @@ ocs         up   http://localhost:8790   3 datasets   212.0 MB data
 s3          up   internal
 
 MODEL                             STATE                    REACH               LAST PING
-chapkit-ewars-model               registered               port 5001           12s ago
+chapkit-simple-multistep-model    registered               port 5001           12s ago
 chapkit-rwanda-malaria-bym-model  running, not registered  via chap-core       -
 auto-arima-chapkit                not running              via chap-core       -
 some-other-service                unmanaged                http://c0ffee:8000  3s ago
@@ -369,17 +369,17 @@ exits with a code that is not 0.
 A short example. Without `-v`, `varde models expose` prints two lines:
 
 ```text
-$ varde models expose chapkit-ewars-model
-exposed chapkit-ewars-model on http://localhost:5001
+$ varde models expose chapkit-simple-multistep-model
+exposed chapkit-simple-multistep-model on http://localhost:5001
 run `varde up` to apply
 ```
 
 With `-v`, the hints are there too:
 
 ```text
-$ varde -v models expose chapkit-ewars-model
-exposed chapkit-ewars-model on http://localhost:5001
-hint: wrote compose.chapkit-ewars-model.yml
+$ varde -v models expose chapkit-simple-multistep-model
+exposed chapkit-simple-multistep-model on http://localhost:5001
+hint: wrote compose.chapkit-simple-multistep-model.yml
 run `varde up` to apply
 ```
 
@@ -417,14 +417,18 @@ command that uses levels has a `messages` list with every line and its level:
 
 ```json
 {
-  "id": "chapkit_ewars_model",
   "host_port": 5001,
-  "ok": true,
+  "id": "chapkit_simple_multistep_model",
   "messages": [
-    {"level": "info", "text": "exposed chapkit-ewars-model on http://localhost:5001"},
-    {"level": "hint", "text": "wrote compose.chapkit-ewars-model.yml"},
+    {"level": "info", "text": "exposed chapkit-simple-multistep-model on http://localhost:5001"},
+    {"level": "hint", "text": "wrote compose.chapkit-simple-multistep-model.yml"},
     {"level": "info", "text": "run `varde up` to apply"}
-  ]
+  ],
+  "ok": true,
+  "previous": null,
+  "service_id": "chapkit-simple-multistep-model",
+  "url": "http://localhost:5001",
+  "written": ["/srv/chapx/compose.chapkit-simple-multistep-model.yml"]
 }
 ```
 

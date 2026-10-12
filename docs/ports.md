@@ -25,13 +25,13 @@ Two ways:
 
 ```sh
 # through chap-core's read-only proxy, no host port needed
-curl http://localhost:8700/v2/services/chapkit-ewars-model/run/api/v1/info
-open http://localhost:8700/v2/services/chapkit-ewars-model/run/docs
+curl http://localhost:8700/v2/services/chapkit-simple-multistep-model/run/api/v1/info
+open http://localhost:8700/v2/services/chapkit-simple-multistep-model/run/docs
 
 # or give that model a port of its own
-varde models expose chapkit-ewars-model            # lowest free port, 5001 up
-varde models expose chapkit-ewars-model --port 5010
-varde models unexpose chapkit-ewars-model          # and take it away again
+varde models expose chapkit-simple-multistep-model            # lowest free port, 5001 up
+varde models expose chapkit-simple-multistep-model --port 5010
+varde models unexpose chapkit-simple-multistep-model          # and take it away again
 varde up                                           # apply either change
 ```
 
@@ -74,8 +74,8 @@ Models have no login, so on a laptop or a shared server that is often more
 than you meant. `--bind` names the address instead:
 
 ```sh
-varde models enable chapkit_ewars_model --port auto --bind 127.0.0.1
-varde models expose chapkit_ewars_model --bind 127.0.0.1   # an enabled one
+varde models enable chapkit_simple_multistep_model --port auto --bind 127.0.0.1
+varde models expose chapkit_simple_multistep_model --bind 127.0.0.1   # an enabled one
 varde models add ghcr.io/org/model:latest --port auto --bind 127.0.0.1
 ```
 
@@ -223,12 +223,9 @@ port is discoverable by reading `.env`.
 before it calls Docker, and refuses with one line per conflict:
 
 ```text
-2 host ports this deployment needs are already in use; nothing was started
-  port 8700 is already in use on this machine (needed by chap); free it, or set
-  CHAP_API_PORT=8701 in `.env`
-  port 5001 is already in use on this machine (needed by chapkit-ewars-model);
-  free it, or run `varde models unexpose chapkit-ewars-model` (the model stays
-  reachable through chap-core) / `varde models expose chapkit-ewars-model --port auto`
+error: 2 host ports this deployment needs are already in use; nothing was started
+  port 8700 is already in use on this machine (needed by chap); free it, or set CHAP_API_PORT=8701 in `.env`
+  port 5001 is already in use on this machine (needed by chapkit-simple-multistep-model); free it, or run `varde models unexpose chapkit-simple-multistep-model` (the model stays reachable through chap-core) / `varde models expose chapkit-simple-multistep-model --port auto`
   or run `varde up --no-preflight` to hand the conflict to Docker
 ```
 
