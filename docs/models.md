@@ -27,11 +27,10 @@ Resolution order for every command that needs the catalogue:
 
 ```text
   url     https://raw.githubusercontent.com/dhis2-chap/model-marketplace/main/registry.yaml
-  source  cache (56 minutes old)
-  models  7
+  source  cache (54 minutes old)
+  models  6
   cache   /home/me/.cache/varde/registries/https_raw_githubusercontent_com_dhis2_chap_model_marketplace_mai-f6e5270ab795f1bd
 
-  chapkit_ewars_model
   chapkit_rwanda_malaria_bym_model
   chapkit_simple_multistep_model
   auto_arima_chapkit
@@ -39,7 +38,7 @@ Resolution order for every command that needs the catalogue:
   chapkit_minimalist_example_py
   chapkit_minimalist_example_r
 
-7 models in the catalogue (cache (56 minutes old))
+6 models in the catalogue (cache (54 minutes old))
 ```
 
 With `-v`, a hint names the next command:
@@ -70,9 +69,9 @@ Each marketplace entry lists versions, and the channels `stable` and `latest`
 each point at one of them.
 
 ```sh
-varde models enable chapkit_ewars_model                       # stable, the default
-varde models enable chapkit_ewars_model --channel latest
-varde models enable chapkit_ewars_model --version 1.0.3       # an exact pin
+varde models enable chapkit_simple_multistep_model                    # stable, the default
+varde models enable chapkit_simple_multistep_model --channel latest
+varde models enable chapkit_simple_multistep_model --version 0.1.1    # an exact pin
 ```
 
 A model that follows a channel records both the channel and the version it
@@ -106,18 +105,17 @@ varde models list                 # models enabled in this deployment are marked
 varde models list --enabled       # only this deployment's
 varde models list --all           # templates too
 varde models search malaria
-varde models info chapkit_ewars_model
+varde models info chapkit_simple_multistep_model
 ```
 
 ```text
 ID                                SERVICE                           NAME                STATUS        STABLE  LATEST  PORT
-chapkit_ewars_model               chapkit-ewars-model               CHAP-EWARS          limited data  1.0.4   1.0.4   via chap-core
-chapkit_simple_multistep_model    chapkit-simple-multistep-model    Simple Multistep    limited data  0.1.2   0.1.2   -
+chapkit_simple_multistep_model    chapkit-simple-multistep-model    Simple Multistep    limited data  0.1.2   0.1.2   via chap-core
 auto_arima_chapkit                auto-arima-chapkit                Auto-ARIMA          experimental  1.0.2   1.0.2   -
 chapkit_ghr_model                 chapkit-ghr-model                 GHRmodel            experimental  0.1.3   0.1.3   -
 chapkit_rwanda_malaria_bym_model  chapkit-rwanda-malaria-bym-model  Rwanda Malaria BYM  not for use   0.1.3   0.1.3   -
 
-5 listed, 1 enabled in this deployment
+4 listed, 1 enabled in this deployment
 ```
 
 Every listing is in the same order: by `STATUS`, from the models that have
@@ -162,8 +160,8 @@ this project has enabled with no host port, it also prints the chap-core proxy
 URL that reaches it.
 
 Both `ID` forms work everywhere an id is taken: the marketplace id
-(`chapkit_ewars_model`, with underscores) and the service id
-(`chapkit-ewars-model`, with hyphens, which is also the Compose service name
+(`chapkit_simple_multistep_model`, with underscores) and the service id
+(`chapkit-simple-multistep-model`, with hyphens, which is also the Compose service name
 and the DNS name).
 
 ## Enabling and disabling
@@ -192,15 +190,15 @@ marketplace again.
 before the definition goes away, and says so:
 
 ```text
-disabled chapkit_ewars_model
-stopped and removed 2 containers (chapkit-ewars-model, chapkit-ewars-model-init); host port 5001 is free again
-kept volume mychap-1ab2c3_ck_chapkit_ewars_model_data; remove it with `varde models disable chapkit_ewars_model --purge` or `docker volume rm mychap-1ab2c3_ck_chapkit_ewars_model_data`
+disabled chapkit_simple_multistep_model
+stopped and removed 2 containers (chapkit-simple-multistep-model, chapkit-simple-multistep-model-init); host port 5001 is free again
+kept volume mychap-1ab2c3_ck_chapkit_simple_multistep_model_data; remove it with `varde models disable chapkit_simple_multistep_model --purge` or `docker volume rm mychap-1ab2c3_ck_chapkit_simple_multistep_model_data`
 ```
 
 The port is therefore free straight away, rather than at the next `varde up`,
 which would have removed the container as an orphan but only once it was run.
 There is nothing left for `varde up` to apply. With `-v`, two hints follow:
-the overlay that was removed (`removed compose.chapkit-ewars-model.yml`) and
+the overlay that was removed (`removed compose.chapkit-simple-multistep-model.yml`) and
 `` `varde status` shows what runs now ``.
 
 ### The data volume
@@ -217,13 +215,13 @@ nobody names again is kept for as long as the machine lasts.
 `--purge` is how the data goes with the model:
 
 ```sh
-varde models disable chapkit_ewars_model --purge
+varde models disable chapkit_simple_multistep_model --purge
 ```
 
 ```text
-disabled chapkit_ewars_model
-stopped and removed 2 containers (chapkit-ewars-model, chapkit-ewars-model-init)
-removed volume mychap-1ab2c3_ck_chapkit_ewars_model_data
+disabled chapkit_simple_multistep_model
+stopped and removed 2 containers (chapkit-simple-multistep-model, chapkit-simple-multistep-model-init)
+removed volume mychap-1ab2c3_ck_chapkit_simple_multistep_model_data
 ```
 
 The volume is removed after the container, which is the only order docker
@@ -237,8 +235,8 @@ answer as two lists, `purged` and `kept_volumes`.
 state the kept-volume line leaves you in:
 
 ```text
-chapkit_ewars_model is not enabled here, so only its data volume was looked for
-removed volume mychap-1ab2c3_ck_chapkit_ewars_model_data
+chapkit_simple_multistep_model is not enabled here, so only its data volume was looked for
+removed volume mychap-1ab2c3_ck_chapkit_simple_multistep_model_data
 ```
 
 `varde doctor`'s `volumes` line finds the ones that were forgotten: a volume
@@ -249,12 +247,12 @@ component is reported as a leftover, with the same two ways to remove it. See
 `expose` and `unexpose` say what changed:
 
 ```text
-exposed chapkit-ewars-model on http://localhost:5001
+exposed chapkit-simple-multistep-model on http://localhost:5001
 run `varde up` to apply
 ```
 
 ```text
-unexposed chapkit-ewars-model; it stays registered with chap-core and reachable at http://localhost:8700/v2/services/chapkit-ewars-model/run/
+unexposed chapkit-simple-multistep-model; it stays registered with chap-core and reachable at http://localhost:8700/v2/services/chapkit-simple-multistep-model/run/
 run `varde up` to apply
 ```
 
@@ -262,7 +260,7 @@ If the model is already where the command puts it, nothing changes, and there
 is no `varde up` line:
 
 ```text
-chapkit-ewars-model is already exposed on http://localhost:5001; nothing changed
+chapkit-simple-multistep-model is already exposed on http://localhost:5001; nothing changed
 ```
 
 The port that the running container of the model publishes is not a port in
@@ -272,19 +270,19 @@ the port and the running container does not publish it yet, a second line
 names the step:
 
 ```text
-chapkit-ewars-model is already exposed on http://localhost:5001; nothing changed
+chapkit-simple-multistep-model is already exposed on http://localhost:5001; nothing changed
 its running container does not publish this port yet; run `varde up` to apply it
 ```
 
 ```text
-chapkit-ewars-model was already unexposed; nothing changed, and it is reachable at http://localhost:8700/v2/services/chapkit-ewars-model/run/
+chapkit-simple-multistep-model was already unexposed; nothing changed, and it is reachable at http://localhost:8700/v2/services/chapkit-simple-multistep-model/run/
 ```
 
 An `enable` of a model that is already enabled at the same version and port
 also changes nothing:
 
 ```text
-chapkit_ewars_model v1.0.4 is already enabled at http://localhost:8700/v2/services/chapkit-ewars-model/run/; nothing changed
+chapkit_simple_multistep_model v0.1.2 is already enabled at http://localhost:8700/v2/services/chapkit-simple-multistep-model/run/; nothing changed
 ```
 
 With `--json`, such a model is in the `unchanged` list, not in `enabled`.
@@ -320,25 +318,24 @@ chap-core must run. If chap-core does not answer, the command stops and names
 ### Listing
 
 ```sh
-varde models configs                           # every enabled model
-varde models configs list chapkit_ewars_model  # one model
-varde models configs --all                     # with the archived ones
+varde models configs                                      # every enabled model
+varde models configs list chapkit_simple_multistep_model  # one model
+varde models configs --all                                # with the archived ones
 ```
 
 ```text
-chapkit_ewars_model
-NAME                     COVARIATES                 OPTIONS                                          SOURCE
-monthly_climate          rainfall,mean_temperature  n_lags=3,3 precision=0.01 region_seasonal=false  marketplace
-monthly_population_only  -                          n_lags=3 precision=0.01 region_seasonal=false    marketplace
-monthly_region_seasonal  rainfall,mean_temperature  n_lags=3,3 precision=0.01 region_seasonal=true   marketplace
-short_lags               rainfall                   n_lags=2,2 precision=0.05                        by hand
+chapkit_simple_multistep_model
+NAME                 COVARIATES                                        OPTIONS                                           SOURCE
+monthly_climate      rainfall,mean_temperature,mean_relative_humidity  n_samples=100 n_target_lags=6 rf_max_depth=10...  marketplace
+monthly_selfhistory  -                                                 n_samples=100 n_target_lags=6 rf_max_depth=10...  marketplace
+short_lags           rainfall                                          n_target_lags=3 rf_max_depth=5                    by hand
 
-4 configured models of 1 model
+3 configured models of 1 model
 ```
 
 Each model gets a table. NAME is the variant name. OPTIONS shows the option
 values that chap-core stores; an option without a value uses the model
-default. SOURCE says where the configured model comes from:
+default. A long list of values ends in `...`; `--json` has all of them. SOURCE says where the configured model comes from:
 
 - `marketplace`: a configuration of the marketplace entry.
 - `service default`: the configuration `default` of a model without a
@@ -351,18 +348,18 @@ gives every field, with the option values whole. If chap-core has no
 configured model of a model, the line names the way out:
 
 ```text
-chapkit_ewars_model: chap-core has no configured model of it; `varde models configs sync chapkit_ewars_model` creates them
+auto_arima_chapkit: chap-core has no configured model of it; `varde models configs sync auto_arima_chapkit` creates them
 ```
 
 ### Adding
 
 ```sh
-varde models configs add chapkit_ewars_model --name short_lags \
-  --set n_lags=2,2 --set precision=0.05 --covariates rainfall
+varde models configs add chapkit_simple_multistep_model --name short_lags \
+  --set n_target_lags=3 --set rf_max_depth=5 --covariates rainfall
 ```
 
 ```text
-created configured model short_lags of chapkit_ewars_model
+created configured model short_lags of chapkit_simple_multistep_model
 ```
 
 - `--name` is the variant name.
@@ -378,8 +375,8 @@ not know. So a mistake would otherwise show only when a run fails. A bad key
 or value stops the command with exit code 2:
 
 ```text
-error: `lag` is not an option of chapkit_ewars_model; its options are label (text or null), max_lag (integer), method (one of fast, exact), n_lags (list of integers), precision (number), region_seasonal (true or false), seasonal (true or false)
-error: `two` is not a value of `max_lag`, which takes an integer, such as `3`
+error: `lag` is not an option of chapkit_simple_multistep_model; its options are n_samples (integer), n_target_lags (integer), rf_max_depth (integer), rf_min_samples_leaf (integer)
+error: `two` is not a value of `n_target_lags`, which takes an integer, such as `3`
 ```
 
 varde also checks the covariates. A required covariate is refused, because
@@ -410,13 +407,13 @@ each run, so varde does not store the value in the file.
 ### Changing
 
 ```sh
-varde models configs update chapkit_ewars_model short_lags --set precision=0.1
-varde models configs update chapkit_ewars_model short_lags --unset precision
-varde models configs update chapkit_ewars_model short_lags   # the form
+varde models configs update chapkit_simple_multistep_model short_lags --set rf_max_depth=8
+varde models configs update chapkit_simple_multistep_model short_lags --unset rf_max_depth
+varde models configs update chapkit_simple_multistep_model short_lags   # the form
 ```
 
 ```text
-updated configured model short_lags of chapkit_ewars_model; chap-core keeps the old values as an archived configured model
+updated configured model short_lags of chapkit_simple_multistep_model; chap-core keeps the old values as an archived configured model
 ```
 
 chap-core has no request that changes a configured model. varde creates a
@@ -434,7 +431,7 @@ values. If the new values are the same as the current values, varde writes
 nothing:
 
 ```text
-configured model short_lags of chapkit_ewars_model has these values already; nothing changed
+configured model short_lags of chapkit_simple_multistep_model has these values already; nothing changed
 ```
 
 If the archive step fails, the new values are live, and a warning gives the
@@ -443,11 +440,11 @@ If the archive step fails, the new values are live, and a warning gives the
 ### Archiving
 
 ```sh
-varde models configs archive chapkit_ewars_model short_lags
+varde models configs archive chapkit_simple_multistep_model short_lags
 ```
 
 ```text
-archived configured model short_lags of chapkit_ewars_model
+archived configured model short_lags of chapkit_simple_multistep_model
 ```
 
 chap-core does not delete a configured model. It archives it: chap-core
@@ -463,14 +460,14 @@ another one is live, `sync` does not change the model. When you archive the
 last one, varde says so:
 
 ```text
-chapkit_ewars_model has no other configured model now, so `varde models configs sync` and `varde up --wait` create its configured models again
+chapkit_simple_multistep_model has no other configured model now, so `varde models configs sync` and `varde up --wait` create its configured models again
 ```
 
 ### Exporting
 
 ```sh
-varde models configs export chapkit_ewars_model > configurations.yaml
-varde models configs export chapkit_ewars_model --out configurations.yaml
+varde models configs export chapkit_simple_multistep_model > configurations.yaml
+varde models configs export chapkit_simple_multistep_model --out configurations.yaml
 ```
 
 The output is the `configurations:` block of a marketplace entry. For each
@@ -478,18 +475,19 @@ configured model it has the variant name, a `description` and a `config`.
 `config` is the flat object that chapkit takes: the option values,
 `additional_continuous_covariates` and `prediction_periods`.
 
+This is the configured model `short_lags` of the export, after the
+`update` above:
+
 ```yaml
 configurations:
   short_lags:
-    description: The configured model short_lags of chapkit_ewars_model.
+    description: The configured model short_lags of chapkit_simple_multistep_model.
     config:
       additional_continuous_covariates:
       - rainfall
-      n_lags:
-      - 2
-      - 2
-      precision: 0.05
-      prediction_periods: 3
+      n_target_lags: 3
+      prediction_periods: 12
+      rf_max_depth: 8
 ```
 
 chap-core does not store `prediction_periods`. varde takes it from the
@@ -503,7 +501,7 @@ entry. If the deployment runs more than one model, give the ID. With `--out`,
 varde reports the file:
 
 ```text
-wrote 4 configurations of chapkit_ewars_model to configurations.yaml
+wrote 3 configurations of chapkit_simple_multistep_model to configurations.yaml
 ```
 
 To use the configurations in another deployment, run `varde models configs
@@ -532,15 +530,13 @@ service has registered:
    defaults of the service.
 
 ```sh
-varde models configs sync                      # every model this deployment enables
-varde models configs sync chapkit_ewars_model  # one model, by marketplace id or service id
+varde models configs sync                                 # every model this deployment enables
+varde models configs sync chapkit_simple_multistep_model  # one model, by marketplace id or service id
 ```
 
 ```text
-chapkit_ewars_model: created configured model monthly_climate
-chapkit_ewars_model: created configured model monthly_population_only
-chapkit_ewars_model: created configured model monthly_region_seasonal
-chapkit_ghr_model: chap-core has a configured model of it already
+auto_arima_chapkit: created configured model monthly
+chapkit_simple_multistep_model: chap-core has a configured model of it already
 ```
 
 The command is idempotent for each registered version. A model that has a
@@ -550,7 +546,7 @@ gets no second set. A model that chap-core has not registered yet gets a line
 that says so. Directly after `varde up`, expect this line for a few seconds:
 
 ```text
-chapkit_ewars_model: not registered with chap-core; run `varde models configs sync` again once `varde status` shows it registered
+chapkit_simple_multistep_model: not registered with chap-core; run `varde models configs sync` again once `varde status` shows it registered
 ```
 
 A model that could not be configured gets a warning with the reason, and the
@@ -578,14 +574,14 @@ model. To test a configured model that you added, give its variant name with
 `--config`:
 
 ```sh
-varde models configs add chapkit_ewars_model --name short_lags \
-  --set n_lags=2,2 --set precision=0.05 --covariates rainfall,mean_temperature
-varde models test chapkit_ewars_model --backtest --config short_lags
+varde models configs add chapkit_simple_multistep_model --name short_lags \
+  --set n_target_lags=3 --set rf_max_depth=5 --covariates rainfall
+varde models test chapkit_simple_multistep_model --backtest --config short_lags
 ```
 
 ```text
 testing 1 model (through chap-core: a dataset, a backtest and its scores)
-chapkit-ewars-model    pass      33s   crps 4.5  mae 6.0  rmse 8.1
+chapkit-simple-multistep-model    pass      13s   crps 6.4  mae 8.7  rmse 10.3
   configured model: short_lags (id 17)
 
 1 of 1 model passes
@@ -600,8 +596,8 @@ registered with, and not an archived one. If the model has no configured model
 of that name, the test skips it and names the ones that it has:
 
 ```text
-chapkit-ewars-model    skip       0s   chap-core has no configured model weekly for chapkit-ewars-model 1.0.4; it has monthly_climate, monthly_population_only, monthly_region_seasonal, short_lags
-  run `varde models configs list chapkit_ewars_model` to see its configured models
+chapkit-simple-multistep-model    skip       0s   chap-core has no configured model weekly for chapkit-simple-multistep-model 0.1.2; it has monthly_climate, monthly_selfhistory, short_lags
+  run `varde models configs list chapkit_simple_multistep_model` to see its configured models
 ```
 
 With `--all` or more than one id, `--config` applies to each model. A model
@@ -648,14 +644,13 @@ generates data matching the covariates, period type and geometry the service
 declares, and then validates, trains and predicts against it.
 
 ```text
-testing 5 models (model level; add --backtest to go through chap-core)
+testing 4 models (model level; add --backtest to go through chap-core)
 auto-arima-chapkit                  pass   12s   1 training, 1 prediction
-chapkit-ewars-model                 pass   18s   1 training, 1 prediction
 chapkit-ghr-model                   pass   24s   1 training, 1 prediction
-chapkit-rwanda-malaria-bym-model    pass   22s   1 training, 1 prediction
+chapkit-rwanda-malaria-bym-model    pass   20s   1 training, 1 prediction
 chapkit-simple-multistep-model      pass    5s   1 training, 1 prediction
 
-5 of 5 models pass
+4 of 4 models pass
 ```
 
 **What it proves:** the image runs, the service answers, the account the
@@ -727,13 +722,15 @@ models of the old version, but chap-core does not run them. Without
 name, as `varde models configs` shows it, or the full name `<service>:<variant>`.
 See [Testing a configuration](#testing-a-configuration).
 
-A service that has no configured model of its version is skipped, not
-backtested. The skip names the version, and the line under it names `varde
-models configs sync`:
+The backtest first creates the configured models that the marketplace entry
+gives, as `varde models configs sync` does. A service that still has no live
+configured model of its version is skipped, not backtested. The skip names
+the version, and the line under it names `varde models configs sync`. It has
+this form:
 
 ```text
-chapkit-ewars-model    skip    0s   chap-core has no configured model for chapkit-ewars-model 1.0.1
-  it is registered, and chap-core has nothing to run it with; run `varde models configs sync chapkit_ewars_model`, then `varde models test chapkit_ewars_model --backtest`
+SERVICE    skip    0s   chap-core has no configured model for SERVICE VERSION
+  it is registered, and chap-core has nothing to run it with; run `varde models configs sync ID`, then `varde models test ID --backtest`
 ```
 
 That configured model's `additionalContinuousCovariates` are the columns the
@@ -759,9 +756,9 @@ it cannot match, so `varde` sets it before posting.
 
 ```text
 testing 2 models (through chap-core: a dataset, a backtest and its scores)
-chapkit-rwanda-malaria-bym-model    pass      38s   crps 17.2  mae 25.5  rmse 28.9
-  configured model: monthly (id 18)
-chapkit-ewars-model                 pass      33s   crps 23.4  mae 33.1  rmse 52.6
+chapkit-rwanda-malaria-bym-model    pass      38s   crps 16.7  mae 26.2  rmse 30.6
+  configured model: monthly (id 20)
+chapkit-simple-multistep-model      pass      13s   crps 5.4  mae 7.3  rmse 9.0
   configured model: monthly_climate (id 14)
 
 2 of 2 models pass
@@ -1043,13 +1040,13 @@ a model's page usually names one it does. Without `--id`, such a source is
 enabled as the marketplace model, with the catalogue's reviewed pin:
 
 ```sh
-varde models add https://github.com/chap-models/chapkit_ewars_model
-varde models add ghcr.io/chap-models/chapkit_ewars_model:sha-24d58c0   # the same, pinned to 1.0.3
+varde models add https://github.com/chap-models/chapkit_simple_multistep_model
+varde models add ghcr.io/chap-models/chapkit_simple_multistep_model:sha-6c1d9ee   # the same, pinned to 0.1.1
 ```
 
 ```text
-https://github.com/chap-models/chapkit_ewars_model is the marketplace model chapkit_ewars_model; enabling that (pass `--id <other>` to add it beside it instead)
-enabled chapkit_ewars_model v1.0.4 at http://localhost:8700/v2/services/chapkit-ewars-model/run/
+https://github.com/chap-models/chapkit_simple_multistep_model is the marketplace model chapkit_simple_multistep_model; enabling that (pass `--id <other>` to add it beside it instead)
+enabled chapkit_simple_multistep_model v0.1.2 at http://localhost:8700/v2/services/chapkit-simple-multistep-model/run/
 run `varde up` to apply
 ```
 
@@ -1060,7 +1057,7 @@ other tag of the same image is a build the catalogue has not reviewed, so it is
 refused:
 
 ```text
-error: the marketplace already lists chapkit_ewars_model (CHAP-EWARS); run `varde models enable chapkit_ewars_model`, or pass `--id auto` (or `--id <other>`) to add this one beside it
+error: the marketplace already lists chapkit_simple_multistep_model (Simple Multistep); run `varde models enable chapkit_simple_multistep_model`, or pass `--id auto` (or `--id <other>`) to add this one beside it
 ```
 
 A local image (`my-model:dev`) is never matched:
@@ -1072,17 +1069,17 @@ with the lowest free `_2`, `_3`, ... suffix when the marketplace or an earlier
 `models add` already uses it.
 
 ```text
-$ varde models add https://github.com/chap-models/chapkit_ewars_model --id auto
-added chapkit_ewars_model_2 (chapkit-ewars-model-2)
-enabled chapkit_ewars_model_2 sha-964eea8 at http://localhost:8700/v2/services/chapkit-ewars-model-2/run/
+$ varde models add https://github.com/chap-models/chapkit_simple_multistep_model --id auto
+added chapkit_simple_multistep_model_2 (chapkit-simple-multistep-model-2)
+enabled chapkit_simple_multistep_model_2 sha-10b2bc7 at http://localhost:8700/v2/services/chapkit-simple-multistep-model-2/run/
 run `varde up` to apply
-warning: this is the image of the marketplace model chapkit_ewars_model, which registers with chap-core as `chapkit-ewars-model`, so `chapkit-ewars-model-2` may never register; to run chapkit_ewars_model, run `varde models remove chapkit_ewars_model_2`, then `varde models enable chapkit_ewars_model`
+warning: this is the image of the marketplace model chapkit_simple_multistep_model, which registers with chap-core as `chapkit-simple-multistep-model`, so `chapkit-simple-multistep-model-2` may never register; to run chapkit_simple_multistep_model, run `varde models remove chapkit_simple_multistep_model_2`, then `varde models enable chapkit_simple_multistep_model`
 ```
 
 `--id auto` changes the id and the service id here, not the code in the
-image. The image above still registers as `chapkit-ewars-model`, so `varde
-status` never shows `chapkit-ewars-model-2` as registered. Any `--id` on the
-repository or an image of a marketplace model gives the same warning. `--service-id chapkit-ewars-model` is
+image. The image above still registers as `chapkit-simple-multistep-model`, so `varde
+status` never shows `chapkit-simple-multistep-model-2` as registered. Any `--id` on the
+repository or an image of a marketplace model gives the same warning. `--service-id chapkit-simple-multistep-model` is
 refused, because the marketplace model uses that name. Use `--id` for a fork
 that sets its own `MLServiceInfo.id`.
 
@@ -1131,12 +1128,12 @@ Both listings mark these entries, because a local definition is not a reviewed
 catalogue entry:
 
 ```text
-ID                    SERVICE               NAME                  STATUS        STABLE       LATEST       PORT  KIND
-chapkit_ewars_model   chapkit-ewars-model   CHAP-EWARS            limited data  1.0.4        1.0.4        -     model
-chapkit_dengue_model  chapkit-dengue-model  chapkit_dengue_model  not for use   sha-b1d6c31  sha-b1d6c31  5001  manual
+ID                                SERVICE                           NAME                            STATUS        STABLE       LATEST       PORT           KIND
+chapkit_simple_multistep_model    chapkit-simple-multistep-model    Simple Multistep                limited data  0.1.2        0.1.2        via chap-core  model
+chapkit_simple_multistep_model_2  chapkit-simple-multistep-model-2  chapkit_simple_multistep_model  not for use   sha-10b2bc7  sha-10b2bc7  via chap-core  manual
 ```
 
-`varde models info chapkit_dengue_model` says the same in its own words - a
+`varde models info chapkit_simple_multistep_model_2` says the same in its own words - a
 `kind` of `manual`, a `source` line naming `varde models add` and the day it
 was added, and a `follows` line naming the branch or reading
 `nothing (pinned)` - and leaves out every field a
@@ -1157,7 +1154,7 @@ same thing here as it does there. A marketplace model has no local definition
 to remove, and says so:
 
 ```text
-error: chapkit_ewars_model is a marketplace model, so there is no local definition to remove; run `varde models disable chapkit_ewars_model`
+error: chapkit_ghr_model is a marketplace model, so there is no local definition to remove; run `varde models disable chapkit_ghr_model`
 ```
 
 ### What it needs, and what it refuses
@@ -1193,17 +1190,18 @@ The models page is the catalogue as one table across the width of the terminal,
 with a one-line summary of the row under the cursor under it:
 
 ```text
-varde · models                                                registry: cache · 2 min   7 models · 1 enabled · 0 pending
+varde · models                                               registry: cache · 59 min   6 models · 1 enabled · 0 pending
 ╭ Marketplace ─────────────────────────────────────────────────────────────────────────────────────────────────────────╮
 │     MODEL                  ID                                 STATUS         VERSION  PORT                           │
 │──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────│
-│ ▸ ✓ CHAP-EWARS             chapkit_ewars_model                ● limited data 1.0.4    via chap-core                  │
-│     Simple Multistep       chapkit_simple_multistep_model     ● limited data 0.1.1                                   │
-│     Auto-ARIMA             auto_arima_chapkit                 ● experimental 1.0.1                                   │
+│ ▸ ✓ Simple Multistep       chapkit_simple_multistep_model     ● limited data 0.1.2    via chap-core                  │
+│     Auto-ARIMA             auto_arima_chapkit                 ● experimental 1.0.2                                   │
+│     GHRmodel               chapkit_ghr_model                  ● experimental 0.1.3                                   │
+│     Rwanda Malaria BYM     chapkit_rwanda_malaria_bym_model   ● not for use  0.1.3                                   │
 │──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────│
-│ CHAP-EWARS  ● limited data  1.0.4 (sha-964eea8)  enabled, via chap-core  requires population            i for details│
+│ Simple Multistep  ● limited data  0.1.2 (sha-10b2bc7)  enabled, via chap-core  requires -               i for details│
 ╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
- [j/k] move  [tab] page  [space] toggle  [i] info  [m] configs  [p] port  [s] save  [ctrl+k] commands  [?] help  [q] quit
+ [j/k] move  [tab] page  [space] toggle  [i] info  [p] port  [s] save  [ctrl+k] commands  [?] help  [q] quit
 ```
 
 The summary line names the model, what the author's assessment means, what the
@@ -1298,7 +1296,7 @@ line gives the way out.
 with `auto`:
 
 ```text
-╭ Host port for CHAP-EWARS ──────────────────────────────────────────────╮
+╭ Host port for Simple Multistep ────────────────────────────────────────╮
 │ port  › 80_                                                            │
 │ now: via chap-core · range 5001-5999 · api port 8140 is taken          │
 │ port 80 is outside this deployment's range 5001-5999                   │
@@ -1323,9 +1321,9 @@ without the dialog.
 one resolves to and a `✓` on the one the row follows today:
 
 ```text
-╭ Channel for CHAP-EWARS ─────────────────────────────────╮
-│ ▸ ✓ stable  1.0.4                                       │
-│     latest  1.0.4                                       │
+╭ Channel for Simple Multistep ───────────────────────────╮
+│ ▸ ✓ stable  0.1.2                                       │
+│     latest  0.1.2                                       │
 │                                                         │
 │ [enter] apply  [esc] cancel  [j/k] move  [s/l] pick one │
 ╰─────────────────────────────────────────────────────────╯
@@ -1340,7 +1338,7 @@ the pin, and the dialog puts no `✓` on `stable` or `latest`. A third line,
 which the cursor cannot reach, shows the pin:
 
 ```text
-│   ✓ pinned  1.0.3                                       │
+│   ✓ pinned  0.1.1                                       │
 ```
 
 The summary strip shows the pin too. A save keeps the pin unless you pick a
@@ -1587,7 +1585,7 @@ the component changes through the same path as `varde components enable`. Then
 the browser closes and prints what changed:
 
 ```text
-updated chapkit_ewars_model v1.0.4 on http://localhost:5001
+updated chapkit_simple_multistep_model v0.1.2 on http://localhost:5001
 enabled the s3 component
 run `varde up` to apply
 ```
@@ -1608,20 +1606,20 @@ set instead of reading `--models`.
 
 Each marketplace model is a [chapkit](https://github.com/dhis2-chap/chapkit)
 container listening on port 8000 with `/health` and `/api/v1/info`. This is the
-overlay `varde` writes for CHAP-EWARS. The file carries two header lines
+overlay `varde` writes for Simple Multistep. The file carries two header lines
 and nothing else by way of explanation: what it does is below.
 
 ```yaml
 # Generated by varde from .varde/; edit there and run `varde sync`.
-# chapkit_ewars_model 1.0.4 (https://github.com/chap-models/chapkit_ewars_model)
+# chapkit_simple_multistep_model 0.1.2 (https://github.com/chap-models/chapkit_simple_multistep_model)
 services:
-  chapkit-ewars-model:
+  chapkit-simple-multistep-model:
     labels:
       com.winterop.varde.role: model
-      com.winterop.varde.model: "chapkit_ewars_model"
+      com.winterop.varde.model: "chapkit_simple_multistep_model"
       com.winterop.varde.kind: init
     restart: unless-stopped
-    image: ghcr.io/chap-models/chapkit_ewars_model:${CHAPKIT_EWARS_MODEL_IMAGE_TAG:-sha-964eea8}
+    image: ghcr.io/chap-models/chapkit_simple_multistep_model:${CHAPKIT_SIMPLE_MULTISTEP_MODEL_IMAGE_TAG:-sha-10b2bc7}
     platform: linux/amd64
     init: true
     expose:
@@ -1635,37 +1633,37 @@ services:
       - no-new-privileges:true
     cap_drop:
       - ALL
-    user: 1000:1000
+    user: 1001:1001
     volumes:
       - type: tmpfs
         target: /tmp
         tmpfs:
           size: 2000000000
       - type: volume
-        source: ck_chapkit_ewars_model_data
+        source: ck_chapkit_simple_multistep_model_data
         target: /app/data
     depends_on:
-      chapkit-ewars-model-init:
+      chapkit-simple-multistep-model-init:
         condition: service_completed_successfully
       chap:
         condition: service_healthy
 
-  chapkit-ewars-model-init:
+  chapkit-simple-multistep-model-init:
     labels:
       com.winterop.varde.role: model
-      com.winterop.varde.model: "chapkit_ewars_model"
+      com.winterop.varde.model: "chapkit_simple_multistep_model"
       com.winterop.varde.kind: init
     image: busybox:1.38
-    command: ["sh", "-c", "chown -R 1000:1000 /app/data"]
+    command: ["sh", "-c", "chown -R 1001:1001 /app/data"]
     user: "0:0"
     volumes:
       - type: volume
-        source: ck_chapkit_ewars_model_data
+        source: ck_chapkit_simple_multistep_model_data
         target: /app/data
     restart: "no"
 
 volumes:
-  ck_chapkit_ewars_model_data: {}
+  ck_chapkit_simple_multistep_model_data: {}
 ```
 
 ### What an overlay contains
@@ -1768,7 +1766,6 @@ What the marketplace images declare today:
 
 | Image | Data directory | User |
 | --- | --- | --- |
-| EWARS | `/app/data` | `chapkit`, rendered as `1000:1000` |
 | The simple multistep model | `/app/data` | `chap`, rendered as `1001:1001` |
 | The Rwanda BYM model | `/work/data` | `chapkit`, rendered as `1000:1000` |
 | GHRmodel | `/work/data` | `app`, probed as `10001:10001` |
