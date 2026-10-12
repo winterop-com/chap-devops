@@ -16,21 +16,21 @@ varde status
 
 The images are `linux/amd64`, so on an Apple Silicon Mac the build runs under
 emulation. The first `varde up` pulls the base images and builds both images,
-which took about five minutes on an Apple Silicon Mac. It prints the full
+which took two to five minutes on an Apple Silicon Mac. It prints the full
 docker build log, and ends with the services it started:
 
 ```text
-started chap, chapkit-ewars-model, postgres, redis, worker
+started chap, chapkit-simple-multistep-model, postgres, redis, worker
 ```
 
 ```text
 chap-core   up   http://localhost:8700   2.5.0.dev0   auth: off
 
-MODEL                STATE                       REACH          LAST PING
-chapkit-ewars-model  registered, not configured  via chap-core  6s ago
+MODEL                           STATE                       REACH          LAST PING
+chapkit-simple-multistep-model  registered, not configured  via chap-core  1s ago
 
 1 model registered
-chapkit-ewars-model: chap-core has no configured model for it, so nothing can run it; run `varde models configs sync`
+chapkit-simple-multistep-model: chap-core has no configured model for it, so nothing can run it; run `varde models configs sync`
 ```
 
 It worked when `varde status` shows chap-core `up` and the model registered.
@@ -89,7 +89,7 @@ before a file is written (see
    moved CHAP_IMAGE_TAG in the kept .env from checkout to v2.4.0
    components: chap-core
    chap-core: v2.4.0, API on http://localhost:8700
-   enabled chapkit_ewars_model v1.0.4 at http://localhost:8700/v2/services/chapkit-ewars-model/run/
+   enabled chapkit_simple_multistep_model v0.1.2 at http://localhost:8700/v2/services/chapkit-simple-multistep-model/run/
    run `cd /home/me/mychap && varde up` to start the deployment
    ```
 
