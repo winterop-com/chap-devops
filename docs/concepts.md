@@ -109,7 +109,7 @@ varde sync
 ```
 
 ```text
-in sync: 0 written, 4 unchanged, 0 removed
+in sync: 0 written, 5 unchanged, 0 removed
 ```
 
 With `-v`, a hint line names each file:
@@ -118,9 +118,10 @@ With `-v`, a hint line names each file:
 $ varde -v sync
 hint: compose.yml is unchanged
 hint: compose.varde.yml is unchanged
-hint: compose.chapkit-ewars-model.yml is unchanged
+hint: compose.auto-arima-chapkit.yml is unchanged
+hint: compose.chapkit-simple-multistep-model.yml is unchanged
 hint: compose.marketplace.yml is unchanged
-in sync: 0 written, 4 unchanged, 0 removed
+in sync: 0 written, 5 unchanged, 0 removed
 ```
 
 `varde up` runs `sync` before `docker compose up`, so the intent and the

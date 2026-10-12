@@ -81,7 +81,7 @@ A run is four steps, printed in that order:
    `--version` are listed as pinned and skipped:
 
    ```text
-     chapkit_ewars_model             v1.0.4 (sha-964eea8)  unchanged
+     auto_arima_chapkit              v1.0.2 (sha-e9047d4)  unchanged
      chapkit_simple_multistep_model  v0.1.1 (sha-6c1d9ee) -> v0.1.2 (sha-10b2bc7)
      chap-core                       v2.4.0  unchanged, the newest release
    ```
@@ -250,7 +250,7 @@ services it did not recreate, and the command to run next:
 $ varde -v restart
 ...
 recreated chapkit-simple-multistep-model
-hint: unchanged: chap, chapkit-ewars-model, postgres, redis, worker
+hint: unchanged: auto-arima-chapkit, chap, postgres, redis, worker
 hint: run `varde status` to check that everything answers
 ```
 
@@ -378,7 +378,7 @@ re-rendered, the images are pulled, and the closing lines say what moved and
 what needs restarting:
 
 ```text
-  chapkit_ewars_model             v1.0.4 (sha-964eea8)  unchanged
+  auto_arima_chapkit              v1.0.2 (sha-e9047d4)  unchanged
   chapkit_simple_multistep_model  v0.1.2 (sha-10b2bc7)  unchanged
   chap-core                       latest -> master  (compose.ghcr.yml too)
 updated chap-core latest -> master and pulled new images for chap, worker; restart needed: chap, worker
