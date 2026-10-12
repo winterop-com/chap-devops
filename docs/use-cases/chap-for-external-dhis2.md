@@ -66,7 +66,7 @@ external DHIS2 2.42.6 at https://dhis2.example.org, as `admin`
 repointed the `chap` route at https://chap.example.org/**; chap-core answered through it
 skipped: installing apps on a DHIS2 varde does not run (the Modeling App is not installed, the Climate App is not installed); `varde dhis2 apps` installs them if its admin agrees
 skipped: generating analytics tables on a DHIS2 varde does not run; `varde dhis2 analytics` starts a run if its admin agrees
-created configured models in chap-core for chapkit_ewars_model (monthly_climate, monthly_population_only, monthly_region_seasonal)
+created configured models in chap-core for chapkit_simple_multistep_model (monthly_climate, monthly_selfhistory)
 the Modeling App can reach Chap after the admin of this DHIS2 installs the Modeling App and the Climate App; `varde dhis2 show` says when they are there
 ```
 

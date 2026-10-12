@@ -119,7 +119,7 @@ and gives no `varde up` line:
 
 ```text
 ocs was already enabled on http://localhost:8791; nothing changed
-chapkit-ewars-model is already exposed on http://localhost:5101; nothing changed
+chapkit-simple-multistep-model is already exposed on http://localhost:5101; nothing changed
 ```
 
 The two lines come from two commands. With `-v`, the `ocs` line has the hint
