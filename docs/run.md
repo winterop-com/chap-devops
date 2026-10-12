@@ -5,23 +5,23 @@
 GitHub repository or image, and use the URL.
 
 ```sh
-varde run chapkit_ewars_model
+varde run chapkit_simple_multistep_model
 varde run https://github.com/chap-models/chapkit_ghr_model
 varde run ghcr.io/my-org/chapkit_dengue_model:sha-1eb8cf1
 varde run my-dengue-model:dev                 # built on this machine
 ```
 
 ```text
-starting chapkit-ewars-model (chapkit_ewars_model in /home/me/.local/share/varde/run/default)
-running chapkit_ewars_model on http://localhost:5001 (answered in 41s)
+starting chapkit-simple-multistep-model (chapkit_simple_multistep_model in /home/me/.local/share/varde/run/default)
+running chapkit_simple_multistep_model on http://localhost:5001 (answered in 4s)
 ```
 
 With `-v`, two hints follow: the command that stops the model, and the command
 that shows its log:
 
 ```text
-hint: `varde stop chapkit_ewars_model` stops it
-hint: `varde -C /home/me/.local/share/varde/run/default logs chapkit-ewars-model` shows its log
+hint: `varde stop chapkit_simple_multistep_model` stops it
+hint: `varde -C /home/me/.local/share/varde/run/default logs chapkit-simple-multistep-model` shows its log
 ```
 
 The command returns once the model answers its own `/health`, so the URL works
@@ -37,10 +37,10 @@ the foreground. After the URL, it shows the model's log, and Ctrl-C stops the
 model:
 
 ```text
-running chapkit_ewars_model on http://localhost:5001 (answered in 41s)
-following the log of chapkit-ewars-model; Ctrl-C stops it
+running chapkit_simple_multistep_model on http://localhost:5001 (answered in 4s)
+following the log of chapkit-simple-multistep-model; Ctrl-C stops it
 ...
-stopped chapkit_ewars_model; its data stays, and `varde run chapkit_ewars_model` starts it again with it
+stopped chapkit_simple_multistep_model; its data stays, and `varde run chapkit_simple_multistep_model` starts it again with it
 ```
 
 Ctrl-C takes the model out of its group, as `varde stop` does. The model's data
@@ -55,7 +55,7 @@ put in: a model that this run enabled goes back out of the group, as after a
 failed start. The command then exits with 130:
 
 ```text
-error: stopped by Ctrl-C; chapkit_ewars_model is taken back out of /home/me/.local/share/varde/run/default
+error: stopped by Ctrl-C; chapkit_simple_multistep_model is taken back out of /home/me/.local/share/varde/run/default
 ```
 
 ## Your own chap-core
@@ -92,7 +92,7 @@ with `varde components enable chap-core --url URL`.
 
 | `MODEL` | What `run` does |
 | --- | --- |
-| A marketplace id or service id: `chapkit_ewars_model` | Enables it at the catalogue's stable version. |
+| A marketplace id or service id: `chapkit_simple_multistep_model` | Enables it at the catalogue's stable version. |
 | A GitHub repository the marketplace lists | The same: the catalogue's reviewed pin, not the newest build of the branch. |
 | Any other GitHub repository URL | Adds it the way [`varde models add`](./models.md#models-outside-the-marketplace) does: the newest published `sha-` build of the default branch. Needs the network. |
 | A ghcr image with a tag or digest | Pins exactly that image. A tag the marketplace publishes for one of its models enables that marketplace version instead. |
@@ -138,17 +138,17 @@ every container in it carries the labels `com.winterop.varde.kind: run` and
 containers ([Container labels](./concepts.md#container-labels)):
 
 ```sh
-varde run chapkit_ewars_model                               # group default
+varde run chapkit_simple_multistep_model                    # group default
 varde run auto_arima_chapkit --group trial
 varde run chapkit_ghr_model --group trial
 varde ps
 ```
 
 ```text
-GROUP    ID                  SERVICE             STATE        URL
-default  chapkit_ewars_model chapkit-ewars-model up           http://localhost:5001
-trial    auto_arima_chapkit  auto-arima-chapkit  up           http://localhost:5002
-trial    chapkit_ghr_model   chapkit-ghr-model   not running  http://localhost:5003
+GROUP    ID                              SERVICE                         STATE        URL
+default  chapkit_simple_multistep_model  chapkit-simple-multistep-model  up           http://localhost:5001
+trial    auto_arima_chapkit              auto-arima-chapkit              up           http://localhost:5002
+trial    chapkit_ghr_model               chapkit-ghr-model               not running  http://localhost:5003
 ```
 
 With `-v`, a hint after the table names the directory that holds the groups,
@@ -205,11 +205,11 @@ an added model, so `varde run ID` starts it again without asking GitHub.
 what became of the container and the volume, and how to start the model again:
 
 ```text
-$ varde -v stop chapkit_ewars_model
-stopped chapkit_ewars_model
-hint: stopped and removed the chapkit-ewars-model container; host port 5001 is free again
-hint: kept volume default-1ab2c3_ck_chapkit_ewars_model_data; remove it with `varde -C /home/me/.local/share/varde/run/default models disable chapkit_ewars_model --purge` or `docker volume rm default-1ab2c3_ck_chapkit_ewars_model_data`
-hint: `varde run chapkit_ewars_model` starts it again
+$ varde -v stop chapkit_simple_multistep_model
+stopped chapkit_simple_multistep_model
+hint: stopped and removed 2 containers (chapkit-simple-multistep-model, chapkit-simple-multistep-model-init); host port 5001 is free again
+hint: kept volume default-1ab2c3_ck_chapkit_simple_multistep_model_data; remove it with `varde -C /home/me/.local/share/varde/run/default models disable chapkit_simple_multistep_model --purge` or `docker volume rm default-1ab2c3_ck_chapkit_simple_multistep_model_data`
+hint: `varde run chapkit_simple_multistep_model` starts it again
 ```
 
 `--purge` takes the volume too, and the group it leaves with no model in it
@@ -223,7 +223,7 @@ can finish the job once the volume is free.
 
 The deployment behind a group is an ordinary varde deployment, so every other
 command works on it with `-C`: `varde -C ~/.local/share/varde/run/default logs
-chapkit-ewars-model`, `varde -C ... status`. Messages from inside a group name
+chapkit-simple-multistep-model`, `varde -C ... status`. Messages from inside a group name
 their commands that way.
 
 ## For tools
@@ -232,16 +232,17 @@ Every one of the three takes `--json` and prints one document on stdout:
 
 ```json
 {
-  "ok": true,
-  "id": "chapkit_ewars_model",
-  "service_id": "chapkit-ewars-model",
-  "port": 5001,
   "bind": "127.0.0.1",
-  "url": "http://localhost:5001",
-  "group": "default",
-  "project_dir": "/home/me/.local/share/varde/run/default",
   "enabled": true,
-  "wait": {"ready": true, "waited_s": 41, "models": [...]}
+  "group": "default",
+  "id": "chapkit_simple_multistep_model",
+  "messages": [...],
+  "ok": true,
+  "port": 5001,
+  "project_dir": "/home/me/.local/share/varde/run/default",
+  "service_id": "chapkit-simple-multistep-model",
+  "url": "http://localhost:5001",
+  "wait": {"ready": true, "waited_s": 4, "models": [...]}
 }
 ```
 
