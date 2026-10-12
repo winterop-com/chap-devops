@@ -6,7 +6,7 @@ models do not depend on each other. For one model, see
 [A chapkit model service on its own](./model-alone.md).
 
 ```sh
-varde init models --only none --models chapkit_ewars_model,auto_arima_chapkit
+varde init models --only none --models chapkit_simple_multistep_model,auto_arima_chapkit
 cd models
 varde up --wait
 varde status
@@ -18,13 +18,13 @@ varde models list --enabled  # the PORT column says where each one answers
 ```text
 created a deployment in /path/to/models
 components: none
-enabled chapkit_ewars_model v1.0.4 on http://localhost:5001
+enabled chapkit_simple_multistep_model v0.1.2 on http://localhost:5001
 enabled auto_arima_chapkit v1.0.2 on http://localhost:5002
 run `cd /path/to/models && varde up` to start the deployment
 ```
 
-A first `varde up` pulls the model images, about 2 GB to download for each of
-these two (6 to 7 GB each on disk). The pull can take some minutes. The images
+A first `varde up` pulls the model images. On disk, the image of Simple
+Multistep is about 1 GB, and the image of Auto-ARIMA about 6 GB. The pull can take some minutes. The images
 are amd64 only, so on an arm64 machine they run under emulation.
 
 `varde up --wait` returns once each model answers its own `/health`. Without
@@ -34,18 +34,18 @@ are amd64 only, so on an arm64 machine they run under emulation.
 
 ```text
 waiting up to 300s for the 2 models to answer
-started auto-arima-chapkit, chapkit-ewars-model
-ready in 2s
-  auto-arima-chapkit   up  http://localhost:5002
-  chapkit-ewars-model  up  http://localhost:5001
+started auto-arima-chapkit, chapkit-simple-multistep-model
+ready in 4s
+  auto-arima-chapkit              up  http://localhost:5002
+  chapkit-simple-multistep-model  up  http://localhost:5001
 ```
 
 Then `varde status` shows:
 
 ```text
-MODEL                STATE  REACH      LAST PING
-auto-arima-chapkit   up     port 5002  -
-chapkit-ewars-model  up     port 5001  -
+MODEL                           STATE  REACH      LAST PING
+auto-arima-chapkit              up     port 5002  -
+chapkit-simple-multistep-model  up     port 5001  -
 
 all 2 models up, each answering on its own host port
 ```

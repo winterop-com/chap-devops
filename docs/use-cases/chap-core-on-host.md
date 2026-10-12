@@ -136,7 +136,7 @@ there. When varde runs its own chap-core again, the models keep that port.
 `varde components enable chap-core` says so:
 
 ```text
-the models keep their host ports (chapkit-ewars-model on http://localhost:5001); `varde models unexpose ID` removes one
+the models keep their host ports (chapkit_simple_multistep_model on http://localhost:5001); `varde models unexpose ID` removes one
 ```
 
 The `REACH` column of `varde status` then shows the port, not `via chap-core`.

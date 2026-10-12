@@ -10,8 +10,8 @@ here start from a model on its own (see [A chapkit model service on its
 own](./model-alone.md)):
 
 ```sh
-varde init ewars --only none --models chapkit_ewars_model
-cd ewars
+varde init multistep --only none --models chapkit_simple_multistep_model
+cd multistep
 varde up
 ```
 
@@ -24,7 +24,8 @@ varde status                 # the models now register with chap-core
 ```
 
 `varde components enable chap-core` prints `enabled chap-core on
-http://localhost:8700` and `` run `varde up` to apply ``. Model services read the
+http://localhost:8700`, a line that says the models keep their host ports, and
+`` run `varde up` to apply ``. Model services read the
 orchestrator URL on that `varde up` and register.
 Registration takes up to a minute after the start, so the first `varde status`
 can show `running, not registered` and the line
@@ -34,11 +35,16 @@ If it does, run `varde status` again in a minute:
 ```text
 chap-core   up   http://localhost:8700   2.4.0   latest: running f80b66f755ef, revision 7c95b2a7df62   auth: off
 
-MODEL                STATE       REACH      LAST PING
-chapkit-ewars-model  registered  port 5001  3s ago
+MODEL                           STATE                       REACH      LAST PING
+chapkit-simple-multistep-model  registered, not configured  port 5001  11s ago
 
 1 model registered
+chapkit-simple-multistep-model: chap-core has no configured model for it, so nothing can run it; run `varde models configs sync`
 ```
+
+`registered, not configured` means chap-core has the model but no configured
+model of it yet. `varde models configs sync`, or `varde up --wait`, creates
+them. See [Configured models](../models.md#configured-models).
 
 The host ports they were given while standalone stay published until you
 `varde models unexpose ID`. The chap-core compose file comes from the copy built
@@ -54,13 +60,13 @@ one now answers:
 ```text
 $ varde components disable chap-core
 disabled chap-core
-stopped and removed 6 containers (chap, chapkit-ewars-model, chapkit-ewars-model-init, postgres, redis, worker); the host ports they published are free again
+stopped and removed 6 containers (chap, chapkit-simple-multistep-model, chapkit-simple-multistep-model-init, postgres, redis, worker); host ports 5001, 8700 are free again
 run `varde up` to apply
 ```
 
 A model that had no host port (after `varde models unexpose`) gets one more
 line, for example
-`chapkit_ewars_model now registers nowhere and is published on http://localhost:5001`.
+`chapkit_simple_multistep_model now registers nowhere and is published on http://localhost:5001`.
 The disable stops the model containers too, so run `varde up` to start the
 models again without chap-core.
 
