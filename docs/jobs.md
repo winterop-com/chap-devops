@@ -18,15 +18,25 @@ One row per job, newest first, with a running job ahead of a finished one that
 started in the same second:
 
 ```text
-ID           TYPE               NAME                                   STATUS   STARTED  DURATION
-f293520a...  create_prediction  eval-make-prediction-ewars             SUCCESS  25m ago  15s
-ed3a0719...  create_prediction  eval-setup-run-ewars                   SUCCESS  25m ago  15s
-e3e9f243...  create_backtest    eval-chapkit-rwanda-malaria-bym-model  FAILURE  30m ago  10s
-501d5b5d...  create_backtest    eval-chapkit-ghr-model                 SUCCESS  33m ago  2m 9s
-0fa57ec9...  create_dataset     eval-chapkit-5ou-202101-202312         SUCCESS  47m ago  2s
+ID           TYPE             NAME                                   STATUS   STARTED  DURATION
+e3e9f243...  create_backtest  eval-chapkit-rwanda-malaria-bym-model  FAILURE  30m ago  10s
+501d5b5d...  create_backtest  eval-chapkit-ghr-model                 SUCCESS  33m ago  2m 9s
+0fa57ec9...  create_dataset   eval-chapkit-5ou-202101-202312         SUCCESS  47m ago  2s
 
-5 jobs: 4 done, 1 failed
+3 jobs: 2 done, 1 failed
 run `varde jobs logs e3e9f243-2492-47cf-9d02-7de886154f70` to see why
+```
+
+After the evaluations and the forecast of [the Modeling App walk](./modeling-app.md),
+the list was:
+
+```text
+ID           TYPE                       NAME                                       STATUS   STARTED  DURATION
+9d70cffa...  create_prediction          Multistep Laos dengue forecast prediction  SUCCESS  2m ago   6s
+cfa5a546...  create_backtest_from_data  Multistep Laos dengue (Copy)               SUCCESS  4m ago   21s
+dca52fb6...  create_backtest_from_data  Multistep Laos dengue                      SUCCESS  6m ago   24s
+
+3 jobs: 3 done
 ```
 
 `varde jobs show <id>` prints the fields of one job. A failed job adds the
