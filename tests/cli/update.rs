@@ -552,12 +552,13 @@ fn a_corrupt_registry_cache_names_registry_update() {
         .assert()
         .success();
     let registries = sandbox.cache.path().join("registries");
+    // The sandbox also holds the frozen marketplace data, under the default
+    // registry URL; this entry is the one the stand-in's URL wrote.
     let entry = std::fs::read_dir(&registries)
         .expect("registry update wrote a cache")
-        .next()
-        .expect("one cache entry")
-        .unwrap()
-        .path();
+        .map(|entry| entry.unwrap().path())
+        .find(|path| path.to_string_lossy().contains("127_0_0_1"))
+        .expect("a cache entry for the stand-in");
     std::fs::write(entry.join("meta.json"), "not json").unwrap();
     let out = chap_in(
         &sandbox,
