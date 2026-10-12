@@ -189,7 +189,7 @@ newest image on this machine
 ```text
 running `chap eval` in ghcr.io/dhis2-chap/chap-worker:v2.3.1; the first run pulls it, about 12 GB
 files: chap reads and writes in /home/me/work
-model: chapkit_ewars_model at http://chapkit-ewars-model:8000 answers
+model: auto_arima_chapkit at http://auto-arima-chapkit:8000 answers
 ```
 
 - The image and its tag, and the size when it is not local yet.
@@ -208,7 +208,7 @@ only the first line.
 | `https://github.com/...` | chap clones it, and runs it in the worker image |
 | `./my_model` (a directory) | chap runs it from your directory |
 | `http://...` (a chapkit service) | varde checks that it answers, then chap calls it |
-| **`chapkit_ewars_model` (an id)** | **varde starts the model, then chap calls it** |
+| **`auto_arima_chapkit` (an id)** | **varde starts the model, then chap calls it** |
 
 A word is a model id only when no file or directory of that name is in the
 current directory. A directory of the same name wins, as it does for chap.
@@ -220,11 +220,11 @@ current directory. A directory of the same name wins, as it does for chap.
 Outside a deployment, varde starts the model in a `varde run` group:
 
 ```text
-starting chapkit-ewars-model (chapkit_ewars_model in ~/.local/share/varde/run/default)
+starting auto-arima-chapkit (auto_arima_chapkit in ~/.local/share/varde/run/default)
 running `chap eval` in ghcr.io/dhis2-chap/chap-core:v2.3.1
-model: chapkit_ewars_model at http://chapkit-ewars-model:8000 answers
-chap finished; it wrote ewars.nc
-chapkit_ewars_model keeps running for the next run; `varde stop chapkit_ewars_model`
+model: auto_arima_chapkit at http://auto-arima-chapkit:8000 answers
+chap finished; it wrote arima.nc
+auto_arima_chapkit keeps running for the next run; `varde stop auto_arima_chapkit`
 stops it, and `--stop` stops it after a run
 ```
 
@@ -237,12 +237,12 @@ name. varde gives chap that URL in place of the id.
 
 ```sh
 cd ~/mychap && mkdir -p eval && cd eval
-varde chap eval --model-name chapkit_ewars_model \
-  --dataset-csv laos_subset.csv --output-file ewars.nc
+varde chap eval --model-name auto_arima_chapkit \
+  --dataset-csv laos_subset.csv --output-file arima.nc
 ```
 
 ```text
-starting chapkit-ewars-model for this run, without chap-core
+starting auto-arima-chapkit for this run, without chap-core
 ```
 
 - varde starts **only that model**, with `--no-deps`: chap-core, postgres and
@@ -262,7 +262,7 @@ starting chapkit-ewars-model for this run, without chap-core
 | the model ran before | varde never stops it |
 
 ```text
-chapkit_ewars_model ran before this run, so --stop left it running
+auto_arima_chapkit ran before this run, so --stop left it running
 ```
 
 `--timeout SECONDS` (300) is how long varde waits for a model that it
@@ -356,8 +356,8 @@ The socket is full control of docker. So `--docker` is never the default.
 ## What varde reports after the run
 
 ```text
-chap finished; it wrote ewars.nc
-`varde chap plot-backtest ewars.nc --output-file ewars.html` plots it
+chap finished; it wrote arima.nc
+`varde chap plot-backtest arima.nc --output-file arima.html` plots it
 ```
 
 - varde looks at the mounted directories before and after the run, and names

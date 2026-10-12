@@ -58,10 +58,10 @@ varde up --wait
 ```
 
 ```text
-chap-core   up   http://localhost:8700   2.3.1   auth: off
+chap-core   up   http://localhost:8700   2.4.0   auth: off
 
-MODEL                STATE       REACH          LAST PING
-chapkit-ewars-model  registered  via chap-core  4s ago
+MODEL                           STATE       REACH          LAST PING
+chapkit-simple-multistep-model  registered  via chap-core  7s ago
 
 1 model registered
 ```
@@ -144,7 +144,7 @@ You change the intent with commands. The artifacts follow.
 ```text
 unchanged     compose.yml
 unchanged     compose.varde.yml
-unchanged     compose.chapkit-ewars-model.yml
+unchanged     compose.chapkit-simple-multistep-model.yml
 unchanged     compose.marketplace.yml
 in sync: 0 written, 4 unchanged, 0 removed
 ```
@@ -178,8 +178,8 @@ in sync: 0 written, 4 unchanged, 0 removed
 - A model can get a port of its own, from **5001 to 5999**:
 
 ```sh
-varde models expose chapkit-ewars-model            # lowest free port, 5001 up
-varde models expose chapkit-ewars-model --bind 127.0.0.1
+varde models expose chapkit-simple-multistep-model   # lowest free port, 5001 up
+varde models expose chapkit-simple-multistep-model --bind 127.0.0.1
 ```
 
 - The components: DHIS2 on **8780**, OCS on **8790**, S3 on none.
@@ -258,7 +258,7 @@ chap-core   up   http://localhost:8700   v2.3.1   auth: on
 ocs         up   http://localhost:8790   3 datasets   212.0 MB data
 
 MODEL                             STATE                    REACH          LAST PING
-chapkit-ewars-model               registered               port 5001      12s ago
+chapkit-simple-multistep-model    registered               port 5001      12s ago
 chapkit-rwanda-malaria-bym-model  running, not registered  via chap-core  -
 auto-arima-chapkit                not running              via chap-core  -
 ```
@@ -288,7 +288,6 @@ fix. The exit code is non-zero only for a `fail`.
 
 ```text
 ID           TYPE               NAME                                   STATUS   STARTED  DURATION
-f293520a...  create_prediction  eval-make-prediction-ewars             SUCCESS  25m ago  15s
 e3e9f243...  create_backtest    eval-chapkit-rwanda-malaria-bym-model  FAILURE  30m ago  10s
 501d5b5d...  create_backtest    eval-chapkit-ghr-model                 SUCCESS  33m ago  2m 9s
 ```
@@ -377,11 +376,11 @@ stops a model.
 ## One model, no deployment: `varde run`
 
 ```sh
-varde run chapkit_ewars_model
+varde run chapkit_simple_multistep_model
 ```
 
 ```text
-running chapkit_ewars_model on http://localhost:5001 (answered in 41s)
+running chapkit_simple_multistep_model on http://localhost:5001 (answered in 4s)
 ```
 
 - A marketplace id, a GitHub URL, a ghcr image or a local image.
@@ -396,9 +395,9 @@ See the **varde run** deck for groups, ports and `varde top`.
 ## The chap CLI, without Python: `varde chap`
 
 ```sh
-varde chap eval --model-name chapkit_ewars_model \
-  --dataset-csv laos_subset.csv --output-file ewars.nc
-varde chap plot-backtest ewars.nc --output-file ewars.html
+varde chap eval --model-name auto_arima_chapkit \
+  --dataset-csv laos_subset.csv --output-file arima.nc
+varde chap plot-backtest arima.nc --output-file arima.html
 ```
 
 - chap-core's own `chap` CLI runs in chap-core's image.

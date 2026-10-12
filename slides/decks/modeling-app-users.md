@@ -36,7 +36,7 @@ For people who use DHIS2 and the Modeling App
 **Behind it:**
 
 - **chap-core**: runs the evaluations and forecasts
-- **models**: one container each (EWARS, ARIMA, ...)
+- **models**: one container each (Simple Multistep, Auto-ARIMA, ...)
 - **OCS**: climate data, if you want it
 
 </div>
@@ -417,7 +417,7 @@ The model list shows **configured models**, not model services:
 ```
 
 - A configured model is a model with a set of option values and covariates.
-- One model service can give several entries: the EWARS model gives three.
+- One model service can give several entries: Simple Multistep gives two.
 - `varde models configs` shows the same list in the terminal, with the
   option values and covariates of each entry.
 
@@ -433,9 +433,8 @@ varde models configs sync
 ```
 
 ```text
-chapkit_ewars_model: created configured model monthly_climate
-chapkit_ewars_model: created configured model monthly_population_only
-chapkit_ewars_model: created configured model monthly_region_seasonal
+chapkit_simple_multistep_model: created configured model monthly_climate
+chapkit_simple_multistep_model: created configured model monthly_selfhistory
 ```
 
 `varde up --wait` and `varde dhis2 connect` do the same step. A model without
@@ -446,20 +445,21 @@ entries shows in `varde status` as `registered, not configured`.
 ## A variant of your own
 
 ```sh
-varde models configs add chapkit_ewars_model --name short_lags \
-  --set n_lags=2,2 --set precision=0.05 --covariates rainfall
+varde models configs add chapkit_simple_multistep_model \
+  --name short_lags --set n_target_lags=3 --set rf_max_depth=5 \
+  --covariates rainfall
 ```
 
 ```text
-created configured model short_lags of chapkit_ewars_model
+created configured model short_lags of chapkit_simple_multistep_model
 ```
 
 - `--name` is the variant name: the Modeling App shows it in brackets.
 - varde checks each key and each value against the options of the model.
 - With no options at a terminal, `add` opens a form: one field for each
   option, with its default.
-- `varde models test chapkit_ewars_model --backtest --config short_lags`
-  runs a backtest of it.
+- `varde models test ID --backtest --config short_lags` runs a backtest
+  of it.
 
 ---
 
@@ -500,7 +500,7 @@ Two causes:
 ## Models that do not register after `auth enable`
 
 ```text
-chapkit-ewars-model  running, not registered  internal  -
+chapkit-simple-multistep-model  running, not registered  via chap-core  -
 ```
 
 A protected chap-core refuses a registration without the key. The containers

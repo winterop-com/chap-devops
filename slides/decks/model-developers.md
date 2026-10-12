@@ -107,19 +107,18 @@ A model service registers **itself** with chap-core when it starts:
 ## Run a model: four sources
 
 ```sh
-varde run chapkit_ewars_model                              # a marketplace id
+varde run chapkit_simple_multistep_model                   # a marketplace id
 varde run https://github.com/chap-models/chapkit_ghr_model # a GitHub repository
 varde run ghcr.io/my-org/my_model:sha-1eb8cf1              # a published image
 varde run my-model:dev                                     # an image built here
 ```
 
 ```text
-running chapkit_ewars_model on http://localhost:5001 (answered in 41s)
+running chapkit_simple_multistep_model on http://localhost:5001 (answered in 4s)
 ```
 
 - No deployment directory: the model runs in a `varde run` group.
-- `varde run -a` stays in the foreground with the model's log. Ctrl-C stops
-  the model, and its data stays.
+- `varde run -a` shows the model's log. Ctrl-C stops the model.
 - `varde ps` lists the models, `varde stop ID` stops one.
 - The first run of a model downloads its image: 1 GB for a Python model, 6 to
   7 GB for an R model.
@@ -264,9 +263,9 @@ versions:
 ```
 
 ```sh
-varde models enable chapkit_ewars_model                   # stable, the default
-varde models enable chapkit_ewars_model --channel latest
-varde models enable chapkit_ewars_model --version 1.0.3   # an exact pin
+varde models enable chapkit_simple_multistep_model                   # stable
+varde models enable chapkit_simple_multistep_model --channel latest
+varde models enable chapkit_simple_multistep_model --version 0.1.1   # a pin
 ```
 
 ---
@@ -274,18 +273,19 @@ varde models enable chapkit_ewars_model --version 1.0.3   # an exact pin
 ## The overlay varde writes for a model
 
 ```yaml
-chapkit-ewars-model:
-  image: ghcr.io/chap-models/chapkit_ewars_model:${CHAPKIT_EWARS_MODEL_IMAGE_TAG:-sha-964eea8}
+chapkit-simple-multistep-model:
+  image: ghcr.io/chap-models/chapkit_simple_multistep_model:sha-10b2bc7
   platform: linux/amd64
   expose: ["8000"]
   read_only: true
   security_opt: [no-new-privileges:true]
   cap_drop: [ALL]
-  user: 1000:1000
-  volumes: [tmpfs on /tmp, ck_chapkit_ewars_model_data on /app/data]
+  user: 1001:1001
+  volumes: [tmpfs on /tmp, ck_chapkit_simple_multistep_model_data on /app/data]
 ```
 
-The real file has one setting on each line. This is a short form.
+The real file has one setting on each line, and `.env` can override the
+image tag. This is a short form.
 
 ---
 
@@ -310,9 +310,9 @@ production.
 Before the model starts, a busybox container chowns the data volume:
 
 ```yaml
-chapkit-ewars-model-init:
+chapkit-simple-multistep-model-init:
   image: busybox:1.38
-  command: ["sh", "-c", "chown -R 1000:1000 /app/data"]
+  command: ["sh", "-c", "chown -R 1001:1001 /app/data"]
   user: "0:0"
 ```
 
@@ -366,7 +366,7 @@ declared covariates and period type, then validates, trains and predicts.
 4. The scores from the backtest's `aggregateMetrics`.
 
 ```text
-chapkit-ewars-model    pass      33s   crps 9.6  mae 10.9  rmse 15.8
+chapkit-simple-multistep-model    pass      13s   crps 5.4  mae 7.3  rmse 9.0
   configured model: monthly_climate (id 14)
 ```
 
@@ -419,9 +419,9 @@ varde chap eval --model-name ./my_model_checkout \
 ## Compare with the models that exist
 
 ```sh
-varde chap eval --model-name chapkit_ewars_model \
-  --dataset-csv laos_subset.csv --output-file ewars.nc
-varde chap export-metrics mine.nc ewars.nc --output-file comparison.csv
+varde chap eval --model-name auto_arima_chapkit \
+  --dataset-csv laos_subset.csv --output-file arima.nc
+varde chap export-metrics mine.nc arima.nc --output-file comparison.csv
 varde chap plot-backtest mine.nc --output-file mine.html
 ```
 
@@ -457,7 +457,7 @@ varde models test my_model --backtest --seed 1          # 4. through chap-core
 cd eval
 varde chap eval --model-name my_model \
   --dataset-csv laos_subset.csv --output-file mine.nc   # 5. on real data
-varde chap export-metrics mine.nc ewars.nc --output-file comparison.csv
+varde chap export-metrics mine.nc arima.nc --output-file comparison.csv
 ```
 
 `--seed 1` gives the same sample data each time, so the scores of two builds
