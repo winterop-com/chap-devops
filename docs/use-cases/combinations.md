@@ -132,18 +132,18 @@ memory; give Docker 8 GB or more.
 `varde up --wait` returns only when chap-core, OCS, DHIS2 and the model answer.
 DHIS2 answers when `/api/ping` returns 200. A first start of DHIS2 can take
 longer than the default 300 seconds, so the command sets `--timeout 1200`.
-With the images already present, the command took 32 seconds and ended with:
+With the images already present, the command took 31 seconds and ended with:
 
 ```text
-ready in 16s
-  chap-core            up          http://localhost:8700
-  chapkit-ewars-model  registered  http://localhost:8700/v2/services/chapkit-ewars-model/run/
-  ocs                  up          http://localhost:8790
-  dhis2                up          http://localhost:8780
-created configured models in chap-core for chapkit_ewars_model (monthly_climate, monthly_population_only, monthly_region_seasonal)
+ready in 13s
+  chap-core                       up          http://localhost:8700
+  chapkit-simple-multistep-model  registered  http://localhost:8700/v2/services/chapkit-simple-multistep-model/run/
+  ocs                             up          http://localhost:8790
+  dhis2                           up          http://localhost:8780
+created configured models in chap-core for chapkit_simple_multistep_model (monthly_climate, monthly_selfhistory)
 ```
 
-The 16 seconds count from the end of the compose step. Then `varde status`
+The 13 seconds count from the end of the compose step. Then `varde status`
 shows:
 
 ```text
@@ -152,8 +152,8 @@ ocs         up   http://localhost:8790   0 datasets   32.0 KB data
 s3          up   internal
 dhis2       up   http://localhost:8780
 
-MODEL                STATE       REACH          LAST PING
-chapkit-ewars-model  registered  via chap-core  11s ago
+MODEL                           STATE       REACH          LAST PING
+chapkit-simple-multistep-model  registered  via chap-core  10s ago
 
 1 model registered
 varde has not connected this DHIS2 to Chap; run `varde dhis2 connect`
