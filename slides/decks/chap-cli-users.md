@@ -280,7 +280,7 @@ If nothing answers, chap is not started:
 error: the model server at http://nothing:8000 is not running (no answer on
 /api/v1/info), so chap was not started; `nothing` is not a model of this
 deployment or group. Give a model id instead (`--model-name
-chapkit_ewars_model`) and varde starts it, or start one with `varde run ID`;
+auto_arima_chapkit`) and varde starts it, or start one with `varde run ID`;
 the `models:` line lists the URLs that answer
 ```
 
