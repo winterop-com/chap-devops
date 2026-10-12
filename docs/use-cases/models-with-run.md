@@ -8,7 +8,7 @@ that only needs "start this model and tell me where it answers".
 From any directory that is not a deployment:
 
 ```sh
-varde run chapkit_ewars_model
+varde run chapkit_simple_multistep_model
 varde run auto_arima_chapkit
 varde run https://github.com/chap-models/chapkit_ghr_model
 varde ps                     # every model, its state and its URL
@@ -18,9 +18,9 @@ Each `varde run` returns once the model answers on its `/health` and prints
 where it answers. Between the two lines, docker compose shows its progress:
 
 ```text
-starting chapkit-ewars-model (chapkit_ewars_model in /home/me/.local/share/varde/run/default)
+starting chapkit-simple-multistep-model (chapkit_simple_multistep_model in /home/me/.local/share/varde/run/default)
 ...
-running chapkit_ewars_model on http://localhost:5001 (answered in 2s)
+running chapkit_simple_multistep_model on http://localhost:5001 (answered in 4s)
 ```
 
 The first run of a model pulls its image. A marketplace model image is several
@@ -44,10 +44,10 @@ other. A marketplace id, a GitHub repository URL, a ghcr image and a local
 It worked when `varde ps` lists every model as `up`, each with its own URL:
 
 ```text
-GROUP    ID                   SERVICE              STATE  URL
-default  auto_arima_chapkit   auto-arima-chapkit   up     http://localhost:5002
-default  chapkit_ewars_model  chapkit-ewars-model  up     http://localhost:5001
-default  chapkit_ghr_model    chapkit-ghr-model    up     http://localhost:5003
+GROUP    ID                              SERVICE                         STATE  URL
+default  auto_arima_chapkit              auto-arima-chapkit              up     http://localhost:5002
+default  chapkit_ghr_model               chapkit-ghr-model               up     http://localhost:5003
+default  chapkit_simple_multistep_model  chapkit-simple-multistep-model  up     http://localhost:5001
 ```
 
 `varde top` shows the same, live.
@@ -60,7 +60,7 @@ step on each other; a run that waits for its turn says `another varde command
 is changing this deployment; waiting for it to finish`.
 
 ```sh
-for m in chapkit_ewars_model auto_arima_chapkit chapkit_ghr_model; do
+for m in chapkit_simple_multistep_model auto_arima_chapkit chapkit_ghr_model; do
   varde run "$m" --no-wait &
 done
 wait
@@ -84,16 +84,16 @@ directory, `default` unless you name one. A group per experiment keeps sets
 apart, and every group can be listed and stopped on its own:
 
 ```sh
-varde run chapkit_ewars_model --group dengue
+varde run chapkit_simple_multistep_model --group dengue
 varde run auto_arima_chapkit --group dengue
-varde run chapkit_ewars_model --group malaria   # one more, separate copy
+varde run chapkit_simple_multistep_model --group malaria   # one more, separate copy
 varde ps --group dengue
 ```
 
 ```text
-GROUP   ID                   SERVICE              STATE  URL
-dengue  auto_arima_chapkit   auto-arima-chapkit   up     http://localhost:5005
-dengue  chapkit_ewars_model  chapkit-ewars-model  up     http://localhost:5004
+GROUP   ID                              SERVICE                         STATE  URL
+dengue  auto_arima_chapkit              auto-arima-chapkit              up     http://localhost:5005
+dengue  chapkit_simple_multistep_model  chapkit-simple-multistep-model  up     http://localhost:5004
 ```
 
 The same model in two groups is two containers with two ports and two data
@@ -104,7 +104,7 @@ commands reach it with `-C`. The `starting` line of `varde run` names the
 group directory, and `varde -v run` prints the full log command:
 
 ```sh
-varde -C ~/.local/share/varde/run/dengue logs chapkit-ewars-model
+varde -C ~/.local/share/varde/run/dengue logs chapkit-simple-multistep-model
 ```
 
 The path is the default data directory; `$VARDE_DATA_DIR` or `$XDG_DATA_HOME`
@@ -119,7 +119,7 @@ Under `--json` each command prints one JSON document on stdout, and docker's
 progress goes to stderr:
 
 ```sh
-varde --json run chapkit_ewars_model --group dengue
+varde --json run chapkit_simple_multistep_model --group dengue
 ```
 
 The fields a tool needs are `url`, `port`, `id`, `group` and `project_dir`; a
@@ -130,19 +130,19 @@ failure is `{"ok": false, "error": ..., "hint": ...}` with a non-zero exit. See
 ## Stopping
 
 ```sh
-varde stop chapkit_ghr_model                     # one model, in whichever group has it
-varde stop chapkit_ewars_model --group malaria   # one model in one group
-varde stop --group dengue                        # every model in one group
-varde stop --all                                 # every model in every group
-varde stop --group dengue --purge                # and its data, and the group itself
+varde stop chapkit_ghr_model                                # one model, in whichever group has it
+varde stop chapkit_simple_multistep_model --group malaria   # one model in one group
+varde stop --group dengue                                   # every model in one group
+varde stop --all                                            # every model in every group
+varde stop --group dengue --purge                           # and its data, and the group itself
 ```
 
 An id alone works only when one group has that model. After the steps above,
-`chapkit_ewars_model` runs in three groups, so `varde stop chapkit_ewars_model`
+`chapkit_simple_multistep_model` runs in three groups, so `varde stop chapkit_simple_multistep_model`
 stops nothing and says:
 
 ```text
-error: chapkit_ewars_model runs in the groups default, dengue, malaria; name one with `--group default`
+error: chapkit_simple_multistep_model runs in the groups default, dengue, malaria; name one with `--group default`
 ```
 
 A stop keeps the model's data volume, so the next `varde run` of it continues

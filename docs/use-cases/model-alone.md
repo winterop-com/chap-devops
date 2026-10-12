@@ -8,11 +8,11 @@ behind something other than chap-core.
 The quickest way needs no folder at all:
 
 ```sh
-varde run chapkit_ewars_model                               # a marketplace model
+varde run chapkit_simple_multistep_model                    # a marketplace model
 varde run https://github.com/chap-models/chapkit_ghr_model  # by repository
 varde run ghcr.io/my-org/chapkit_dengue_model:sha-1eb8cf1   # by image: use your own
 varde ps
-varde stop chapkit_ewars_model
+varde stop chapkit_simple_multistep_model
 varde stop --all
 ```
 
@@ -25,8 +25,8 @@ Each of the other two commands prints a `starting` line, and one more line
 when the model answers:
 
 ```text
-starting chapkit-ewars-model (chapkit_ewars_model in ~/.local/share/varde/run/default)
-running chapkit_ewars_model on http://localhost:5001 (answered in 2s)
+starting chapkit-simple-multistep-model (chapkit_simple_multistep_model in ~/.local/share/varde/run/default)
+running chapkit_simple_multistep_model on http://localhost:5001 (answered in 4s)
 ```
 
 varde prints the full path of the group. The docker compose progress goes to
@@ -36,8 +36,8 @@ URL is the marketplace model `chapkit_ghr_model`, and it answers on
 
 `varde run` keeps the model in a group under varde's data directory, publishes
 it on `127.0.0.1` only, and returns once it answers. A first run pulls the
-model image, about 2 GB for each of these two, and the pull can take some
-minutes. `-a` keeps it in the foreground with its log, until Ctrl-C stops it.
+model image, and the pull can take some minutes. On disk, the image of Simple
+Multistep is about 1 GB, and the image of GHRmodel about 7 GB. `-a` keeps it in the foreground with its log, until Ctrl-C stops it.
 `varde stop ID` stops one model, and `varde stop --all` stops every model that
 `varde run` started. Both keep the data volume of each model. To remove the
 volumes and the groups too, add `--purge`. See [Running one model](../run.md).
@@ -46,21 +46,21 @@ For a deployment directory of your own, with `varde status`, `varde doctor` and
 everything else:
 
 ```sh
-varde init ewars --only none --models chapkit_ewars_model
-cd ewars
+varde init multistep --only none --models chapkit_simple_multistep_model
+cd multistep
 varde up --wait
 varde status
 curl http://localhost:5001/health
-varde open chapkit_ewars_model
+varde open chapkit_simple_multistep_model
 ```
 
 `varde up --wait` returns once the model answers its own `/health`:
 
 ```text
 waiting up to 300s for the model to answer
-started chapkit-ewars-model
-ready in 2s
-  chapkit-ewars-model  up  http://localhost:5001
+started chapkit-simple-multistep-model
+ready in 4s
+  chapkit-simple-multistep-model  up  http://localhost:5001
 ```
 
 Without `--wait`, `varde up` returns when the container starts, and for some
@@ -68,8 +68,8 @@ seconds `varde status` says `running, not answering`. Then `varde status`
 shows:
 
 ```text
-MODEL                STATE  REACH      LAST PING
-chapkit-ewars-model  up     port 5001  -
+MODEL                           STATE  REACH      LAST PING
+chapkit-simple-multistep-model  up     port 5001  -
 
 1 model up, answering on its own host port
 ```
@@ -80,7 +80,7 @@ The `curl` command gets the same `/health` that `varde status` asks:
 {"status":"healthy","checks":{"database":{"state":"healthy"},"registration":{"state":"healthy"}}}
 ```
 
-`varde open chapkit_ewars_model` opens the model's API documentation, at
+`varde open chapkit_simple_multistep_model` opens the model's API documentation, at
 `http://localhost:5001/docs`, in a browser. With `--no-browser`, it prints the
 address instead:
 
@@ -118,12 +118,12 @@ Near the start of its log, after `Application startup complete`, expect one
 model continues to serve. See
 [`registration.missing_orchestrator_url` in a model's log](../troubleshooting.md#registrationmissing_orchestrator_url-in-a-models-log).
 
-`varde models test chapkit_ewars_model` (or `--all`) works here: it runs
+`varde models test chapkit_simple_multistep_model` (or `--all`) works here: it runs
 `chapkit test` inside the model's own container:
 
 ```text
 testing 1 model (model level; add --backtest to go through chap-core)
-chapkit-ewars-model    pass   18s   1 training, 1 prediction
+chapkit-simple-multistep-model    pass    5s   1 training, 1 prediction
 
 1 of 1 model passes
 ```
