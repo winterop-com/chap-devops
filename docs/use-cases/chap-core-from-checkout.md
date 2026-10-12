@@ -8,7 +8,7 @@ with `--with`).
 Replace `~/dev/chap-core` with the path of your chap-core checkout:
 
 ```sh
-varde init mychap --source ~/dev/chap-core --models default
+varde init mychap --source ~/dev/chap-core --models chapkit_simple_multistep_model
 cd mychap
 varde up                     # builds both images from the checkout, then starts them
 varde status
@@ -78,7 +78,7 @@ before a file is written (see
    values you used:
 
    ```sh
-   varde init . --force --models default
+   varde init . --force --models chapkit_simple_multistep_model
    ```
 
    `init` keeps `.env`, and moves its `CHAP_IMAGE_TAG` line from `checkout`

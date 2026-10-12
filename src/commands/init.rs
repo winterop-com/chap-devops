@@ -33,8 +33,6 @@ use ports::{own_running_claims, warn_about_ports};
 use std::path::{Component as PathComponent, Path, PathBuf};
 use summary::summary;
 
-/// The model `--models default` enables.
-pub const DEFAULT_MODEL: &str = "chapkit_ewars_model";
 /// The `--chap-tag` value that means "whatever the newest release is".
 pub const MOVING_DEFAULT_TAG: &str = "latest";
 /// Database user and database name of the generated `.env`.
@@ -237,11 +235,6 @@ pub(crate) fn create(ctx: &Ctx, args: &InitArgs, report_it: bool) -> Result<()> 
     let selection = if args.interactive {
         // Quitting the browser without saving is "no models", not an error.
         crate::tui::run_tui(ctx, &project, &registry)?.unwrap_or_default()
-    } else if !components.chap_core.enabled && args.models == "default" {
-        // The default model set is a default, not a request: it is the set a
-        // Chap deployment starts with, and a deployment without chap-core asks
-        // for its model services by name.
-        Selection::default()
     } else {
         parse_models(&args.models, &registry)?
     };
@@ -559,13 +552,14 @@ fn compose_project(dir: &Path) -> Result<String> {
 
 /// Expand `--models` into a selection.
 ///
-/// `none` enables nothing, `default` enables [`DEFAULT_MODEL`], anything else
-/// is a comma-separated list of marketplace ids or service ids.
+/// `none` enables nothing, `all` every model, anything else is a
+/// comma-separated list of marketplace ids or service ids. There is no default
+/// model: the marketplace decides what it lists, and an id built into varde
+/// fails when that list changes.
 fn parse_models(spec: &str, registry: &Registry) -> Result<Selection> {
     let spec = spec.trim();
     let ids: Vec<String> = match spec {
         "none" | "" => Vec::new(),
-        "default" => vec![DEFAULT_MODEL.to_string()],
         // Every model the catalogue lists, templates aside: those are
         // scaffolding to copy, not models to run.
         "all" => registry

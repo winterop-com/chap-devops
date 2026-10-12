@@ -63,7 +63,7 @@ analytics run.
 ## A DHIS2 with Chap, from nothing
 
 ```sh
-varde init mychap --with dhis2 --models default
+varde init mychap --with dhis2 --models chapkit_simple_multistep_model
 cd mychap
 varde up
 varde dhis2 connect
@@ -337,7 +337,7 @@ shell history.
 ## A DHIS2 that runs elsewhere
 
 ```sh
-varde init chap-server --models default --api-token
+varde init chap-server --models chapkit_simple_multistep_model --api-token
 cd chap-server && varde up
 varde dhis2 use https://dhis2.example.org --chap-url https://chap.example.org
 varde dhis2 connect
@@ -538,7 +538,7 @@ warn  memory   5.0 GB available to docker
 
 ```sh
 curl -fsSL https://raw.githubusercontent.com/winterop-com/varde/main/install.sh | sh
-varde init mychap --with dhis2 --models default
+varde init mychap --with dhis2 --models chapkit_simple_multistep_model
 cd mychap && varde up && varde dhis2 connect
 ```
 

@@ -4,6 +4,22 @@ use serde_json::Value as Json;
 use serde_yaml_ng::Value as Yaml;
 use std::path::Path;
 
+/// There is no default model: a plain `init` enables none and says how to add
+/// one, so a model the marketplace drops cannot stop it.
+#[test]
+fn init_with_no_models_option_enables_no_model() {
+    let sandbox = Sandbox::new();
+    sandbox
+        .init(&[])
+        .assert()
+        .success()
+        .stdout(predicates::str::contains(
+            "no models are enabled; run `varde models enable ID` to add one",
+        ));
+    let models = read(&sandbox.project().join(".varde/models.yaml"));
+    assert!(!models.contains("chapkit_"), "{models}");
+}
+
 #[test]
 fn init_writes_every_file_of_a_deployment() {
     let sandbox = Sandbox::new();

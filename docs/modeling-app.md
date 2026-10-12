@@ -6,7 +6,7 @@ of it waiting for the model. It starts where
 [Chap with a local DHIS2](./use-cases/chap-with-local-dhis2.md) ends:
 
 ```sh
-varde init mychap --models default --with dhis2
+varde init mychap --models chapkit_simple_multistep_model --with dhis2
 cd mychap
 varde up
 varde status          # until the dhis2 line says up

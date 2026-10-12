@@ -3,7 +3,7 @@
 chap-core and its models on a server, used by an existing DHIS2 instance.
 
 ```sh
-varde init mychap --models default --api-token
+varde init mychap --models chapkit_simple_multistep_model --api-token
 cd mychap
 varde up                     # returns when the containers start
 varde status                 # run it again until the chap-core line says up

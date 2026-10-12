@@ -5,7 +5,7 @@ database, connected so the Modeling App in DHIS2 talks to this Chap. For
 development, demos and training.
 
 ```sh
-varde init mychap --models default --with dhis2
+varde init mychap --models chapkit_simple_multistep_model --with dhis2
 cd mychap
 varde up                     # the first start of DHIS2 can take minutes
 varde status                 # wait until the dhis2 line says up, not starting
@@ -63,9 +63,9 @@ To remove the deployment and its data, run `varde down --volumes --yes` in
 ## Another DHIS2 version
 
 ```sh
-varde init chap243 --models default --with dhis2 --dhis2-tag 2.43
-varde init chap241 --models default --with dhis2 --dhis2-tag 2.41
-varde init chapdev --models default --with dhis2 --dhis2-image dhis2/core-dev --dhis2-tag master
+varde init chap243 --models chapkit_simple_multistep_model --with dhis2 --dhis2-tag 2.43
+varde init chap241 --models chapkit_simple_multistep_model --with dhis2 --dhis2-tag 2.41
+varde init chapdev --models chapkit_simple_multistep_model --with dhis2 --dhis2-image dhis2/core-dev --dhis2-tag master
 ```
 
 Each line makes a new deployment. If the directory already exists, `init`

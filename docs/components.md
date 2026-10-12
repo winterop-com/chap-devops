@@ -908,9 +908,8 @@ chap-core` puts the orchestrator URL back, and the models register on the next
 `varde up`; the host ports they were given stay until you
 `varde models unexpose` them.
 
-The default model set is a default for a Chap deployment, not something you
-asked for, so `--without chap-core` or `--only` with no `--models` starts with
-no models. Name the ones you want with `--models ID,...`.
+`init` enables no model unless `--models` names one, with or without
+chap-core. Name the ones you want with `--models ID,...`.
 
 ## A chap-core elsewhere
 

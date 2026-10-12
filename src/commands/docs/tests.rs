@@ -76,7 +76,7 @@ fn a_table_cell_never_ends_early() {
 #[test]
 fn help_texts_and_defaults_reach_the_table() {
     let out = reference();
-    assert!(out.contains("Default: `default`"), "init --models default");
+    assert!(out.contains("Default: `none`"), "init --models none");
     assert!(out.contains("Default: `8700`"), "init --api-port 8700");
     assert!(
         out.contains("Never touch the network"),

@@ -5,7 +5,7 @@ port can use its API. Turning authentication on is one flag at `init` time, or
 one command afterwards.
 
 ```sh
-varde init mychap --models default --api-token   # at creation
+varde init mychap --models chapkit_simple_multistep_model --api-token   # at creation
 varde auth enable                                # on a deployment that already exists
 ```
 

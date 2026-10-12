@@ -90,8 +90,7 @@ varde init a --with ocs,dhis2
 varde init b --with ocs,dhis2 --api-port 8701 --ocs-port 8791 --dhis2-port 8781 --port-base 5101
 ```
 
-Both deployments also get chap-core and the default model,
-`chapkit_ewars_model`. If d242 and d243 from the section above are in the
+Both deployments also get chap-core, with no model. If d242 and d243 from the section above are in the
 same directory, `init a` also warns about port 8780. Stop them before you
 start `a`. `init b` prints the ports it uses:
 

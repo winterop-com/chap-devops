@@ -38,7 +38,10 @@ fn doctor_json_is_a_list_of_checks_and_a_summary() {
 #[test]
 fn doctor_in_a_fresh_project_finds_the_files_in_order_and_skips_the_network() {
     let sandbox = Sandbox::new();
-    sandbox.init(&["--models", "default"]).assert().success();
+    sandbox
+        .init(&["--models", "chapkit_ewars_model"])
+        .assert()
+        .success();
 
     let out = sandbox
         .chap()

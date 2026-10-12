@@ -117,7 +117,7 @@ model answers on `http://localhost:5001`, as in
 ## Everything
 
 ```sh
-varde init full --models default --with ocs,s3,dhis2
+varde init full --models chapkit_simple_multistep_model --with ocs,s3,dhis2
 cd full
 varde up --wait --timeout 1200
 varde status

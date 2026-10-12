@@ -3,7 +3,7 @@
 The default, and what most deployments are: chap-core plus the models it runs.
 
 ```sh
-varde init mychap --models default
+varde init mychap --models chapkit_simple_multistep_model
 cd mychap
 varde up
 varde status                 # chap-core up, every model registered

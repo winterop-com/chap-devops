@@ -52,7 +52,7 @@ varde doctor
 ## The first deployment: three commands
 
 ```sh
-varde init mychap --models default
+varde init mychap --models chapkit_simple_multistep_model
 cd mychap
 varde up --wait
 ```
@@ -190,7 +190,7 @@ varde models expose chapkit-ewars-model --bind 127.0.0.1
 ## Authentication
 
 ```sh
-varde init mychap --models default --api-token   # at creation
+varde init mychap --models chapkit_simple_multistep_model --api-token   # at creation
 varde auth enable                                # later
 varde auth show --reveal                         # read the token
 ```
@@ -412,7 +412,7 @@ See the **chap CLI** deck.
 ## DHIS2 and the Modeling App
 
 ```sh
-varde init mychap --with dhis2 --models default
+varde init mychap --with dhis2 --models chapkit_simple_multistep_model
 cd mychap && varde up
 varde dhis2 connect
 ```

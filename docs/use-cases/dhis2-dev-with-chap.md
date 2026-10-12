@@ -6,7 +6,7 @@ and the models. `varde dhis2 connect` points the `chap` route of your DHIS2 at
 this chap-core.
 
 ```sh
-varde init mychap --models default
+varde init mychap --models chapkit_simple_multistep_model
 cd mychap
 varde up                     # returns when the containers start
 varde status                 # run it again until the chap-core line says up

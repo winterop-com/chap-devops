@@ -4,7 +4,7 @@ chap-core with an Open Climate Service beside it, so Chap has climate data to
 fetch from inside the same deployment.
 
 ```sh
-varde init mychap --models default --with ocs,s3
+varde init mychap --models chapkit_simple_multistep_model --with ocs,s3
 cd mychap
 varde up
 varde status                 # chap-core, ocs and s3 lines, then the models

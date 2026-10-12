@@ -125,7 +125,7 @@ Docker with Compose v2.24.4 or newer. See
 
 ```sh
 varde doctor                         # is this machine ready: docker, compose, disk, network
-varde init mychap --models default   # writes the deployment directory
+varde init mychap --models chapkit_simple_multistep_model   # writes the deployment directory
 cd mychap
 varde up                             # sync the compose files, docker compose up -d
 varde status                         # chap-core health and registered models

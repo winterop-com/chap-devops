@@ -34,14 +34,14 @@ See [Doctor](./doctor.md).
 ## 1. Write the deployment directory
 
 ```sh
-varde init mychap --models default
+varde init mychap --models chapkit_simple_multistep_model
 ```
 
 ```text
 created a deployment in /srv/mychap
 components: chap-core
 chap-core: v2.4.0, API on http://localhost:8700
-enabled chapkit_ewars_model v1.0.4 at http://localhost:8700/v2/services/chapkit-ewars-model/run/
+enabled chapkit_simple_multistep_model v0.1.2 at http://localhost:8700/v2/services/chapkit-simple-multistep-model/run/
 run `cd /srv/mychap && varde up` to start the deployment
 ```
 
@@ -60,10 +60,11 @@ development DHIS2 and a PostgreSQL of its own; its first start takes minutes
 rather than seconds, and [DHIS2](./dhis2.md) says why and what else to know
 first. See [Components](./components.md).
 
-`--models default` enables `chapkit_ewars_model` on its `stable` channel.
-`--models none` writes the base services only, and `--models a,b` takes an
-explicit list of marketplace ids. `--interactive` opens the model browser
-instead of reading `--models`.
+`--models chapkit_simple_multistep_model` enables Simple Multistep on its
+`stable` channel, and `--models a,b` takes a list of marketplace ids. Without
+`--models`, `init` enables no model and says `no models are enabled; run
+\`varde models enable ID\` to add one`. `--interactive` opens the model
+browser instead of reading `--models`.
 
 A model the marketplace does not list yet is added from its repository or
 image: `varde models add https://github.com/my-org/chapkit_dengue_model` (see
@@ -74,7 +75,7 @@ and `init` takes the `compose.ghcr.yml` that release publishes as the base
 of the deployment. `--chap-tag` picks another tag; see [Updating](./updating.md).
 
 The deployment above has no authentication: anything that can reach the port can
-use the API. `varde init mychap --models default --api-token` generates a token
+use the API. `varde init mychap --models chapkit_simple_multistep_model --api-token` generates a token
 and protects the API with it. `varde auth enable` does the same to a deployment
 that already exists. See [Authentication](./auth.md).
 
@@ -87,8 +88,8 @@ varde up
 
 ```text
 ...
- Container mychap-862350-chapkit-ewars-model-1 Started
-started chap, chapkit-ewars-model, postgres, redis, worker
+ Container mychap-dabd2e-chapkit-simple-multistep-model-1 Started
+started chap, chapkit-simple-multistep-model, postgres, redis, worker
 ```
 
 The first `up` on a machine pulls the images: about 6 GB to download and
@@ -120,11 +121,11 @@ varde status
 ```text
 chap-core   up   http://localhost:8700   2.4.0   auth: off
 
-MODEL                STATE                       REACH          LAST PING
-chapkit-ewars-model  registered, not configured  via chap-core  2s ago
+MODEL                           STATE                       REACH          LAST PING
+chapkit-simple-multistep-model  registered, not configured  via chap-core  1s ago
 
 1 model registered
-chapkit-ewars-model: chap-core has no configured model for it, so nothing can run it; run `varde models configs sync`
+chapkit-simple-multistep-model: chap-core has no configured model for it, so nothing can run it; run `varde models configs sync`
 ```
 
 `registered, not configured` is the normal state after a plain `varde up`.
@@ -136,9 +137,8 @@ varde models configs sync
 ```
 
 ```text
-chapkit_ewars_model: created configured model monthly_climate
-chapkit_ewars_model: created configured model monthly_population_only
-chapkit_ewars_model: created configured model monthly_region_seasonal
+chapkit_simple_multistep_model: created configured model monthly_climate
+chapkit_simple_multistep_model: created configured model monthly_selfhistory
 ```
 
 `varde up --wait` does the same step for you. See
@@ -148,8 +148,8 @@ the model as `registered`:
 ```text
 chap-core   up   http://localhost:8700   2.4.0   auth: off
 
-MODEL                STATE       REACH          LAST PING
-chapkit-ewars-model  registered  via chap-core  0s ago
+MODEL                           STATE       REACH          LAST PING
+chapkit-simple-multistep-model  registered  via chap-core  7s ago
 
 1 model registered
 ```
@@ -190,22 +190,22 @@ selected row under it. `space` enables or disables, `p` publishes a host port,
 The same thing without the browser:
 
 ```sh
-varde models search multistep
-varde models info chapkit_simple_multistep_model
-varde models enable chapkit_simple_multistep_model --channel stable
+varde models search arima
+varde models info auto_arima_chapkit
+varde models enable auto_arima_chapkit --channel stable
 ```
 
 `enable` changes only the files:
 
 ```text
-enabled chapkit_simple_multistep_model v0.1.2 at http://localhost:8700/v2/services/chapkit-simple-multistep-model/run/
+enabled auto_arima_chapkit v1.0.2 at http://localhost:8700/v2/services/auto-arima-chapkit/run/
 run `varde up` to apply
 ```
 
 The STATUS column of `search` tells you how ready a model is. No model in the
-marketplace is `production` yet. This model and CHAP-EWARS are `limited data`:
-they show promise, but need careful evaluation. Read `varde models info` before
-you enable a model for real work.
+marketplace is `production` yet. Simple Multistep is `limited data`: it shows
+promise, but needs careful evaluation. Auto-ARIMA is `experimental`. Read
+`varde models info` before you enable a model for real work.
 
 Start the model:
 
@@ -214,21 +214,21 @@ varde up
 varde status
 ```
 
-`up` says `started chapkit-simple-multistep-model`. Right after it, the new
+`up` says `started auto-arima-chapkit`. Right after it, the new
 model is not registered yet, and `status` exits with 1:
 
 ```text
 chap-core   up   http://localhost:8700   2.4.0   auth: off
 
 MODEL                           STATE                    REACH          LAST PING
-chapkit-ewars-model             registered               via chap-core  9s ago
-chapkit-simple-multistep-model  running, not registered  via chap-core  -
+auto-arima-chapkit              running, not registered  via chap-core  -
+chapkit-simple-multistep-model  registered               via chap-core  1s ago
 
 1 of 2 models is not registered.
-chapkit-simple-multistep-model: started under two minutes ago and registers once it is ready; run `varde status` again in a minute
+auto-arima-chapkit: started under two minutes ago and registers once it is ready; run `varde status` again in a minute
 ```
 
-In the test run, the model registered within 30 seconds. Then it is
+In the test run, the model registered within 10 seconds. Then it is
 `registered, not configured`, as in step 3. Give it its configured models:
 
 ```sh
@@ -236,9 +236,8 @@ varde models configs sync
 ```
 
 ```text
-chapkit_ewars_model: chap-core has a configured model of it already
-chapkit_simple_multistep_model: created configured model monthly_climate
-chapkit_simple_multistep_model: created configured model monthly_selfhistory
+auto_arima_chapkit: created configured model monthly
+chapkit_simple_multistep_model: chap-core has a configured model of it already
 ```
 
 `varde status` now shows both models as `registered`:
@@ -247,8 +246,8 @@ chapkit_simple_multistep_model: created configured model monthly_selfhistory
 chap-core   up   http://localhost:8700   2.4.0   auth: off
 
 MODEL                           STATE       REACH          LAST PING
-chapkit-ewars-model             registered  via chap-core  5s ago
-chapkit-simple-multistep-model  registered  via chap-core  8s ago
+auto-arima-chapkit              registered  via chap-core  4s ago
+chapkit-simple-multistep-model  registered  via chap-core  6s ago
 
 all 2 models registered
 ```
@@ -261,13 +260,12 @@ enabled:
 
 ```text
 ID                                SERVICE                           NAME                STATUS        STABLE  LATEST  PORT
-chapkit_ewars_model               chapkit-ewars-model               CHAP-EWARS          limited data  1.0.4   1.0.4   via chap-core
 chapkit_simple_multistep_model    chapkit-simple-multistep-model    Simple Multistep    limited data  0.1.2   0.1.2   via chap-core
-auto_arima_chapkit                auto-arima-chapkit                Auto-ARIMA          experimental  1.0.2   1.0.2   -
+auto_arima_chapkit                auto-arima-chapkit                Auto-ARIMA          experimental  1.0.2   1.0.2   via chap-core
 chapkit_ghr_model                 chapkit-ghr-model                 GHRmodel            experimental  0.1.3   0.1.3   -
 chapkit_rwanda_malaria_bym_model  chapkit-rwanda-malaria-bym-model  Rwanda Malaria BYM  not for use   0.1.3   0.1.3   -
 
-5 listed, 2 enabled in this deployment
+4 listed, 2 enabled in this deployment
 ```
 
 ## 5. Reach a model from your own machine
@@ -276,17 +274,17 @@ Model services publish no host port of their own. Either go through chap-core,
 which accepts only GET (and HEAD) requests:
 
 ```sh
-curl http://localhost:8700/v2/services/chapkit-ewars-model/run/api/v1/info
+curl http://localhost:8700/v2/services/chapkit-simple-multistep-model/run/api/v1/info
 ```
 
 or give the model a port:
 
 ```sh
-varde models expose chapkit-ewars-model
+varde models expose chapkit-simple-multistep-model
 ```
 
 ```text
-exposed chapkit-ewars-model on http://localhost:5001
+exposed chapkit-simple-multistep-model on http://localhost:5001
 run `varde up` to apply
 ```
 
@@ -300,7 +298,7 @@ Until then, `varde status` shows it as `running, not registered`:
 
 ```text
 1 of 2 models is not registered.
-chapkit-ewars-model: started under two minutes ago and registers once it is ready; run `varde status` again in a minute
+chapkit-simple-multistep-model: started under two minutes ago and registers once it is ready; run `varde status` again in a minute
 ```
 
 See [Ports](./ports.md).
@@ -312,7 +310,7 @@ varde backup create
 ```
 
 ```text
-wrote /srv/mychap/varde-backup-mychap-20261008-024106.tar.gz (19.2 KB gzipped, 195.7 KB of data)
+wrote /srv/mychap/varde-backup-mychap-20261012-094057.tar.gz (19.0 KB gzipped, 195.6 KB of data)
 ```
 
 One `tar.gz` in the deployment directory holds the deployment files, a `pg_dump`
@@ -332,7 +330,7 @@ varde restart             # apply them to the services that are running
 When nothing is newer, `update` gives one row per pin and one closing line:
 
 ```text
-  chapkit_ewars_model             v1.0.4 (sha-964eea8)  unchanged
+  auto_arima_chapkit              v1.0.2 (sha-e9047d4)  unchanged
   chapkit_simple_multistep_model  v0.1.2 (sha-10b2bc7)  unchanged
   chap-core                       v2.4.0  unchanged, the newest release
 already up to date

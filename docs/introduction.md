@@ -63,7 +63,7 @@ model, an `.env` file, and a `.varde/` directory that records exactly what the
 deployment is meant to be.
 
 ```sh
-varde init mychap --models default   # writes the deployment directory
+varde init mychap --models chapkit_simple_multistep_model   # writes the deployment directory
 cd mychap
 varde up                             # sync the compose files, docker compose up -d
 varde status                         # chap-core health and registered models

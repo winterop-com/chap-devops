@@ -12,8 +12,8 @@ pub struct InitArgs {
     #[arg(value_name = "DIR", default_value = ".")]
     pub dir: PathBuf,
 
-    /// Models to enable: none, default, all, or a list of ids
-    #[arg(long, value_name = "SPEC", default_value = "default")]
+    /// Models to enable: none, all, or a list of ids
+    #[arg(long, value_name = "SPEC", default_value = "none")]
     pub models: String,
 
     /// Select the models in the browser instead of with --models

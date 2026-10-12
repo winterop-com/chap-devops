@@ -462,7 +462,14 @@ error: unknown model `nosuch`; run `varde models list` to see the model ids
 The marketplace has no model with that id, and no model added with `varde
 models add` has it. The command exits with status 1. Run `varde models list`
 and use an id from the `ID` column. Both the marketplace id
-(`chapkit_ewars_model`) and the service id (`chapkit-ewars-model`) work.
+(`chapkit_simple_multistep_model`) and the service id
+(`chapkit-simple-multistep-model`) work.
+
+varde 0.102.0 and older say this for `chapkit_ewars_model` on a plain
+`varde init`. The marketplace no longer lists CHAP-EWARS, and those versions
+enabled it when `--models` was not given. Update varde with `varde self
+update`. Or give the models by name, for example `varde init mychap --models
+chapkit_simple_multistep_model`.
 
 ## 401 from the Modeling App
 

@@ -28,7 +28,7 @@ A few words the person will see:
 | Word | Meaning |
 | --- | --- |
 | chap-core | Chap's backend: the service that trains, evaluates and runs the models. The Modeling App is its interface in DHIS2. |
-| model | One forecasting method, for example CHAP-EWARS. Each runs in its own container. |
+| model | One forecasting method, for example Simple Multistep. Each runs in its own container. |
 | DHIS2 | The health information system. `varde` can run a demo one with data from Laos. |
 | Modeling App | Chap's user interface, installed inside DHIS2. |
 | evaluation | Testing a model on past data: it forecasts from several past points and scores each forecast. Also called a backtest. |
@@ -192,7 +192,7 @@ weekly dengue cases for 2019 to 2024 in 18 provinces, with rainfall,
 temperature and population.
 
 ```sh
-varde init mychap --models default --with dhis2
+varde init mychap --models chapkit_simple_multistep_model --with dhis2
 cd mychap
 varde doctor
 varde up
@@ -231,7 +231,7 @@ chap-core and one model, without DHIS2: less memory, but no user interface
 beyond chap-core's API page.
 
 ```sh
-varde init mychap --models default
+varde init mychap --models chapkit_simple_multistep_model
 cd mychap
 varde up
 varde status
@@ -250,7 +250,7 @@ More: [Chap with forecasting models](./use-cases/chap-with-models.md).
 ### 3. Chap with climate data
 
 ```sh
-varde init mychap --models default --with ocs,s3
+varde init mychap --models chapkit_simple_multistep_model --with ocs,s3
 cd mychap
 varde up
 varde status
@@ -304,7 +304,7 @@ The person needs the DHIS2 address, an admin account on it, and an address at
 which that DHIS2 can reach this computer (not `localhost`).
 
 ```sh
-varde init mychap --models default --api-token
+varde init mychap --models chapkit_simple_multistep_model --api-token
 cd mychap
 varde up
 varde dhis2 use https://THEIR-DHIS2 --chap-url https://ADDRESS-OF-THIS-MACHINE
@@ -359,10 +359,10 @@ More: [An OCS server on its own](./use-cases/ocs-alone.md).
 No folder needed: from any directory that is not a deployment,
 
 ```sh
-varde run chapkit_ewars_model
+varde run chapkit_simple_multistep_model
 ```
 
-It worked when the last lines say `running chapkit_ewars_model on
+It worked when the last lines say `running chapkit_simple_multistep_model on
 http://localhost:5001 (answered in ...)` and name the `varde stop` that stops
 it. With `-a`, varde stays in the foreground and shows the model's log, and
 Ctrl-C stops the model. The model's API is at that URL, and its documentation at `/docs` under it.
@@ -370,7 +370,7 @@ It is reachable from this machine only. A first run pulls the image, which can
 take several minutes; the command waits for it. Other models: `varde models
 list` shows their ids, and `varde run` takes any of them, a GitHub repository
 URL or a ghcr image the same way. `varde ps` lists what runs, `varde top` shows
-it live, and `varde stop chapkit_ewars_model` stops it.
+it live, and `varde stop chapkit_simple_multistep_model` stops it.
 
 More than one works the same way: one `varde run` per model, each on its own
 port, and `varde ps` lists them all. `--group NAME` keeps a set apart, and
@@ -379,7 +379,7 @@ port, and `varde ps` lists them all. `--group NAME` keeps a set apart, and
 For a folder of its own instead, with `varde status` and the rest:
 
 ```sh
-varde init onemodel --only none --models chapkit_ewars_model
+varde init onemodel --only none --models chapkit_simple_multistep_model
 cd onemodel
 varde up
 varde status
@@ -387,7 +387,7 @@ varde status
 
 It worked when `varde status` shows the model as `up`. Its API is at the
 port in the REACH column, usually `http://localhost:5001`, and
-`varde open chapkit_ewars_model` opens its documentation.
+`varde open chapkit_simple_multistep_model` opens its documentation.
 
 More: [Running one model](./run.md),
 [A chapkit model service on its own](./use-cases/model-alone.md),
@@ -653,7 +653,7 @@ For someone changing chap-core who wants to run their version with models.
 Replace the path with where they cloned chap-core:
 
 ```sh
-varde init mychap --source ~/dev/chap-core --models default
+varde init mychap --source ~/dev/chap-core --models chapkit_simple_multistep_model
 cd mychap
 varde up
 varde status
@@ -671,7 +671,7 @@ For someone who already runs DHIS2 on this machine (for DHIS2 or app work).
 Ask whether their DHIS2 runs in Docker. If it does not:
 
 ```sh
-varde init mychap --models default
+varde init mychap --models chapkit_simple_multistep_model
 cd mychap
 varde up
 varde dhis2 use http://localhost:8080 --chap-url http://localhost:8700
@@ -681,7 +681,7 @@ varde dhis2 connect
 If it runs in Docker, it reaches Chap through `host.docker.internal`:
 
 ```sh
-varde init mychap --models default
+varde init mychap --models chapkit_simple_multistep_model
 cd mychap
 varde up
 varde dhis2 use http://localhost:8080 --chap-url http://host.docker.internal:8700
@@ -745,7 +745,7 @@ missing piece is an error):
 | OCS | `--ocs-port 8791` |
 | DHIS2 | `--dhis2-port 8781` |
 
-For example, a second option 2: `varde init second --models default --api-port
+For example, a second option 2: `varde init second --models chapkit_simple_multistep_model --api-port
 8701 --port-base 5101`.
 
 For a third, use 8702, 8792, 8782 and 5201, and so on. It worked when both
@@ -766,7 +766,7 @@ varde chap plot-backtest eval.nc --output-file eval.html
 ```
 
 Use their model's GitHub URL in `--model-name`, or a marketplace id such as
-`chapkit_ewars_model`: varde starts that model by itself, and they need no
+`chapkit_simple_multistep_model`: varde starts that model by itself, and they need no
 `varde up`. Never give a `localhost` URL. The first run pulls
 an image of about 12 GB, so tell them it takes some minutes. If varde stops with
 `runs in docker`, run the same command with `varde chap --docker` and tell
@@ -794,7 +794,7 @@ The first line creates the configured models that chap-core needs, then makes
 every enabled model train, forecast and run an evaluation through chap-core on
 sample data the model generates itself, and prints the scores. Under each
 row, the line `configured model: NAME (id N)` names the configured model that
-the backtest used. For CHAP-EWARS
+the backtest used. For Simple Multistep
 it takes under a minute. If every model was skipped, it says `warning: no model
 was tested` and exits non-zero; the line under each row says why. `varde jobs` lists what
 chap-core did. To see it in the Modeling App instead, add DHIS2 to the same

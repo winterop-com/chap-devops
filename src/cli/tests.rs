@@ -158,7 +158,7 @@ fn init_defaults() {
         panic!("expected init");
     };
     assert_eq!(args.dir, PathBuf::from("."));
-    assert_eq!(args.models, "default");
+    assert_eq!(args.models, "none");
     assert_eq!(args.chap_tag, "latest");
     assert_eq!(args.api_port, 8700);
     assert_eq!(args.port_base, 5001);

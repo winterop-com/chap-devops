@@ -1608,7 +1608,7 @@ set instead of reading `--models`.
 
 Each marketplace model is a [chapkit](https://github.com/dhis2-chap/chapkit)
 container listening on port 8000 with `/health` and `/api/v1/info`. This is the
-overlay `varde` writes for the default model. The file carries two header lines
+overlay `varde` writes for CHAP-EWARS. The file carries two header lines
 and nothing else by way of explanation: what it does is below.
 
 ```yaml

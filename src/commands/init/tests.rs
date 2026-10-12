@@ -35,7 +35,7 @@ fn models_all_enables_every_model_but_the_templates() {
     let expected = registry.models.iter().filter(|m| !m.is_template()).count();
     assert_eq!(all.enable.len(), expected);
     assert!(all.enable.len() > 1);
-    assert!(all.enable.iter().any(|r| r.id == DEFAULT_MODEL));
+    assert!(all.enable.iter().any(|r| r.id == "chapkit_ewars_model"));
 }
 
 #[test]
@@ -45,13 +45,16 @@ fn models_none_enables_nothing() {
     assert!(parse_models("  ", &registry).unwrap().enable.is_empty());
 }
 
+/// There is no default model: `default` is an id like any other, and the
+/// marketplace lists no model by that name.
 #[test]
-fn models_default_is_ewars() {
+fn models_has_no_default_value() {
     let registry = load_embedded().unwrap();
-    let sel = parse_models("default", &registry).unwrap();
-    assert_eq!(sel.enable.len(), 1);
-    assert_eq!(sel.enable[0].id, DEFAULT_MODEL);
-    assert!(!sel.enable[0].allow_template);
+    let err = parse_models("default", &registry).expect_err("no model is named default");
+    assert!(matches!(
+        err.downcast_ref::<ChapError>(),
+        Some(ChapError::UnknownModel(id)) if id == "default"
+    ));
 }
 
 #[test]

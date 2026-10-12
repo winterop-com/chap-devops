@@ -41,7 +41,7 @@ Usage: varde init [OPTIONS] [DIR]
 | Argument | Description |
 | --- | --- |
 | `<DIR>` | Directory to create. Default: `.`. |
-| `--models <SPEC>` | Models to enable: none, default, all, or a list of ids. Default: `default`. |
+| `--models <SPEC>` | Models to enable: none, all, or a list of ids. Default: `none`. |
 | `--interactive` | Select the models in the browser instead of with --models. |
 | `--chap-tag <TAG>` | chap-core image tag: latest, master, dev or vX.Y.Z. Default: `latest`. |
 | `--force` | Overwrite an existing deployment in the target directory. |
