@@ -429,11 +429,14 @@ varde chap eval --model-name auto_arima_chapkit \
   --dataset-csv laos_subset.csv --output-file out/arima.nc \
   --backtest-params.n-splits 3 --backtest-params.n-periods 3
 varde chap --stop eval --model-name chapkit_simple_multistep_model \
+  --model-configuration-yaml multistep.yaml \
   --dataset-csv laos_subset.csv --output-file out/multistep.nc \
   --backtest-params.n-splits 3 --backtest-params.n-periods 3
 ```
 
 varde makes `out/` with the first run. The third run stops its model after.
+The data has no humidity, so `multistep.yaml` gives Simple Multistep only
+`additional_continuous_covariates: [rainfall, mean_temperature]`.
 
 ---
 
