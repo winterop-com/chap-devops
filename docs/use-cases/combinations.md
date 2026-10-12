@@ -87,13 +87,13 @@ first `varde up` pulls about 15 GB. See
 ## A model beside OCS, no Chap
 
 ```sh
-varde init ocs-model --only ocs --models chapkit_ewars_model
+varde init ocs-model --only ocs --models chapkit_simple_multistep_model
 cd ocs-model
 varde up --wait
 varde status
 ```
 
-The first `varde up` pulls the model image (about 7 GB on disk) and the OCS
+The first `varde up` pulls the model image (about 1 GB on disk) and the OCS
 image (about 3 GB) if they are not on the machine. `varde up --wait` returns
 once the model answers on its own host port and OCS answers its health check.
 Then
@@ -102,8 +102,8 @@ Then
 ```text
 ocs   up   http://localhost:8790   0 datasets   32.0 KB data
 
-MODEL                STATE  REACH      LAST PING
-chapkit-ewars-model  up     port 5001  -
+MODEL                           STATE  REACH      LAST PING
+chapkit-simple-multistep-model  up     port 5001  -
 
 1 model up, answering on its own host port
 ocs is up

@@ -13,10 +13,10 @@ varde status                 # chap-core, ocs and s3 lines, then the models
 The first `varde up` pulls the images that are not on the machine yet: the
 chap-core images, the model image and the OCS image. The OCS image alone is
 about 3 GB on disk. With the chap-core and model images already present, the
-first `varde up` took six minutes. It ends with one line:
+first `varde up` took about a minute in one test run. It ends with one line:
 
 ```text
-started chap, chapkit-ewars-model, ocs, postgres, redis, s3, worker
+started chap, chapkit-simple-multistep-model, ocs, postgres, redis, s3, worker
 ```
 
 `varde status` then shows this:
@@ -26,11 +26,11 @@ chap-core   up   http://localhost:8700   2.4.0   auth: off
 ocs         up   http://localhost:8790   0 datasets   32.0 KB data
 s3          up   internal
 
-MODEL                STATE                       REACH          LAST PING
-chapkit-ewars-model  registered, not configured  via chap-core  2s ago
+MODEL                           STATE                       REACH          LAST PING
+chapkit-simple-multistep-model  registered, not configured  via chap-core  1s ago
 
 1 model registered
-chapkit-ewars-model: chap-core has no configured model for it, so nothing can run it; run `varde models configs sync`
+chapkit-simple-multistep-model: chap-core has no configured model for it, so nothing can run it; run `varde models configs sync`
 ```
 
 `registered, not configured` is the normal state after a plain `varde up`.
@@ -41,9 +41,8 @@ varde models configs sync
 ```
 
 ```text
-chapkit_ewars_model: created configured model monthly_climate
-chapkit_ewars_model: created configured model monthly_population_only
-chapkit_ewars_model: created configured model monthly_region_seasonal
+chapkit_simple_multistep_model: created configured model monthly_climate
+chapkit_simple_multistep_model: created configured model monthly_selfhistory
 ```
 
 `varde up --wait` does the same step for you. See
@@ -51,8 +50,8 @@ chapkit_ewars_model: created configured model monthly_region_seasonal
 the model as `registered`:
 
 ```text
-MODEL                STATE       REACH          LAST PING
-chapkit-ewars-model  registered  via chap-core  14s ago
+MODEL                           STATE       REACH          LAST PING
+chapkit-simple-multistep-model  registered  via chap-core  2s ago
 
 1 model registered
 ```

@@ -340,8 +340,8 @@ ocs        http://localhost:8790       the OCS web interface
 s3         -                           an S3 API; no web interface to open
 dhis2      -                           not a component of this deployment
 
-MODEL                OPENS                       WHAT IT IS
-chapkit_ewars_model  http://localhost:5001/docs  the model's API documentation
+MODEL                           OPENS                       WHAT IT IS
+chapkit_simple_multistep_model  http://localhost:5001/docs  the model's API documentation
 
 3 of them can be opened: run `varde open NAME`
 ```
