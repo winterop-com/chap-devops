@@ -44,11 +44,8 @@ it also removes the chap-core database. See
 
 ```text
 2 host ports this deployment needs are already in use; nothing was started
-  port 8700 is already in use on this machine (needed by chap); free it, or set
-  CHAP_API_PORT=8701 in `.env`
-  port 5001 is already in use on this machine (needed by chapkit-ewars-model);
-  free it, or run `varde models unexpose chapkit-ewars-model` (the model stays
-  reachable through chap-core) / `varde models expose chapkit-ewars-model --port auto`
+  port 8700 is already in use on this machine (needed by chap); free it, or set CHAP_API_PORT=8701 in `.env`
+  port 5001 is already in use on this machine (needed by chapkit-simple-multistep-model); free it, or run `varde models unexpose chapkit-simple-multistep-model` (the model stays reachable through chap-core) / `varde models expose chapkit-simple-multistep-model --port auto`
   or run `varde up --no-preflight` to hand the conflict to Docker
 ```
 
@@ -259,8 +256,8 @@ Give another directory, or remove the files in it first.
 ## `chap-core has no configured model for`
 
 ```text
-chapkit-ewars-model    skip    0s   chap-core has no configured model for chapkit-ewars-model 1.0.1
-  it is registered, and chap-core has nothing to run it with; run `varde models configs sync chapkit_ewars_model`, then `varde models test chapkit_ewars_model --backtest`
+SERVICE    skip    0s   chap-core has no configured model for SERVICE VERSION
+  it is registered, and chap-core has nothing to run it with; run `varde models configs sync ID`, then `varde models test ID --backtest`
 ```
 
 The model is registered, but chap-core has no configured model for it. chap-core
@@ -268,7 +265,7 @@ The model is registered, but chap-core has no configured model for it. chap-core
 one cannot run, and the Modeling App does not list it. `varde status` shows such
 a model as `registered, not configured`.
 
-The version at the end of the line is the version that the model registered
+SERVICE is the service id, ID the model id, and VERSION the version that the model registered
 with. A backtest uses only a configured model of that version that chap-core
 has not archived. If the model registered with a new version, the configured
 models of the old version do not count, because chap-core does not run them.
@@ -282,8 +279,8 @@ table say why.
 Make the configured models, then test again:
 
 ```sh
-varde models configs sync chapkit_ewars_model
-varde models test chapkit_ewars_model --backtest
+varde models configs sync ID
+varde models test ID --backtest
 ```
 
 See [Configured models](./models.md#configured-models).
@@ -304,8 +301,8 @@ template chap-core stored for its version.
 ## `chap-core has no configured model NAME for`
 
 ```text
-chapkit-ewars-model    skip       0s   chap-core has no configured model weekly for chapkit-ewars-model 1.0.4; it has monthly_climate, monthly_population_only, monthly_region_seasonal
-  run `varde models configs list chapkit_ewars_model` to see its configured models
+chapkit-simple-multistep-model    skip       0s   chap-core has no configured model weekly for chapkit-simple-multistep-model 0.1.2; it has monthly_climate, monthly_selfhistory, short_lags
+  run `varde models configs list chapkit_simple_multistep_model` to see its configured models
 ```
 
 `varde models test --backtest --config weekly` asked for the configured model
@@ -322,7 +319,7 @@ configured model is a skip, and the other models are tested.
 ## `chap-core did not list its configured models, so varde cannot find --config`
 
 ```text
-chapkit-ewars-model    skip    0s   chap-core did not list its configured models, so varde cannot find --config weekly
+SERVICE    skip    0s   chap-core did not list its configured models, so varde cannot find --config weekly
   run `varde status` to see why
 ```
 
@@ -388,7 +385,7 @@ with `--set`, `--unset` and `--covariates` as the way out.
 ## `has a configured model NAME already; give another --name, or archive it first`
 
 ```text
-error: chapkit_ewars_model has a configured model short_lags already; give another --name, or archive it first with `varde models configs archive chapkit_ewars_model short_lags`
+error: chapkit_simple_multistep_model has a configured model monthly_climate already; give another --name, or archive it first with `varde models configs archive chapkit_simple_multistep_model monthly_climate`
 ```
 
 A configured model with this variant name is live. If varde sent the new one,
@@ -406,8 +403,8 @@ other way out.
 ## `is not an option of ID; its options are`
 
 ```text
-error: `lag` is not an option of chapkit_ewars_model; its options are label (text or null), max_lag (integer), method (one of fast, exact), n_lags (list of integers), precision (number), region_seasonal (true or false), seasonal (true or false)
-error: `two` is not a value of `max_lag`, which takes an integer, such as `3`
+error: `lag` is not an option of chapkit_simple_multistep_model; its options are n_samples (integer), n_target_lags (integer), rf_max_depth (integer), rf_min_samples_leaf (integer)
+error: `two` is not a value of `n_target_lags`, which takes an integer, such as `3`
 ```
 
 varde checks each `--set` against the options of the model template before it
@@ -424,7 +421,7 @@ would have no effect, and a wrong value would show only when a run fails.
 ```text
 error: my_model takes only these additional covariates: rainfall, mean_temperature; remove `foo`
 error: my_model takes no additional covariates; remove --covariates
-error: `population` is a required covariate of chapkit_ewars_model, which every run gets; remove it from --covariates
+error: `population` is a required covariate of chapkit_ghr_model, which every run gets; remove it from --covariates
 ```
 
 The model template does not allow free covariates, so a configured model can
@@ -435,7 +432,7 @@ message names.
 ## `an export is the configurations of one model; name one of`
 
 ```text
-error: an export is the configurations of one model; name one of chapkit_ewars_model, chapkit_simple_multistep_model
+error: an export is the configurations of one model; name one of auto_arima_chapkit, chapkit_ghr_model, chapkit_rwanda_malaria_bym_model, chapkit_simple_multistep_model
 ```
 
 The deployment runs more than one model, and `varde models configs export`
@@ -514,7 +511,7 @@ Either way `varde up` is what hands a changed `.env` to the containers. See
 ## The models stopped registering after I turned authentication on
 
 ```text
-chapkit-ewars-model  running, not registered  via chap-core  -
+chapkit-simple-multistep-model  running, not registered  via chap-core  -
 ```
 
 A protected chap-core rejects an unauthenticated registration like any other
@@ -531,7 +528,7 @@ varde status
 If it persists, check that both ends carry the line:
 
 ```sh
-grep SERVICEKIT_REGISTRATION_KEY compose.chapkit-ewars-model.yml compose.varde.yml
+grep SERVICEKIT_REGISTRATION_KEY compose.chapkit-simple-multistep-model.yml compose.varde.yml
 ```
 
 An active `SERVICEKIT_REGISTRATION_KEY: ${SERVICEKIT_REGISTRATION_KEY:-}` in
@@ -543,7 +540,7 @@ The same line in `compose.varde.yml` is what chap-core checks it against.
 Upstream's `compose.ghcr.yml` passes only `CHAP_API_TOKEN` into the `chap`
 service, so without that line the container has no key, and the model's
 `X-Service-Key` is rejected as an invalid API token - a 401 in
-`varde logs chapkit-ewars-model`. `varde sync` then `varde restart` puts the
+`varde logs chapkit-simple-multistep-model`. `varde sync` then `varde restart` puts the
 line back.
 
 ## `unable to open database file`
@@ -731,7 +728,7 @@ overlay is out of date: run `varde sync`, then `varde restart`.
 ## `running and not answering on /health`
 
 ```text
-1 of 1 model is running and not answering on /health; a model that just started answers in a minute, so run `varde status` again, or read `varde logs chapkit-ewars-model`
+1 of 1 model is running and not answering on /health; a model that just started answers in a minute, so run `varde status` again, or read `varde logs chapkit-simple-multistep-model`
 ```
 
 A deployment without chap-core asks each model's own `/health` on its host
@@ -1508,7 +1505,7 @@ cache again.
 ## `GitHub's rate limit is used up`
 
 ```text
-skip  registry pin chapkit_ewars_model  could not ask https://github.com/chap-models/chapkit_ewars_model
+skip  registry pin chapkit_simple_multistep_model  could not ask https://github.com/chap-models/chapkit_simple_multistep_model
       for its default branch: GitHub's rate limit is used up (unauthenticated, 60 requests an hour
       per address); set GITHUB_TOKEN for 5000, or wait until 15:04
 ```
@@ -1616,7 +1613,7 @@ line to put the pin back.
 Every command reads `.varde/` first, and this one stopped there:
 
 ```text
-error: `.varde/models.yaml` gives chapkit_ewars_model the compose file `/tmp/compose.x.yml`, which is not a file in this deployment's directory; ...
+error: `.varde/models.yaml` gives chapkit_simple_multistep_model the compose file `/tmp/compose.x.yml`, which is not a file in this deployment's directory; varde only writes `compose.<service>.yml` there; correct the entry by hand, or run `varde init --force` to rebuild the state
 ```
 
 varde writes every compose file into the deployment directory itself, as
@@ -1624,7 +1621,7 @@ varde writes every compose file into the deployment directory itself, as
 name. A name with a `/`, a `..` or a drive in it would have it write or delete
 a file somewhere else, so it is refused before anything uses it. The state was
 edited by hand or came from an archive changed after it was made. Put the
-plain name back (`compose.chapkit-ewars-model.yml` for that model), or rebuild
+plain name back (`compose.chapkit-simple-multistep-model.yml` for that model), or rebuild
 the state with `varde init --force`. The same message names
 `.varde/project.yaml` when the name is in its `compose_files` or
 `rendered_files` list.
@@ -1685,8 +1682,8 @@ files before it stopped, varde names them.
 `varde chap` asked the `--model-name` URL for `/api/v1/info` before the run,
 and nothing answered. chap was not started, so there is no traceback.
 
-- A service name such as `http://chapkit-ewars-model:8000` that varde does
-  not know: give the model id instead (`--model-name chapkit_ewars_model`).
+- A service name such as `http://my-model:8000` that varde does
+  not know: give the model id instead (`--model-name chapkit_simple_multistep_model`).
   varde then starts the model. In a deployment, the model must be enabled
   first.
 - A server elsewhere: check that it runs, and that this machine can reach
