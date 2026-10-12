@@ -7,20 +7,24 @@ chap-core and its worker and databases, DHIS2, OCS, the object store and the
 models - and what each container is doing.
 
 ```text
- varde top   3 deployments  7/9 running  at 14:02:41 (every 2s)
-┌────────────────────────────────────────────────────────────────────────────────────────────┐
-│DEPLOYMENT / SERVICE               STATE               CPU     MEMORY              URL      │
-│▾ mychap  init                     5/6 running                                  /home/me/mychap
-│  ├─ chap                          running (healthy)   1.20%   612MiB / 15.6GiB   http://localhost:8700
-│  ├─ postgres                      running (healthy)   0.40%   88MiB / 15.6GiB
-│  ├─ redis                         running (healthy)   0.30%   9MiB / 15.6GiB
-│  ├─ worker                        running (healthy)   0.10%   410MiB / 15.6GiB
-│  ├─ dhis2                         running (starting)  96.0%   2.1GiB / 15.6GiB   http://localhost:8780
-│  └─ chapkit-ewars-model           exited                                         http://localhost:5001
-│▾ run/default  run                 1/1 running
-│  └─ chapkit-ghr-model             running             0.50%   230MiB / 15.6GiB   http://localhost:5002
-│▸ run/trial  run                   1/2 running
-└────────────────────────────────────────────────────────────────────────────────────────────┘
+ varde top  3 deployments  8/12 running  at 13:17:51 (every 2s)
+┌──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+│DEPLOYMENT / SERVICE                                                  STATE                  CPU      MEMORY                 URL                              │
+│▾ mychap  init                                                        6/9 running                                            /home/me/mychap                  │
+│  ├─ chap                                                             running (healthy)      6.52%    442.9MiB / 31.29GiB    http://localhost:8700            │
+│  ├─ postgres                                                         running (healthy)      0.02%    35.27MiB / 31.29GiB                                     │
+│  ├─ redis                                                            running (healthy)      0.28%    12.56MiB / 31.29GiB                                     │
+│  ├─ worker                                                           running (healthy)      0.79%    1.118GiB / 31.29GiB                                     │
+│  ├─ dhis2                                                            running (healthy)      2.82%    1.982GiB / 31.29GiB    http://localhost:8780            │
+│  ├─ dhis2-db                                                         running (healthy)      0.04%    71.71MiB / 31.29GiB                                     │
+│  ├─ dhis2-dump                                                       exited                                                                                  │
+│  ├─ dhis2-prep                                                       exited                                                                                  │
+│  └─ chapkit-simple-multistep-model (chapkit_simple_multistep_model)  exited                                                 http://localhost:5001            │
+│▸ run/default  run                                                    1/1 running                                            /home/me/.local/share/varde/run/ │
+│▾ run/trial  run                                                      1/2 running                                            /home/me/.local/share/varde/run/ │
+│  ├─ auto-arima-chapkit (auto_arima_chapkit)                          running (healthy)      0.43%    108.9MiB / 31.29GiB    http://localhost:5003            │
+│  └─ chapkit-simple-multistep-model (chapkit_simple_multistep_model)  exited                                                 http://localhost:5001            │
+└──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
  j/k move  enter fold  l logs  s stop model  r refresh  q quit
 ```
 
