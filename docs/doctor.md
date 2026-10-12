@@ -14,32 +14,31 @@ varde doctor
 ```
 
 ```text
-ok    docker cli                        docker 29.8.1
-ok    docker daemon                     Docker Engine 29.8.0
-ok    docker compose                    v2.24.6
-warn  os and arch                       macos/aarch64; Chap images are linux/amd64 only, so they run under emulation
+ok    docker cli                                   docker 29.9.0
+ok    docker daemon                                Docker Engine 29.8.2
+ok    docker compose                               v5.5.1
+warn  os and arch                                  macos/aarch64; Chap images are linux/amd64 only, so they run under emulation
       nothing to do: Rosetta runs the amd64 images, they are only slower
-ok    disk space                        633.1 GB free on /Users/you/mychap
-ok    leftovers                         no volumes left by removed deployments
-ok    network ghcr.io                   reachable (HTTP 401)
-ok    network marketplace               reachable (HTTP 200)
-ok    network releases                  reachable, newest chap-core is v2.3.1
-ok    github api                        reachable, 4990 of 5000 requests left this hour (token)
-ok    varde                             v0.2.0, aarch64-apple-darwin, release archive
-ok    compose project                   mychap-1ab2c3 (recorded in .varde/project.yaml)
-ok    deployment files                  all 7 present
-ok    components                        chap-core
-ok    compose files                     in sync (0 to write, 7 unchanged, 0 to remove)
-ok    .env                              auth off, POSTGRES_PASSWORD set, CHAP_IMAGE_TAG present
-ok    volumes                           6 volumes named mychap-1ab2c3_*
-fail  api port                          8700 is in use by something else
-      port 8700 is already in use on this machine (needed by chap); free it, or set
-      CHAP_API_PORT=8701 in `.env`
-ok    chap-core pin                     v2.3.1 is the newest release
-ok    image chapkit-ewars-model         ghcr.io/chap-models/chapkit_ewars_model:sha-24d58c0 (linux/amd64)
-ok    registry pin chapkit_ewars_model  sha-24d58c0 is the newest build on main
-ok    user chapkit-ewars-model          1000:1000, as the image declares
-skip  health                            no container of this deployment is running
+ok    disk space                                   1067.0 GB free on /Users/you/mychap
+ok    leftovers                                    no volumes left by removed deployments
+ok    network ghcr.io                              reachable (HTTP 401)
+ok    network marketplace                          reachable (HTTP 200)
+ok    network releases                             reachable, newest chap-core is v2.4.0
+ok    github api                                   reachable, 41 of 60 requests left this hour (no token; set GITHUB_TOKEN for 5000)
+ok    varde                                        v0.102.0, aarch64-apple-darwin, cargo build
+ok    compose project                              mychap-1ab2c3 (recorded in .varde/project.yaml)
+ok    deployment files                             all 7 present
+ok    components                                   chap-core
+ok    compose files                                in sync (0 to write, 4 unchanged, 0 to remove)
+ok    .env                                         auth off, POSTGRES_PASSWORD set, CHAP_IMAGE_TAG present
+ok    volumes                                      no mychap-1ab2c3_* volume yet; `varde up` creates them
+fail  api port                                     8700 is in use by something else
+      port 8700 is already in use on this machine (needed by chap); free it, or set CHAP_API_PORT=8701 in `.env`
+ok    chap-core pin                                v2.4.0 is the newest release
+ok    image chapkit-simple-multistep-model         ghcr.io/chap-models/chapkit_simple_multistep_model:sha-10b2bc7 (linux/amd64)
+ok    registry pin chapkit_simple_multistep_model  sha-10b2bc7 is the newest build on main
+ok    user chapkit-simple-multistep-model          1001:1001, as the image declares
+skip  health                                       no container of this deployment is running
       run `varde up` to start Chap
 
 23 checks: 20 ok, 1 warn, 1 fail, 1 skipped
@@ -100,8 +99,8 @@ GITHUB_TOKEN=$(gh auth token) varde doctor
 ```
 
 ```text
-ok    github api                        reachable, 4990 of 5000 requests left this hour (token)
-ok    registry pin chapkit_ewars_model  sha-24d58c0 is the newest build on main
+ok    github api                                   reachable, 4989 of 5000 requests left this hour (token)
+ok    registry pin chapkit_simple_multistep_model  sha-10b2bc7 is the newest build on main
 ```
 
 A classic token with no scopes at all, or a fine-grained token with read
@@ -265,14 +264,14 @@ Outside a deployment directory the project checks are simply absent from
 `skip` with the reason, and the reason always names the flag:
 
 ```text
-skip  network ghcr.io                   --offline: the image registry was not probed
-skip  network marketplace               --offline: the model catalogue was not probed
-skip  network releases                  --offline: the chap-core release list was not probed
-skip  github api                        --offline: the GitHub API rate limit was not asked
-skip  varde                             v0.2.0, aarch64-apple-darwin, release archive; --offline: the release list was not asked
-skip  chap-core pin                     v2.3.1 pinned; --offline: the release list was not asked
-skip  image chapkit-ewars-model         --offline: the registry was not asked
-skip  registry pin chapkit_ewars_model  --offline, so the model repositories were not asked about newer builds
+skip  network ghcr.io                              --offline: the image registry was not probed
+skip  network marketplace                          --offline: the model catalogue was not probed
+skip  network releases                             --offline: the chap-core release list was not probed
+skip  github api                                   --offline: the GitHub API rate limit was not asked
+skip  varde                                        v0.102.0, aarch64-apple-darwin, cargo build; --offline: the release list was not asked
+skip  chap-core pin                                v2.4.0 pinned; --offline: the release list was not asked
+skip  image chapkit-simple-multistep-model         --offline: the registry was not asked
+skip  registry pin chapkit_simple_multistep_model  --offline, so the model repositories were not asked about newer builds
 ```
 
 `--offline` is the reason on every one of those lines whatever else the
