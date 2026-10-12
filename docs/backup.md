@@ -108,17 +108,17 @@ not call it a leftover; the archive is the one place it costs something.
 
 `varde backup create` prints one line: where the archive is, and its size.
 With `-v`, a hint for each part gives its size. For chap-core, one model and
-DHIS2 on the Laos demo database, the backup took 5 seconds:
+DHIS2 on the Laos demo database, the backup took 6 seconds:
 
 ```text
 $ varde -v backup create
-wrote /srv/chapx/varde-backup-chapx-20261008-002753.tar.gz (21.7 MB gzipped, 57.2 MB of data)
-hint: files: .env, .varde/components.yaml, .varde/compose.chap-core.v2.4.0.yml, .varde/models.yaml, .varde/project.yaml, dhis2/dhis.conf, compose.chapkit-ewars-model.yml, compose.dhis2.yml, compose.marketplace.yml, compose.varde.yml, compose.yml
-hint: database: chap_core as chap (54.0 KB), PostgreSQL 17.11 (Debian 17.11-1.pgdg13+2)
-hint: model chapkit-ewars-model: /app/data (54.0 KB, paused for 0.4 s)
-hint: component dhis2: /opt/dhis2 (48.8 MB, paused for 1.4 s)
+wrote /srv/chapx/varde-backup-chapx-20261012-113057.tar.gz (34.2 MB gzipped, 70.2 MB of data)
+hint: files: .env, .varde/components.yaml, .varde/compose.chap-core.v2.4.0.yml, .varde/models.yaml, .varde/project.yaml, dhis2/dhis.conf, compose.chapkit-simple-multistep-model.yml, compose.dhis2.yml, compose.marketplace.yml, compose.varde.yml, compose.yml
+hint: database: chap_core as chap (1.1 MB), PostgreSQL 17.11 (Debian 17.11-1.pgdg13+2)
+hint: model chapkit-simple-multistep-model: /app/data (11.9 MB, paused for 0.6 s)
+hint: component dhis2: /opt/dhis2 (48.8 MB, paused for 1.3 s)
 hint: component dhis2: the database as a pg_dump without analytics_*, aggregated_*, completeness_*, _* and the data of audit (8.3 MB)
-hint: `varde backup restore /srv/chapx/varde-backup-chapx-20261008-002753.tar.gz` restores it
+hint: `varde backup restore /srv/chapx/varde-backup-chapx-20261012-113057.tar.gz` restores it
 ```
 
 The archive path is printed resolved, without `..` parts: `--out ../archives`
@@ -129,11 +129,11 @@ part left out for another reason, such as a model that never started, is a
 warning:
 
 ```text
-warning: chapkit-ewars-model: no ck_chapkit_ewars_model_data volume yet, so there is no data to back up; the service has never started
+warning: chapkit-simple-multistep-model: no ck_chapkit_simple_multistep_model_data volume yet, so there is no data to back up; the service has never started
 ```
 
 A service that is running is paused for the seconds its volume takes to read,
-as the `paused for 1.4 s` above shows.
+as the `paused for 1.3 s` above shows.
 
 `docker compose pause` freezes the processes in the container without touching
 its storage, so nothing writes into a half-read tar - a chapkit model keeps a
@@ -145,7 +145,7 @@ backup paused until then. For the deployment above, a Ctrl-C while `dhis2` was
 paused gave:
 
 ```text
-error: stopped by Ctrl-C; no archive was written; chapkit-ewars-model, dhis2 were paused for the backup and run again
+error: stopped by Ctrl-C; no archive was written; chapkit-simple-multistep-model, dhis2 were paused for the backup and run again
 ```
 
 The command exits with code 130 and removes its staging directory.
@@ -222,7 +222,7 @@ into it:
 ```sh
 varde init chapy --models none
 cd chapy
-varde backup restore /srv/backups/varde-backup-chapx-20261008-002753.tar.gz
+varde backup restore /srv/backups/varde-backup-chapx-20261012-113057.tar.gz
 ```
 
 The models and components that `init` sets do not matter: the restore replaces
@@ -286,11 +286,11 @@ The order is the whole design: nothing writes to the database or a data volume
 while its storage is being swapped underneath it.
 
 When it is done, the restore prints what it restored in one line, and the next
-step. For the chap-core, model and DHIS2 archive above, the restore took 17
+step. For the chap-core, model and DHIS2 archive above, the restore took 19
 seconds:
 
 ```text
-restored 11 files, the chap_core database, the data of chapkit-ewars-model, dhis2, dhis2-db
+restored 11 files, the chap_core database, the data of chapkit-simple-multistep-model, dhis2, dhis2-db
 the deployment is starting
 the DHIS2 dump has no analytics tables; when DHIS2 answers, run `varde dhis2 analytics` to make them again
 ```
@@ -300,7 +300,7 @@ the identity are hints, shown with `-v`. For a restore into a new deployment
 that had not started yet:
 
 ```text
-restored 11 files, the chap_core database, the data of chapkit-ewars-model, dhis2, dhis2-db
+restored 11 files, the chap_core database, the data of chapkit-simple-multistep-model, dhis2, dhis2-db
 hint: files: .env, .varde/components.yaml, ...
 hint: the previous .env is in .env.before-restore
 hint: kept this deployment's POSTGRES_PASSWORD, DHIS2_DB_PASSWORD in .env: its database volumes stayed, and they open only with these values
@@ -381,7 +381,7 @@ for OCS). Before the restore starts the deployment, it does the port check of
 then stops. For the chap-core, model and DHIS2 archive above:
 
 ```text
-error: restored 11 files, the chap_core database, the data of chapkit-ewars-model, dhis2, dhis2-db, and did not start the deployment: 2 host ports this deployment needs are already in use
+error: restored 11 files, the chap_core database, the data of chapkit-simple-multistep-model, dhis2, dhis2-db, and did not start the deployment: 2 host ports this deployment needs are already in use
   port 8700 (needed by chap) is in use, and chapx (/srv/chapx) publishes it too; stop it with `varde -C /srv/chapx down`, or move this one: set CHAP_API_PORT=8701 in `.env`
   port 8780 (needed by dhis2) is in use, and chapx (/srv/chapx) publishes it too; stop it with `varde -C /srv/chapx down`, or move this one: run `varde components enable dhis2 --port 8781`
   or run `varde up --no-preflight` to hand the conflict to Docker
@@ -396,7 +396,7 @@ move the ports before `varde up`:
 
 ```sh
 cd chapy
-varde backup restore ../chapx/varde-backup-chapx-20261008-002753.tar.gz --no-start
+varde backup restore ../chapx/varde-backup-chapx-20261012-113057.tar.gz --no-start
 ```
 
 1. Set `CHAP_API_PORT=8701` in `.env`.
