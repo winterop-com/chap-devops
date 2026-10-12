@@ -675,7 +675,7 @@ saying it until a connect has been recorded. `varde up` closes with it, under
 the line it always ends on:
 
 ```text
-already running: chap, chapkit-ewars-model, dhis2, dhis2-db, postgres, redis, worker
+already running: chap, chapkit-simple-multistep-model, dhis2, dhis2-db, postgres, redis, worker
 varde has not connected this DHIS2 to Chap; run `varde dhis2 connect` once DHIS2 answers
 ```
 
@@ -685,11 +685,11 @@ and `varde status` puts it under its verdict, with the model hints:
 chap-core   up   http://localhost:8700   2.4.0   auth: off
 dhis2       up   http://localhost:8780
 
-MODEL                STATE                       REACH          LAST PING
-chapkit-ewars-model  registered, not configured  via chap-core  13s ago
+MODEL                           STATE                       REACH          LAST PING
+chapkit-simple-multistep-model  registered, not configured  via chap-core  10s ago
 
 1 model registered
-chapkit-ewars-model: chap-core has no configured model for it, so nothing can run it; run `varde models configs sync`
+chapkit-simple-multistep-model: chap-core has no configured model for it, so nothing can run it; run `varde models configs sync`
 varde has not connected this DHIS2 to Chap; run `varde dhis2 connect`
 ```
 
