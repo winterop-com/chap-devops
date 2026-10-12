@@ -395,9 +395,7 @@ fn a_chapkit_url_that_does_not_answer_is_a_note_and_not_a_traceback() {
     .stderr(predicates::str::contains(
         "the model server at http://nothing:8000 is not running",
     ))
-    .stderr(predicates::str::contains(
-        "--model-name chapkit_ewars_model",
-    ));
+    .stderr(predicates::str::contains("--model-name auto_arima_chapkit"));
     let calls = std::fs::read_to_string(&log).unwrap_or_default();
     assert!(!calls.contains("run --rm -i"), "chap never ran: {calls}");
 
@@ -559,9 +557,7 @@ fn a_model_url_on_localhost_is_refused_before_the_run() {
     .stderr(predicates::str::contains(
         "in the container `localhost` is the container itself",
     ))
-    .stderr(predicates::str::contains(
-        "--model-name chapkit_ewars_model",
-    ));
+    .stderr(predicates::str::contains("--model-name auto_arima_chapkit"));
     let calls = std::fs::read_to_string(&log).unwrap_or_default();
     assert!(!calls.contains("run --rm -i"), "nothing ran: {calls}");
 }

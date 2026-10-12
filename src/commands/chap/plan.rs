@@ -168,7 +168,7 @@ pub fn unreachable_message(url: &str) -> String {
     match url_host(url) {
         Some(host) if !host.contains('.') => format!(
             "{head}; `{host}` is not a model of this deployment or group. Give a model id \
-             instead (`--model-name chapkit_ewars_model`) and varde starts it, or start one \
+             instead (`--model-name auto_arima_chapkit`) and varde starts it, or start one \
              with `varde run ID`; the `models:` line lists the URLs that answer"
         ),
         _ => format!("{head}; check that the server runs and that this machine can reach it"),

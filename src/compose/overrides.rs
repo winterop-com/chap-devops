@@ -153,7 +153,9 @@ pub fn chown_pair(user: &str) -> String {
 /// them.
 ///
 /// Every marketplace entry is listed, including the ones that match the
-/// defaults, so that the table doubles as the record of what was checked. The
+/// defaults, so that the table doubles as the record of what was checked.
+/// CHAP-EWARS stays: the marketplace dropped it on 2026-10-08, but its image
+/// is still published, and `varde models add` takes it by URL. The
 /// values are `config.User` and `config.WorkingDir`+`/data` of the image the
 /// `stable` channel pins, read anonymously off ghcr - the same two fields
 /// [`crate::compose::resolve`] reads at enable time, so a run that falls back

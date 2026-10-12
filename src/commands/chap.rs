@@ -60,7 +60,7 @@ pub fn run(ctx: &Ctx, args: &ChapArgs) -> Result<()> {
     {
         return Err(ChapError::Usage(format!(
             "`{}` is not a directory here; give a model directory, a GitHub URL or a model id \
-             such as `chapkit_ewars_model`",
+             such as `auto_arima_chapkit`",
             path.display()
         ))
         .into());
@@ -460,7 +460,7 @@ fn loopback_refusal(url: &str, port: u16, place: &Place) -> String {
         ),
         _ => format!(
             "`{url}` is this machine, and in the container `localhost` is the container \
-             itself; give the model id instead (`--model-name chapkit_ewars_model`), and \
+             itself; give the model id instead (`--model-name auto_arima_chapkit`), and \
              varde starts the model and gives chap its URL on the network"
         ),
     }
