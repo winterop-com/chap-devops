@@ -173,7 +173,7 @@ varde jobs show 0fa57ec9            # Database result  1  -> /v1/crud/datasets/1
 
 # 3. a backtest of one configured model against that dataset
 varde api POST /v1/analytics/create-backtest \
-  --data '{"name":"eval-ewars","modelId":14,"datasetId":1,"nPeriods":3,"nSplits":3,"stride":1}'
+  --data '{"name":"eval-multistep","modelId":14,"datasetId":1,"nPeriods":3,"nSplits":3,"stride":1}'
 # -> {"id": "59159ad4-893b-4bbf-a855-70a38c3fb787"}
 
 # 4. poll it, then read what it produced
@@ -194,7 +194,7 @@ A prediction is the same shape one step further on: `POST
 from a backtest and run on a schedule.
 
 ```sh
-varde api POST /v1/crud/prediction-setups --data '{"backtestId":3,"name":"ewars-monthly"}'
+varde api POST /v1/crud/prediction-setups --data '{"backtestId":3,"name":"multistep-monthly"}'
 varde api POST /v1/crud/prediction-setups/1/run --data @run.json
 varde api GET  /v1/crud/prediction-setups/1
 varde api PATCH /v1/crud/prediction-setups/1 --data '{"scheduleCronExpression":"17 3 * * 1"}'

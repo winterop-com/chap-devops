@@ -879,7 +879,8 @@ deployment it registers there and is reached through it; without chap-core it
 runs on its own and is reached on a host port of its own:
 
 ```sh
-varde init ewars --only none --models chapkit_ewars_model
+varde init multistep --only none --models chapkit_simple_multistep_model
+cd multistep
 varde up
 curl http://localhost:5001/health
 open http://localhost:5001/docs

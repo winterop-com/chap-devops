@@ -28,7 +28,7 @@ enable` / `disable`. See [Growing a deployment](./use-cases/growing.md).
 | --- | --- | --- |
 | only DHIS2 (2.42, 2.43, 2.41 or the next one) | [A DHIS2 on its own](./use-cases/dhis2-alone.md) | `varde init dhis --only dhis2` |
 | only OCS (with or without S3) | [An OCS server on its own](./use-cases/ocs-alone.md) | `varde init climate --only ocs,s3` |
-| only one model service | [A chapkit model service on its own](./use-cases/model-alone.md) | `varde run chapkit_ewars_model` |
+| only one model service | [A chapkit model service on its own](./use-cases/model-alone.md) | `varde run chapkit_simple_multistep_model` |
 | only some model services | [Several model services side by side](./use-cases/models-alone.md) | `varde init models --only none --models ID,ID` |
 | any number of model services, no folder | [Any number of model services, no folder](./use-cases/models-with-run.md) | `varde run ID`, once per model |
 

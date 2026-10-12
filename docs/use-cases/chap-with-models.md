@@ -16,18 +16,18 @@ registered:
 ```text
 chap-core   up   http://localhost:8700   2.4.0   auth: off
 
-MODEL                STATE                       REACH          LAST PING
-chapkit-ewars-model  registered, not configured  via chap-core  1s ago
+MODEL                           STATE                       REACH          LAST PING
+chapkit-simple-multistep-model  registered, not configured  via chap-core  1s ago
 
 1 model registered
-chapkit-ewars-model: chap-core has no configured model for it, so nothing can run it; run `varde models configs sync`
+chapkit-simple-multistep-model: chap-core has no configured model for it, so nothing can run it; run `varde models configs sync`
 ```
 
 and `varde models test --all` says every model passes:
 
 ```text
 testing 1 model (model level; add --backtest to go through chap-core)
-chapkit-ewars-model    pass   16s   1 training, 1 prediction
+chapkit-simple-multistep-model    pass    5s   1 training, 1 prediction
 
 1 of 1 model passes
 ```
@@ -51,9 +51,9 @@ run `varde up` to start the model.
 
 ## Every model in the marketplace
 
-`default` is the one model varde starts with, `chapkit_ewars_model`. `all` is
-every model the marketplace lists (templates aside), and a list of ids picks
-some. `varde models list` prints them.
+`all` is every model the marketplace lists (templates aside), and a list of
+ids picks some. `varde models list` prints them. Without `--models`, `init`
+enables no model.
 
 This is a new deployment. It needs port 8700 too. If the deployment from the
 first section is still up, go to `mychap` and run `varde down --volumes --yes`
@@ -68,7 +68,7 @@ varde status                 # again, until every model is registered
 varde models test --all      # make each model train and predict once
 ```
 
-The model images are large: five images of 1 to 7 GB each, all linux/amd64
+The model images are large: four images of 1 to 7 GB each, all linux/amd64
 only. `varde init` already pulls one of them to read its user, and says
 ``asking ghcr.io/chap-models/chapkit_ghr_model:sha-dfb2e3f what uid `app` is (this pulls the image)``.
 The first `varde up` pulls the others, which can take many minutes.
@@ -82,30 +82,29 @@ auto-arima-chapkit                running, not registered  via chap-core  -
 ...
 chapkit-simple-multistep-model    running, not registered  via chap-core  -
 
-5 of 5 models are not registered.
+4 of 4 models are not registered.
 auto-arima-chapkit: started under two minutes ago and registers once it is ready; run `varde status` again in a minute
 ...
 ```
 
 If you see this, wait a minute and run `varde status` again. On an M2 Max,
-all five models registered in less than a minute. It worked when `varde status`
-ends with `all 5 models registered`, followed by one
+all four models registered in less than a minute. It worked when `varde status`
+ends with `all 4 models registered`, followed by one
 `chap-core has no configured model for it` line for each model, as in the
 first section. `varde models test --all` then says:
 
 ```text
-testing 5 models (model level; add --backtest to go through chap-core)
-auto-arima-chapkit                  pass   12s   1 training, 1 prediction
-chapkit-ewars-model                 pass   16s   1 training, 1 prediction
-chapkit-ghr-model                   pass   22s   1 training, 1 prediction
+testing 4 models (model level; add --backtest to go through chap-core)
+auto-arima-chapkit                  pass   10s   1 training, 1 prediction
+chapkit-ghr-model                   pass   24s   1 training, 1 prediction
 chapkit-rwanda-malaria-bym-model    pass   20s   1 training, 1 prediction
-chapkit-simple-multistep-model      pass    5s   1 training, 1 prediction
+chapkit-simple-multistep-model      pass    6s   1 training, 1 prediction
 
-5 of 5 models pass
+4 of 4 models pass
 ```
 
-On an Apple Silicon Mac the models run under emulation; the five tests above
-took about 80 seconds on an M2 Max.
+On an Apple Silicon Mac the models run under emulation; the four tests above
+took about 60 seconds on an M2 Max.
 
 ## Test through chap-core
 
@@ -124,18 +123,21 @@ It worked when every model passes with its scores, and the closing lines name
 the configured models it created:
 
 ```text
-testing 5 models (through chap-core: a dataset, a backtest and its scores)
-auto-arima-chapkit                  pass      18s   crps 3.5  mae 4.8  rmse 6.0
-chapkit-ewars-model                 pass      33s   crps 3.5  mae 4.5  rmse 5.3
-chapkit-ghr-model                   pass   1m 28s   crps 12.9  mae 19.6  rmse 21.4
-chapkit-rwanda-malaria-bym-model    pass      38s   crps 18.8  mae 28.3  rmse 32.9
-chapkit-simple-multistep-model      pass      13s   crps 9.6  mae 12.5  rmse 14.9
+testing 4 models (through chap-core: a dataset, a backtest and its scores)
+auto-arima-chapkit                  pass      18s   crps 3.4  mae 4.9  rmse 5.8
+  configured model: monthly (id 14)
+chapkit-ghr-model                   pass   1m 33s   crps 14.7  mae 21.8  rmse 23.8
+  configured model: monthly_climate (id 15)
+chapkit-rwanda-malaria-bym-model    pass      38s   crps 16.3  mae 21.5  rmse 26.5
+  configured model: monthly (id 16)
+chapkit-simple-multistep-model      pass      13s   crps 3.9  mae 5.3  rmse 6.8
+  configured model: monthly_climate (id 17)
 
-created configured models in chap-core for auto_arima_chapkit (monthly), chapkit_ewars_model (monthly_climate, monthly_population_only, monthly_region_seasonal), chapkit_ghr_model (monthly_climate), chapkit_rwanda_malaria_bym_model (monthly), chapkit_simple_multistep_model (monthly_climate, monthly_selfhistory)
-5 of 5 models pass
+created configured models in chap-core for auto_arima_chapkit (monthly), chapkit_ghr_model (monthly_climate), chapkit_rwanda_malaria_bym_model (monthly), chapkit_simple_multistep_model (monthly_climate, monthly_selfhistory)
+4 of 4 models pass
 ```
 
-The five backtests took about three minutes on an M2 Max. The scores are not
+The four backtests took about three minutes on an M2 Max. The scores are not
 the same from one run to the next. A second run creates no configured models,
 so it has no `created configured models` line. After the first run,
 `varde status` shows each model as `registered`.

@@ -220,7 +220,7 @@ and `varde top` finds its containers the same way. The one-shot container of
 | Label | Value | On |
 | --- | --- | --- |
 | `com.winterop.varde.role` | `chap-core`, `model`, `ocs`, `s3` or `dhis2` | Every container except the one of `varde chap`. `chap-core` covers chap, the worker, Valkey and PostgreSQL; `dhis2` covers its database and one-shots; `s3` its bucket one-shot. |
-| `com.winterop.varde.model` | The marketplace id, such as `chapkit_ewars_model` | A model service and its `-init` container. |
+| `com.winterop.varde.model` | The marketplace id, such as `chapkit_simple_multistep_model` | A model service and its `-init` container. |
 | `com.winterop.varde.kind` | `run` for a [`varde run` group](./run.md#where-it-runs-groups), `init` for a deployment `varde init` wrote, `cli` for the one-shot container of `varde chap` | Every container. |
 | `com.winterop.varde.group` | The group name | Every container of a `varde run` group, and nothing else. |
 
