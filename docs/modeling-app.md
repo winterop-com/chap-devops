@@ -17,11 +17,11 @@ varde open dhis2
 `varde dhis2 connect` points the DHIS2 route `chap` at chap-core, installs the
 Modeling App and the DHIS2 Climate App, and runs the DHIS2 analytics tables.
 It also makes the configured models that the Modeling App lists. It took about
-30 seconds. Its last line is
+40 seconds. Its last line is
 `` the Modeling App can reach Chap; open DHIS2 with `varde open dhis2` ``.
 
-Tested with Modeling App 7.2.0, DHIS2 2.42.6 with the Laos demo database,
-chap-core v2.4.0 and CHAP-EWARS (chapkit) 1.0.4. Other versions of the Modeling
+Tested on 2026-10-12 with Modeling App 7.2.0, DHIS2 2.42.6 with the Laos demo
+database, chap-core v2.4.0 and Simple Multistep (chapkit) 0.1.2. Other versions of the Modeling
 App may name a button differently; the steps stay the same. `varde dhis2 show`
 says which Modeling App version a deployment has.
 
@@ -61,14 +61,14 @@ tab **Use saved dataset**, which needs a dataset saved before. Choose the tab
 
 | Field | Value |
 | --- | --- |
-| Name | anything, for example `EWARS Laos dengue` |
+| Name | anything, for example `Multistep Laos dengue` |
 | Period type | Monthly |
 | From period / To period | 2019 January to 2024 December: pick the year in the box at the top of the picker, then the month |
 | Organisation units | tick **Lao PDR**, pick the level **Province** below the tree, then **Confirm Selection** |
-| Model | **Select model**, click **CHAP-EWARS Model (chapkit) [Monthly climate]** in the list, then **Use this model** |
+| Model | **Select model**, click **Simple Multistep Model (chapkit) [Monthly climate]** in the list, then **Use this model** |
 
-The list cuts long names short, for example `CHAP-EWARS Model (chapkit)
-[Monthly…`. The panel on the right shows the full name of the entry you
+The list cuts long names short, for example `Simple Multistep Model
+(chapkit) [Mont…`. The panel on the right shows the full name of the entry you
 clicked, and **Use this model** picks that entry.
 
 Leave the **Backtest parameters** as they are: 3 forecast periods, 7 splits, a
@@ -77,11 +77,11 @@ climatology*.
 
 ![Selecting the model](images/modeling-app/02-select-model.png)
 
-**CHAP-EWARS Model (chapkit)** is the model `varde` started with `--models
-default`. It has three entries, one for each configuration in its marketplace
-entry: *Monthly climate* uses rainfall and temperature, *Monthly population
-only* uses no climate data, and *Monthly region seasonal* fits a season for
-each province. The list shows one entry for each configured model, as
+**Simple Multistep Model (chapkit)** is the model `varde` started with
+`--models chapkit_simple_multistep_model`. It has two entries, one for each
+configuration in its marketplace entry: *Monthly climate* uses rainfall,
+temperature and relative humidity, and *Monthly selfhistory* uses only the
+case history. The list shows one entry for each configured model, as
 `<model name> [<variant name>]`. Each model enabled with `varde models
 enable` adds its own entries. chap-core 2.4 and later does not make these
 entries itself: `varde up --wait`, `varde dhis2 connect` and `varde models
@@ -93,9 +93,9 @@ configs add`. See [Adding](./models.md#adding).
 [Configured models](./models.md#configured-models).
 
 The list also holds models that chap-core ships configured on its own and runs
-inside its worker. Some of them have the status *Deprecated*. One of those is
-**CHAP-EWARS Model** without `(chapkit)`: it is the older EWARS, not the model
-`varde` started. The three `(chapkit)` entries have the status *Limited*.
+inside its worker, such as **CHAP-EWARS Model** and **Monthly CHAP-EWARS
+model**. Some of them have the status *Deprecated*. They are not models that
+`varde` started. The two `(chapkit)` entries have the status *Limited*.
 
 ![Organisation units: Lao PDR at the Province level](images/modeling-app/03-org-units.png)
 
@@ -107,9 +107,9 @@ Search by name in each box:
 | Model input | DHIS2 data item |
 | --- | --- |
 | Disease cases | `Dengue Cases (Any) - Weekly` |
-| Population | `LSB: Population (Estimated-single age)` |
 | Rainfall | `CCH - Precipitation (CHIRPS)` |
 | Mean temperature | `CCH - Air temperature (ERA5-Land)` |
+| Mean relative humidity | `CCH - Relative humidity (ERA5-Land)` |
 
 A search for the dengue cases also finds the items
 `CHAP Dengue Cases (Any) - Weekly Quantile ...` and
@@ -124,8 +124,8 @@ anything, and should say *All 18 locations can be successfully imported*.
 ![The dry run: 18 valid locations](images/modeling-app/05-dry-run.png)
 
 Close it and choose **Start import**. The app moves to **Jobs**, where the
-evaluation runs. With CHAP-EWARS it took about two minutes on an Apple Silicon
-Mac (M2 Max), where the model runs under emulation. `varde jobs` in the
+evaluation runs. With Simple Multistep it took about 25 seconds on an Apple
+Silicon Mac (M2 Max), where the model runs under emulation. `varde jobs` in the
 terminal shows the same job; its type is `create_backtest_from_data`.
 
 ## 4. Read the result
@@ -150,13 +150,13 @@ To compare two models, run a second evaluation on the same data:
    settings to copy; leave them all ticked and choose **Create**.
 2. The copy has the name, provinces, model, data mapping and periods of the
    first, and its name ends in `(Copy)`.
-3. On the copy, **Select model** picks another model. Then choose **Start
-   import**.
+3. On the copy, **Select model** picks another model, for example
+   **Simple Multistep Model (chapkit) [Monthly selfhistory]**. Then choose
+   **Start import**.
 4. In **Evaluate**, **Compare**, pick the first evaluation in the left box and
    the copy in the box beside it.
 
-The *Monthly CHAP-EWARS model* that chap-core ships (status *Deprecated*) took
-about two minutes as well. The comparison shows the two side by side, province
+The evaluation of *Monthly selfhistory* took about 20 seconds. The comparison shows the two side by side, province
 by province; the box **Location(s)** starts with ten provinces selected. More
 marketplace models come with `varde models enable ID` and `varde up`
 (`varde models list` shows the ids).
@@ -180,7 +180,8 @@ prediction** again. The app goes back to the setup, where the run shows as
 
 ![Running a prediction](images/modeling-app/10-run-prediction.png)
 
-It took about twenty seconds; the row then says *Success* without a reload.
+The job took about 6 seconds in `varde jobs`. The row in the app said
+*Success* within a minute, without a reload.
 **Go to last run** shows one chart per province:
 the real cases up to December 2024 and the forecast for January to March 2025.
 
