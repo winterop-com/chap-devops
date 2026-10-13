@@ -205,6 +205,7 @@ fn dispatch(ctx: &Ctx, cli: &Cli) -> error::Result<()> {
 
         Command::Api(args) => commands::api::run(ctx, args),
         Command::Chap(args) => commands::chap::run(ctx, args),
+        Command::Chapkit(args) => commands::chapkit::run(ctx, args),
 
         Command::Doctor(args) => commands::doctor::run(ctx, args),
         Command::Cleanup(args) => commands::cleanup::run(ctx, args),

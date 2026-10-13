@@ -329,6 +329,9 @@ pub enum Command {
     /// Run the chap CLI in a container, with no Python or uv installed
     Chap(ChapArgs),
 
+    /// Run the chapkit CLI in the chap-core image, with no Python installed
+    Chapkit(ChapkitArgs),
+
     /// Run a checklist over this machine and this deployment
     Doctor(DoctorArgs),
 

@@ -28,7 +28,7 @@ Usage: varde [OPTIONS] <COMMAND>
 | `--offline` | Never touch the network; use what is cached or on this machine. |
 | `--cache-dir <DIR>` | Cache directory: the registry snapshot and the self-update downloads. |
 
-Subcommands: [`varde init`](#varde-init), [`varde run`](#varde-run), [`varde ps`](#varde-ps), [`varde stop`](#varde-stop), [`varde top`](#varde-top), [`varde models`](#varde-models), [`varde components`](#varde-components), [`varde ui`](#varde-ui), [`varde registry`](#varde-registry), [`varde sync`](#varde-sync), [`varde update`](#varde-update), [`varde up`](#varde-up), [`varde down`](#varde-down), [`varde logs`](#varde-logs), [`varde restart`](#varde-restart), [`varde docker`](#varde-docker), [`varde backup`](#varde-backup), [`varde status`](#varde-status), [`varde open`](#varde-open), [`varde jobs`](#varde-jobs), [`varde api`](#varde-api), [`varde chap`](#varde-chap), [`varde doctor`](#varde-doctor), [`varde cleanup`](#varde-cleanup), [`varde auth`](#varde-auth), [`varde dhis2`](#varde-dhis2), [`varde self`](#varde-self), [`varde completions`](#varde-completions)
+Subcommands: [`varde init`](#varde-init), [`varde run`](#varde-run), [`varde ps`](#varde-ps), [`varde stop`](#varde-stop), [`varde top`](#varde-top), [`varde models`](#varde-models), [`varde components`](#varde-components), [`varde ui`](#varde-ui), [`varde registry`](#varde-registry), [`varde sync`](#varde-sync), [`varde update`](#varde-update), [`varde up`](#varde-up), [`varde down`](#varde-down), [`varde logs`](#varde-logs), [`varde restart`](#varde-restart), [`varde docker`](#varde-docker), [`varde backup`](#varde-backup), [`varde status`](#varde-status), [`varde open`](#varde-open), [`varde jobs`](#varde-jobs), [`varde api`](#varde-api), [`varde chap`](#varde-chap), [`varde chapkit`](#varde-chapkit), [`varde doctor`](#varde-doctor), [`varde cleanup`](#varde-cleanup), [`varde auth`](#varde-auth), [`varde dhis2`](#varde-dhis2), [`varde self`](#varde-self), [`varde completions`](#varde-completions)
 
 ## varde init
 
@@ -894,6 +894,19 @@ Usage: varde chap [OPTIONS] [CHAP_ARGS]...
 | `<CHAP_ARGS>...` | Arguments for chap, such as `eval --model-name URL ...`. |
 
 Registry options: `--registry-url <URL>`, `--offline`, `--cache-dir <DIR>` (see [varde](#varde)).
+
+## varde chapkit
+
+Run the chapkit CLI in the chap-core image, with no Python installed.
+
+```text
+Usage: varde chapkit [OPTIONS] [CHAPKIT_ARGS]...
+```
+
+| Argument | Description |
+| --- | --- |
+| `--tag <TAG>` | chap-core image tag; the deployment's tag or the newest release if omitted. |
+| `<CHAPKIT_ARGS>...` | Arguments for chapkit, such as `mlproject migrate DIR`. |
 
 ## varde doctor
 

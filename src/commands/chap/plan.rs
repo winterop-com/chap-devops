@@ -346,7 +346,9 @@ pub struct RunSpec {
     pub docker: Option<Option<u32>>,
     /// Whether stdin is a terminal, which is when `-t` is asked for.
     pub tty: bool,
-    /// The arguments for `chap`.
+    /// The command to run in the image: `chap` or `chapkit`.
+    pub program: &'static str,
+    /// The arguments for the command.
     pub args: Vec<String>,
 }
 
@@ -416,7 +418,7 @@ pub fn docker_args(spec: &RunSpec) -> Vec<String> {
     out.push("--label".to_string());
     out.push(format!("{}=cli", crate::docker::KIND_LABEL));
     out.push(spec.image.clone());
-    out.push("chap".to_string());
+    out.push(spec.program.to_string());
     if spec.args.is_empty() {
         out.push("--help".to_string());
     } else {

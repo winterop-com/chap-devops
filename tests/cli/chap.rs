@@ -13,7 +13,7 @@ use tempfile::TempDir;
 /// `$CHAP_EXIT`, the way chap does when it writes a file. The chapkit probe
 /// exits `$PROBE_EXIT`; compose lists `$RUNNING` as running, and
 /// `$SERVICES` as its services.
-fn fake_docker() -> (TempDir, PathBuf, PathBuf) {
+pub(crate) fn fake_docker() -> (TempDir, PathBuf, PathBuf) {
     let temp = tempfile::tempdir().expect("a directory for the fake docker");
     let bin = temp.path().join("bin");
     std::fs::create_dir_all(&bin).expect("a bin directory");
@@ -52,7 +52,7 @@ fn fake_docker() -> (TempDir, PathBuf, PathBuf) {
 }
 
 /// The arguments of the one `docker run` that runs chap.
-fn chap_run(log: &Path) -> Vec<String> {
+pub(crate) fn chap_run(log: &Path) -> Vec<String> {
     let calls = std::fs::read_to_string(log).unwrap_or_default();
     let line = calls
         .lines()
@@ -62,14 +62,14 @@ fn chap_run(log: &Path) -> Vec<String> {
 }
 
 /// The value after `flag` in a run's arguments.
-fn value_of<'a>(args: &'a [String], flag: &str) -> Option<&'a str> {
+pub(crate) fn value_of<'a>(args: &'a [String], flag: &str) -> Option<&'a str> {
     args.windows(2)
         .find(|pair| pair[0] == flag)
         .map(|pair| pair[1].as_str())
 }
 
 /// A working directory of its own, outside any deployment.
-fn workdir(sandbox: &Sandbox) -> PathBuf {
+pub(crate) fn workdir(sandbox: &Sandbox) -> PathBuf {
     let dir = sandbox.home.path().join("work");
     std::fs::create_dir_all(&dir).unwrap();
     std::fs::canonicalize(dir).unwrap()
