@@ -475,7 +475,9 @@ model, arrived in 2.20.
 
 Nothing else is required. No Python, no `uv`, no checkout of chap-core. This
 is also true for chap-core's own `chap` CLI: `varde chap` runs it in a
-container. See [The chap CLI](./chap-cli.md).
+container. See [The chap CLI](./chap-cli.md). The same is true for chapkit's
+CLI: `varde chapkit` runs it in the chap-core image. See
+[The chapkit CLI](./chapkit-cli.md).
 
 `varde` checks the installed Compose version and warns on stderr when it is
 older than 2.24.4 rather than failing, because an older Compose still runs most

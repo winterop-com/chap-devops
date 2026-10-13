@@ -715,7 +715,7 @@ warning: no model was tested, because every one was skipped; the line under each
 | --- | --- |
 | `its container is not running` | `varde up`. |
 | ``the image has no `chapkit test`; the service reports chapkit 1.0.0`` | The image predates the command. `varde update` moves the pin; `--backtest` tests it through chap-core instead. |
-| ``an MLproject service has no `chapkit test` `` | The image serves an `MLproject` file with `chapkit mlproject run`, and chapkit has `chapkit test` only in a chapkit service project. Use `--backtest`. |
+| ``an MLproject service has no `chapkit test` `` | The image serves an `MLproject` file with `chapkit mlproject run`, and chapkit has `chapkit test` only in a chapkit service project. Use `--backtest`, or make the model a chapkit service with [`varde chapkit mlproject migrate`](./chapkit-cli.md#migrate-an-mlproject-model). |
 | `chap-core has no configured model for <service> <version>` | `--backtest` only. Run `varde models configs sync ID`, then the test again. |
 | `chap-core has no configured model NAME for <service> <version>; it has ...` | `--config` only. Use one of the names, or add the configured model with `varde models configs add ID`. |
 | `chap-core did not list its configured models, so varde cannot find --config NAME` | `--config` only. Run `varde status`. |
@@ -982,7 +982,9 @@ varde models test dengue_lags --backtest --config long
 
 A model-level test (`varde models test` without `--backtest`) runs
 `chapkit test` in the container. An MLproject image does not have it, and the
-row says `skip` with ``an MLproject service has no `chapkit test` ``.
+row says `skip` with ``an MLproject service has no `chapkit test` ``. To make an
+MLproject a chapkit service, use `varde chapkit mlproject migrate DIR`; see
+[The chapkit CLI](./chapkit-cli.md#migrate-an-mlproject-model).
 
 After a change, raise the version (`version` in `main.py`, or in `MLproject`)
 before you build again. chap-core stores each version of a model only once,

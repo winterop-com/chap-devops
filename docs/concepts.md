@@ -215,14 +215,14 @@ docker ps --filter label=com.winterop.varde.role
 ```
 
 lists every varde container, of every deployment and every `varde run` group,
-and `varde top` finds its containers the same way. The one-shot container of
-`varde chap` has no role label; `label=com.winterop.varde.kind` finds it too.
+and `varde top` finds its containers the same way. The one-shot containers of
+`varde chap` and `varde chapkit` have no role label; `label=com.winterop.varde.kind` finds it too.
 
 | Label | Value | On |
 | --- | --- | --- |
-| `com.winterop.varde.role` | `chap-core`, `model`, `ocs`, `s3` or `dhis2` | Every container except the one of `varde chap`. `chap-core` covers chap, the worker, Valkey and PostgreSQL; `dhis2` covers its database and one-shots; `s3` its bucket one-shot. |
+| `com.winterop.varde.role` | `chap-core`, `model`, `ocs`, `s3` or `dhis2` | Every container except the ones of `varde chap` and `varde chapkit`. `chap-core` covers chap, the worker, Valkey and PostgreSQL; `dhis2` covers its database and one-shots; `s3` its bucket one-shot. |
 | `com.winterop.varde.model` | The marketplace id, such as `chapkit_simple_multistep_model` | A model service and its `-init` container. |
-| `com.winterop.varde.kind` | `run` for a [`varde run` group](./run.md#where-it-runs-groups), `init` for a deployment `varde init` wrote, `cli` for the one-shot container of `varde chap` | Every container. |
+| `com.winterop.varde.kind` | `run` for a [`varde run` group](./run.md#where-it-runs-groups), `init` for a deployment `varde init` wrote, `cli` for the one-shot containers of `varde chap` and `varde chapkit` | Every container. |
 | `com.winterop.varde.group` | The group name | Every container of a `varde run` group, and nothing else. |
 
 The model and component files carry the labels themselves. chap-core's
@@ -381,6 +381,7 @@ Commands:
   update       Move the pins to what upstream publishes now, and pull
   api          Send one authenticated request to chap-core's API
   chap         Run the chap CLI in a container, with no Python or uv installed
+  chapkit      Run the chapkit CLI in the chap-core image, with no Python installed
   doctor       Run a checklist over this machine and this deployment
   cleanup      Delete what deployments whose directory is gone left in docker
   self         Update varde itself, and report what this build is

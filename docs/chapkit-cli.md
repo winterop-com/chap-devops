@@ -83,6 +83,9 @@ command ends. varde refuses them and names the command that does the work:
 | `chapkit test` | `varde models test ID`, which runs `chapkit test` in the model's own container. |
 | `chapkit run`, `chapkit mlproject run` | Build an image, then `varde run IMAGE`. |
 
+If `uv lock` fails, varde gives a warning; see
+[`could not write DIR/uv.lock`](./troubleshooting.md#could-not-write-diruvlock-and-the-dockerfile-copies-it).
+
 For a new project, `varde models new DIR` is the same as `chapkit init`, with
 the templates in varde. See [A new model project](./models.md#a-new-model-project).
 `varde chapkit init NAME` also works, and gets a `uv.lock` the same way.

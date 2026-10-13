@@ -184,6 +184,8 @@ old one first as shown in [Every option: stop, start, remove](#every-option-stop
 | 19 | [Two of these at the same time](#19-two-of-these-at-the-same-time) | keep one option running while starting another |
 | | **The chap CLI** | |
 | 20 | [Evaluate a model on my own data](#20-evaluate-a-model-on-my-own-data) | run `chap eval` on their CSV without installing Python or uv |
+| | **The chapkit CLI** | |
+| 21 | [Make my MLproject model a chapkit service](#21-make-my-mlproject-model-a-chapkit-service) | change a model with an `MLproject` file to a chapkit service, without installing Python or uv |
 
 ### 1. Chap in DHIS2, with the Modeling App
 
@@ -779,6 +781,35 @@ It worked when the last lines say `chap finished; it wrote eval.nc` and
 More: [Evaluating a model on your own data](./use-cases/evaluate-with-chap-cli.md),
 which goes from installing varde to a comparison of two models, and
 [The chap CLI](./chap-cli.md).
+
+### 21. Make my MLproject model a chapkit service
+
+They have a model directory with an `MLproject` file. Do not install Python or
+uv for them. Make sure that the directory is in git, or that they have a copy:
+the migration moves files to `_old/`. In the directory above the model:
+
+```sh
+varde chapkit mlproject migrate my-model --yes
+```
+
+It worked when the last lines say `chapkit finished; it wrote ...` and
+``wrote my-model/uv.lock with `uv lock` in the same image``. If the second line
+is a warning that varde could not write `uv.lock`, the build fails; show them
+the warning.
+
+Then build the image and test it:
+
+```sh
+cd my-model
+docker build --platform linux/amd64 --build-arg GIT_REVISION=$(git rev-parse HEAD) -t my-model:dev .
+varde run my-model:dev
+varde -C ~/.local/share/varde/run/default models test my_model
+```
+
+The build needs a git commit for `GIT_REVISION`. It worked when the last line
+says `1 of 1 model passes`.
+
+More: [The chapkit CLI](./chapkit-cli.md).
 
 ## What to try next without DHIS2
 

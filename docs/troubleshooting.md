@@ -227,7 +227,35 @@ rain-model    skip    1s   an MLproject service has no `chapkit test`
 The image serves an `MLproject` file with `chapkit mlproject run`, as the
 `mlproject-*` types of `varde models new` do. The image has chapkit, but
 chapkit has `chapkit test` only in a chapkit service project. A newer image
-does not change this. Test the model through chap-core with `--backtest`.
+does not change this. Test the model through chap-core with `--backtest`, or
+make the model a chapkit service with `varde chapkit mlproject migrate DIR`. See
+[Migrate an MLproject model](./chapkit-cli.md#migrate-an-mlproject-model).
+
+## `` `chapkit test` in this container cannot reach a model service ``
+
+`varde chapkit` runs chapkit in a container that is on no network of a model,
+and the container stops when the command ends. So `chapkit test` has no
+service to test. Use `varde models test ID`: it runs `chapkit test` in the
+model's own container. For a model image that you built, start it first with
+`varde run IMAGE`.
+
+## `` `chapkit run` serves a model, and this container stops when the command ends ``
+
+`chapkit run` and `chapkit mlproject run` start a model service. The container
+of `varde chapkit` stops when the command ends, so the service would stop too.
+Build an image of the model, then start it with `varde run IMAGE`.
+
+## ``could not write DIR/uv.lock, and the `Dockerfile` copies it``
+
+`chapkit init` and `chapkit mlproject migrate` write a `Dockerfile` that copies
+`uv.lock`. varde runs `uv lock` in the chap-core image to write it, and this
+time it failed. Without the file, `docker build` fails with
+`"/uv.lock": not found`.
+
+1. Run `varde chapkit --help` to make sure that the image runs.
+2. Run `varde chapkit init` or `varde chapkit mlproject migrate` again on a new
+   copy. `uv lock` needs the network to read PyPI.
+3. If it fails again, run `uv lock` in `DIR` on a machine that has uv.
 
 ## `is stored from revision ..., but its source now reports revision ...`
 
