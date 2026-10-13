@@ -38,7 +38,8 @@ pub fn run(ctx: &Ctx, args: &ChapkitArgs) -> Result<()> {
         )
         .into());
     }
-    if let Some(why) = refused(&args.args) {
+    let chapkit_args = with_group_help(&args.args);
+    if let Some(why) = refused(&chapkit_args) {
         return Err(ChapError::Usage(why).into());
     }
     let cwd = std::env::current_dir()
@@ -52,7 +53,7 @@ pub fn run(ctx: &Ctx, args: &ChapkitArgs) -> Result<()> {
     let tag = resolve_tag(ctx, args.tag.as_deref(), deployment.as_ref(), false)?;
     let reference = format!("{}:{tag}", plan::CORE_REPOSITORY);
 
-    let outside = plan::outside_paths(&args.args, &cwd);
+    let outside = plan::outside_paths(&chapkit_args, &cwd);
     let mounts =
         plan::mount_dirs(&outside, std::slice::from_ref(&cwd), Path::exists).map_err(|path| {
             ChapError::Usage(format!(
@@ -66,8 +67,8 @@ pub fn run(ctx: &Ctx, args: &ChapkitArgs) -> Result<()> {
     std::fs::create_dir_all(data.join("cache"))
         .map_err(|e| anyhow::anyhow!("creating {}: {e}", data.join("cache").display()))?;
 
-    let help = plan::is_help(&args.args);
-    let command = args.args.first().map(String::as_str).unwrap_or("--help");
+    let help = plan::is_help(&chapkit_args);
+    let command = chapkit_args.first().map(String::as_str).unwrap_or("--help");
     let pull = match docker::image_is_local(&reference) {
         true => String::new(),
         false => format!(
@@ -95,7 +96,7 @@ pub fn run(ctx: &Ctx, args: &ChapkitArgs) -> Result<()> {
         docker: None,
         tty: std::io::stdin().is_terminal() && std::io::stdout().is_terminal(),
         program: "chapkit",
-        args: args.args.clone(),
+        args: chapkit_args.clone(),
     };
     let roots: Vec<PathBuf> = std::iter::once(cwd.clone()).chain(mounts).collect();
     let before = Snapshot::take(&roots, &[]);
@@ -112,7 +113,7 @@ pub fn run(ctx: &Ctx, args: &ChapkitArgs) -> Result<()> {
             }
             Ok(())
         }
-        USAGE_ERROR => Err(ChapError::Usage(usage_hint(&args.args)).into()),
+        USAGE_ERROR => Err(ChapError::Usage(usage_hint(&chapkit_args)).into()),
         DOCKER_RUN_FAILED => Err(ChapError::Exited {
             command: "docker run",
             code,
@@ -159,6 +160,22 @@ fn refused(args: &[String]) -> Option<String> {
         ),
         _ => None,
     }
+}
+
+/// The chapkit command groups: with no command after them, chapkit prints
+/// their help and exits with 2, as Click does for `no_args_is_help`.
+const GROUPS: &[&str] = &["artifact", "mlproject"];
+
+/// The arguments with `--help` added after a group with nothing after it,
+/// so chapkit prints the same help and exits with 0.
+fn with_group_help(args: &[String]) -> Vec<String> {
+    let mut args = args.to_vec();
+    if let [group] = args.as_slice()
+        && GROUPS.contains(&group.as_str())
+    {
+        args.push("--help".to_string());
+    }
+    args
 }
 
 /// The error after a usage error of chapkit, with the way out: the help of

@@ -64,3 +64,21 @@ fn a_usage_error_names_the_help_of_the_command() {
     let hint = super::usage_hint(&strings(&["--nope"]));
     assert!(hint.contains("`varde chapkit --help`"), "{hint}");
 }
+
+#[test]
+fn a_group_alone_gets_help() {
+    assert_eq!(
+        super::with_group_help(&strings(&["artifact"])),
+        ["artifact", "--help"]
+    );
+    assert_eq!(
+        super::with_group_help(&strings(&["mlproject"])),
+        ["mlproject", "--help"]
+    );
+    assert_eq!(
+        super::with_group_help(&strings(&["artifact", "list"])),
+        ["artifact", "list"]
+    );
+    assert_eq!(super::with_group_help(&strings(&["init"])), ["init"]);
+    assert!(super::with_group_help(&[]).is_empty());
+}

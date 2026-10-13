@@ -248,9 +248,13 @@ Build an image of the model, then start it with `varde run IMAGE`.
 ## `chapkit did not accept the arguments, and its usage is above`
 
 chapkit exited with status 2, which is a usage error: a command, an argument
-or an option is missing or wrong. For example, `varde chapkit artifact` needs
-`list` or `download` after it. The usage that chapkit printed is above the
-line. The line names the help to read, such as `varde chapkit artifact --help`.
+or an option is missing or wrong, for example an option that the command does
+not have. The usage that chapkit printed is above the line. The line names the
+help to read, such as `varde chapkit artifact --help`.
+
+A group with no command after it, `varde chapkit artifact` or
+`varde chapkit mlproject`, is not an error: varde asks chapkit for the help of
+the group.
 
 ## ``could not write DIR/uv.lock, and the `Dockerfile` copies it``
 

@@ -123,7 +123,7 @@ fn a_usage_error_of_chapkit_names_the_help_and_exits_2() {
     let work = workdir(&sandbox);
     let (_temp, bin, _log) = fake_docker();
 
-    chap_with_docker(&sandbox, &work, &bin, &["chapkit", "artifact"])
+    chap_with_docker(&sandbox, &work, &bin, &["chapkit", "artifact", "--nope"])
         .env("CHAP_EXIT", "2")
         .assert()
         .code(2)
@@ -132,4 +132,18 @@ fn a_usage_error_of_chapkit_names_the_help_and_exits_2() {
              `varde chapkit artifact --help` lists what the command takes",
         ))
         .stderr(predicates::str::contains("exited with status").not());
+}
+
+#[test]
+fn a_group_alone_runs_its_help() {
+    let sandbox = Sandbox::new();
+    let work = workdir(&sandbox);
+    let (_temp, bin, log) = fake_docker();
+
+    chap_with_docker(&sandbox, &work, &bin, &["chapkit", "artifact"])
+        .assert()
+        .success()
+        .stderr(predicates::str::contains("files:").not());
+    let args = chap_run(&log);
+    assert_eq!(args[args.len() - 3..], ["chapkit", "artifact", "--help"]);
 }
