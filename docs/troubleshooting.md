@@ -245,6 +245,13 @@ model's own container. For a model image that you built, start it first with
 of `varde chapkit` stops when the command ends, so the service would stop too.
 Build an image of the model, then start it with `varde run IMAGE`.
 
+## `chapkit did not accept the arguments, and its usage is above`
+
+chapkit exited with status 2, which is a usage error: a command, an argument
+or an option is missing or wrong. For example, `varde chapkit artifact` needs
+`list` or `download` after it. The usage that chapkit printed is above the
+line. The line names the help to read, such as `varde chapkit artifact --help`.
+
 ## ``could not write DIR/uv.lock, and the `Dockerfile` copies it``
 
 `chapkit init` and `chapkit mlproject migrate` write a `Dockerfile` that copies

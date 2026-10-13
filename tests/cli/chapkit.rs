@@ -4,6 +4,7 @@
 
 use crate::chap::{chap_run, fake_docker, value_of, workdir};
 use crate::common::*;
+use predicates::prelude::PredicateBooleanExt;
 
 #[test]
 fn chapkit_runs_in_the_core_image_in_the_current_directory() {
@@ -114,4 +115,21 @@ fn chapkit_test_and_run_are_refused_with_the_varde_command() {
             .unwrap_or_default()
             .contains("run --rm -i")
     );
+}
+
+#[test]
+fn a_usage_error_of_chapkit_names_the_help_and_exits_2() {
+    let sandbox = Sandbox::new();
+    let work = workdir(&sandbox);
+    let (_temp, bin, _log) = fake_docker();
+
+    chap_with_docker(&sandbox, &work, &bin, &["chapkit", "artifact"])
+        .env("CHAP_EXIT", "2")
+        .assert()
+        .code(2)
+        .stderr(predicates::str::contains(
+            "chapkit did not accept the arguments, and its usage is above; \
+             `varde chapkit artifact --help` lists what the command takes",
+        ))
+        .stderr(predicates::str::contains("exited with status").not());
 }

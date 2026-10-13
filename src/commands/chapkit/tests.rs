@@ -51,3 +51,16 @@ fn needs_lock_names_a_new_project_with_no_lock() {
     let written = vec![new.join("pyproject.toml"), locked.join("pyproject.toml")];
     assert_eq!(super::needs_lock(&written), vec![new]);
 }
+
+#[test]
+fn a_usage_error_names_the_help_of_the_command() {
+    let hint = super::usage_hint(&strings(&["artifact"]));
+    assert!(hint.contains("`varde chapkit artifact --help`"), "{hint}");
+    let hint = super::usage_hint(&strings(&["mlproject", "migrate", "--nope"]));
+    assert!(
+        hint.contains("`varde chapkit mlproject migrate --help`"),
+        "{hint}"
+    );
+    let hint = super::usage_hint(&strings(&["--nope"]));
+    assert!(hint.contains("`varde chapkit --help`"), "{hint}");
+}

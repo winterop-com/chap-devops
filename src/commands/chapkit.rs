@@ -22,6 +22,10 @@ use std::path::{Path, PathBuf};
 /// The exit code `docker run` gives when it could not start the container.
 const DOCKER_RUN_FAILED: i32 = 125;
 
+/// The exit code chapkit gives when its arguments are not complete or not
+/// correct, after it prints its usage.
+const USAGE_ERROR: i32 = 2;
+
 /// How many written files the closing line names.
 const WRITTEN_LIMIT: usize = 8;
 
@@ -108,6 +112,7 @@ pub fn run(ctx: &Ctx, args: &ChapkitArgs) -> Result<()> {
             }
             Ok(())
         }
+        USAGE_ERROR => Err(ChapError::Usage(usage_hint(&args.args)).into()),
         DOCKER_RUN_FAILED => Err(ChapError::Exited {
             command: "docker run",
             code,
@@ -154,6 +159,26 @@ fn refused(args: &[String]) -> Option<String> {
         ),
         _ => None,
     }
+}
+
+/// The error after a usage error of chapkit, with the way out: the help of
+/// the chapkit command the arguments name, which lists what it takes. The
+/// exit code stays 2, as for a usage error of varde.
+fn usage_hint(args: &[String]) -> String {
+    let words: Vec<&str> = args
+        .iter()
+        .map(String::as_str)
+        .take_while(|arg| !arg.starts_with('-'))
+        .take(2)
+        .collect();
+    let command = match words.as_slice() {
+        [] => String::new(),
+        words => format!(" {}", words.join(" ")),
+    };
+    format!(
+        "chapkit did not accept the arguments, and its usage is above; \
+         `varde chapkit{command} --help` lists what the command takes"
+    )
 }
 
 /// The project directories in `written` whose `Dockerfile` copies a
