@@ -110,6 +110,26 @@ pub struct ModelsTestArgs {
     #[arg(long, value_name = "SECONDS")]
     pub timeout: Option<u64>,
 
+    /// Configs that `chapkit test` creates for each model
+    #[arg(long, value_name = "N", conflicts_with = "backtest", value_parser = clap::value_parser!(u32).range(1..))]
+    pub configs: Option<u32>,
+
+    /// Trainings for each config
+    #[arg(long, value_name = "N", conflicts_with = "backtest", value_parser = clap::value_parser!(u32).range(1..))]
+    pub trainings: Option<u32>,
+
+    /// Predictions for each trained model
+    #[arg(long, value_name = "N", conflicts_with = "backtest", value_parser = clap::value_parser!(u32).range(1..))]
+    pub predictions: Option<u32>,
+
+    /// Rows of training data (locations times periods)
+    #[arg(long, value_name = "N", conflicts_with = "backtest", value_parser = clap::value_parser!(u32).range(1..))]
+    pub rows: Option<u32>,
+
+    /// Rows of the history and of the future data for each prediction
+    #[arg(long, value_name = "N", conflicts_with = "backtest", value_parser = clap::value_parser!(u32).range(1..))]
+    pub predict_rows: Option<u32>,
+
     /// Keep what the test created instead of deleting it
     #[arg(long)]
     pub keep: bool,

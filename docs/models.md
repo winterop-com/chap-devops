@@ -670,6 +670,35 @@ chapkit-rwanda-malaria-bym-model    FAIL   14s   predict: Error in file(file, "r
 
 `-vv` prints the whole output of `chapkit test`. `-v` shows only the hints.
 
+#### More data for a test
+
+By default, `chapkit test` creates 1 config, trains once and predicts once.
+The training data has 250 rows: 50 periods for 5 locations, which is about 4
+years of monthly data, or 1 year of weekly data. Some models need more:
+
+- A weekly model often needs more than 1 year of training data.
+- A model with a long context window, for example many lags, needs a long
+  history for each prediction.
+
+For these models, give more rows. varde gives the options to `chapkit test`:
+
+```sh
+varde models test chapkit_simple_multistep_model --rows 600 --predict-rows 300
+varde models test chapkit_simple_multistep_model --configs 2 --trainings 2
+```
+
+With `--configs 2 --trainings 2`, each config trains twice, and each trained
+model predicts once:
+
+```text
+testing 1 model (model level; add --backtest to go through chap-core)
+chapkit-simple-multistep-model    pass   18s   4 trainings, 4 predictions
+
+1 of 1 model passes
+```
+
+These options are for the model level only; `--backtest` refuses them.
+
 A model that could not be tested is skipped. The line under the row gives the
 way out:
 
@@ -842,6 +871,8 @@ chap-core's, not the test's, so it is left alone.
 | `--config NAME` | Backtest the configured model with this variant name. Needs `--backtest`. With more than one model, it applies to each model. |
 | `--seed N` | Seed the generated data, so two runs compare. Without it every run is fresh data. |
 | `--timeout SECONDS` | How long one model gets: 300 at the model level, 900 with `--backtest`. At the model level the same number is chapkit's per-job deadline. |
+| `--configs N`, `--trainings N`, `--predictions N` | The model level only. How many configs `chapkit test` creates, how many trainings each config gets, and how many predictions each trained model gets. The default of each is 1. |
+| `--rows N`, `--predict-rows N` | The model level only. The rows (locations times periods) of the training data, 250 by default, and of the history and the future data of each prediction, 150 by default. See [More data for a test](#more-data-for-a-test). |
 | `--keep` | Do not delete what the run created. |
 | `-vv` | Stream `chapkit test`'s whole output as it runs, and narrate every request. This is what to add to a failure. |
 | `--json` | One object per model: `id`, `service_id`, `level`, `result`, `seconds`, `summary`, `detail`, and - for a backtest - `job_id`, `backtest_id`, `configured_model` and the whole `metrics` object. |

@@ -66,6 +66,7 @@ pub(super) fn model_level(
         exec.push("--seed".to_string());
         exec.push(seed.to_string());
     }
+    exec.extend(chapkit_counts(args));
     // `chapkit test` generates monthly data unless told otherwise, and a
     // service that only accepts weekly periods would refuse every row of it.
     if period_type(info.as_ref()) == "weekly" {
@@ -173,3 +174,23 @@ fn serves_mlproject(project: &Project, service_id: &str, echo: bool) -> bool {
     docker::compose_captured(project, &exec, echo, Duration::from_secs(30))
         .is_ok_and(|outcome| outcome.code == 0 && !outcome.timed_out)
 }
+
+/// The `chapkit test` options for the number of configs, trainings,
+/// predictions and rows. An option that is not given is left out, so chapkit
+/// uses its own default.
+fn chapkit_counts(args: &ModelsTestArgs) -> Vec<String> {
+    [
+        ("--configs", args.configs),
+        ("--trainings", args.trainings),
+        ("--predictions", args.predictions),
+        ("--rows", args.rows),
+        ("--predict-rows", args.predict_rows),
+    ]
+    .into_iter()
+    .filter_map(|(flag, value)| value.map(|n| [flag.to_string(), n.to_string()]))
+    .flatten()
+    .collect()
+}
+
+#[cfg(test)]
+mod tests;

@@ -544,3 +544,61 @@ fn models_test_skips_an_image_that_has_no_chapkit_test() {
     assert!(text.contains("--backtest"), "{text}");
     assert!(text.contains("0 pass, 1 skipped"), "{text}");
 }
+
+#[cfg(unix)]
+#[test]
+fn models_test_gives_the_count_options_to_chapkit_test() {
+    let sandbox = Sandbox::new();
+    let (dir, _) = tested_project(&sandbox);
+    let passed = "\
+TEST SUMMARY
+Configs created:       2
+Trainings completed:   4
+Trainings failed:      0
+Predictions completed: 4
+Predictions failed:    0
+
+Result: ALL TESTS PASSED
+";
+    let (fake, log) = fake_docker(passed, 0);
+    let bin = fake.path().join("bin");
+
+    let out = chap_with_docker(
+        &sandbox,
+        &dir,
+        &bin,
+        &[
+            "models",
+            "test",
+            "chapkit_ewars_model",
+            "--configs",
+            "2",
+            "--trainings",
+            "2",
+            "--predictions",
+            "1",
+            "--rows",
+            "600",
+            "--predict-rows",
+            "300",
+        ],
+    )
+    .assert()
+    .success()
+    .get_output()
+    .stdout
+    .clone();
+    let text = String::from_utf8(out).expect("the rows are text");
+    assert!(
+        text.contains("pass    0s   4 trainings, 4 predictions"),
+        "{text}"
+    );
+    assert!(
+        read(&log).contains(&format!(
+            "exec -T {PASSING_MODEL} chapkit test --url http://127.0.0.1:8000 --timeout 300 \
+             --configs 2 --trainings 2 --predictions 1 --rows 600 --predict-rows 300"
+        )),
+        "{}",
+        read(&log)
+    );
+}
