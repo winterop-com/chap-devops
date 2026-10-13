@@ -42,6 +42,7 @@
 - [Status and output](./status.md)
 - [Jobs and the API](./jobs.md)
 - [The chap CLI](./chap-cli.md)
+- [The chapkit CLI](./chapkit-cli.md)
 - [Doctor](./doctor.md)
 - [Troubleshooting](./troubleshooting.md)
 - [Slides](./slides.md)
