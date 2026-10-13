@@ -208,6 +208,11 @@ Usage: varde models test [OPTIONS] [ID]...
 | `--config <NAME>` | Variant name of the configured model to backtest, as in `models configs`. |
 | `--seed <N>` | Seed for the generated data, so a run can be repeated. |
 | `--timeout <SECONDS>` | Time limit for the test of one model, in seconds. |
+| `--configs <N>` | Configs that `chapkit test` creates for each model. |
+| `--trainings <N>` | Trainings for each config. |
+| `--predictions <N>` | Predictions for each trained model. |
+| `--rows <N>` | Rows of training data (locations times periods). |
+| `--predict-rows <N>` | Rows of the history and of the future data for each prediction. |
 | `--keep` | Keep what the test created instead of deleting it. |
 
 Registry options: `--registry-url <URL>`, `--offline`, `--cache-dir <DIR>` (see [varde](#varde)).
