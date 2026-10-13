@@ -38,6 +38,22 @@ pub struct ChapArgs {
     pub args: Vec<String>,
 }
 
+/// Run the chapkit CLI in the chap-core image, with no Python or uv installed
+#[derive(Debug, Clone, Args)]
+pub struct ChapkitArgs {
+    /// chap-core image tag; the deployment's tag or the newest release if omitted
+    #[arg(long, value_name = "TAG")]
+    pub tag: Option<String>,
+
+    /// Arguments for chapkit, such as `mlproject migrate DIR`
+    #[arg(
+        value_name = "CHAPKIT_ARGS",
+        trailing_var_arg = true,
+        allow_hyphen_values = true
+    )]
+    pub args: Vec<String>,
+}
+
 /// The two chap-core images the CLI can run in.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, ValueEnum)]
 pub enum ChapImage {

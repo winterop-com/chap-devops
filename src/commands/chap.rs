@@ -5,8 +5,8 @@
 //! writes is on the host after the run. The caches and the model runs live
 //! under varde's data directory, mounted the same way. See `docs/chap-cli.md`.
 
-mod files;
-mod plan;
+pub(crate) mod files;
+pub(crate) mod plan;
 mod start;
 
 use crate::cli::{ChapArgs, ChapImage, ModelRunArgs, PortArg};
@@ -204,6 +204,7 @@ pub fn run(ctx: &Ctx, args: &ChapArgs) -> Result<()> {
         network: place.network.clone(),
         docker: socket_group,
         tty: std::io::stdin().is_terminal() && std::io::stdout().is_terminal(),
+        program: "chap",
         args: chap_args,
     };
 
@@ -471,7 +472,7 @@ fn loopback_refusal(url: &str, port: u16, place: &Place) -> String {
 /// The tag of the run. Without network, the newest local tag: of the worker
 /// image when the run needs it, and else of either image, since both carry
 /// the same chap at a tag.
-fn resolve_tag(
+pub(crate) fn resolve_tag(
     ctx: &Ctx,
     asked: Option<&str>,
     deployment: Option<&Project>,
@@ -543,7 +544,7 @@ fn runs_in_docker(ctx: &Ctx, kind: &ModelKind, cwd: &Path) -> bool {
 /// The user and group to run as, so the files chap writes belong to the
 /// person who ran it.
 #[cfg(unix)]
-fn host_user() -> Option<(u32, u32)> {
+pub(crate) fn host_user() -> Option<(u32, u32)> {
     let id = |flag: &str| -> Option<u32> {
         let out = std::process::Command::new("id").arg(flag).output().ok()?;
         String::from_utf8_lossy(&out.stdout).trim().parse().ok()
@@ -552,7 +553,7 @@ fn host_user() -> Option<(u32, u32)> {
 }
 
 #[cfg(not(unix))]
-fn host_user() -> Option<(u32, u32)> {
+pub(crate) fn host_user() -> Option<(u32, u32)> {
     None
 }
 

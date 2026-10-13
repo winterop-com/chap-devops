@@ -164,6 +164,7 @@ fn spec() -> RunSpec {
         network: None,
         docker: None,
         tty: false,
+        program: "chap",
         args: strings(&["eval", "--model-name", "http://m:8000"]),
     }
 }
