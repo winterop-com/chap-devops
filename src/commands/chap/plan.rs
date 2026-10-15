@@ -236,10 +236,12 @@ pub fn image_for(kind: &ModelKind, core_here: bool, worker_here: bool) -> ChapIm
         ModelKind::GitHub { .. } | ModelKind::Local(_) => ChapImage::Worker,
         // A model id resolves to a chapkit service before the run, and a
         // built-in model runs in chap itself.
-        ModelKind::None | ModelKind::Builtin(_) | ModelKind::Chapkit(_) => match (core_here, worker_here) {
-            (false, true) => ChapImage::Worker,
-            _ => ChapImage::Core,
-        },
+        ModelKind::None | ModelKind::Builtin(_) | ModelKind::Chapkit(_) => {
+            match (core_here, worker_here) {
+                (false, true) => ChapImage::Worker,
+                _ => ChapImage::Core,
+            }
+        }
     }
 }
 

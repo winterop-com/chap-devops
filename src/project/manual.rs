@@ -133,6 +133,7 @@ impl ManualModel {
                 notes: None,
             }],
             configurations: BTreeMap::new(),
+            role: None,
             manual: true,
         }
     }

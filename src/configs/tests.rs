@@ -148,3 +148,29 @@ fn sync_leaves_a_model_alone_while_another_config_of_its_version_is_live() {
     });
     assert!(sync_leaves_alone(&configs, &climate));
 }
+
+#[test]
+fn the_from_service_body_carries_the_role_only_when_the_entry_has_one() {
+    let plain: serde_json::Value =
+        serde_json::from_str(&from_service_body("auto-arima", None)).unwrap();
+    assert_eq!(plain, json!({ "service_id": "auto-arima" }));
+    let compared: serde_json::Value =
+        serde_json::from_str(&from_service_body("auto-arima", Some("comparison"))).unwrap();
+    assert_eq!(
+        compared,
+        json!({ "service_id": "auto-arima", "role": "comparison" })
+    );
+}
+
+#[test]
+fn the_role_comes_from_the_marketplace_entry() {
+    let mut entry = load_embedded()
+        .expect("the embedded snapshot parses")
+        .models
+        .remove(0);
+    assert_eq!(role_of(None), None);
+    assert_eq!(role_of(Some(&sync::Source::Custom)), None);
+    entry.role = Some("comparison".to_string());
+    let source = sync::Source::Marketplace(Box::new(entry));
+    assert_eq!(role_of(Some(&source)), Some("comparison"));
+}

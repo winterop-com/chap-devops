@@ -80,9 +80,10 @@ impl Session {
         let project = project_of(ctx)?;
         let target = one_target(ctx, &project, id)?;
         let api = api_of(&project);
-        let mut template = configs::template_of_service(&api, &target.id, &target.service_id)
-            .map_err(|err| anyhow::anyhow!(err))?;
         let source = source_for(ctx, &project, &target);
+        let role = configs::role_of(source.as_ref());
+        let mut template = configs::template_of_service(&api, &target.id, &target.service_id, role)
+            .map_err(|err| anyhow::anyhow!(err))?;
         allow_from(&mut template, source.as_ref());
         let listed = configs::listing(&api)?;
         let existing = configs::configs_of(&listed, &template.name);

@@ -1056,7 +1056,7 @@ reviewed catalogue entry:
 
 | Value | Where it comes from |
 | --- | --- |
-| id | `--id`, else the repository or image name in snake_case. |
+| id | `--id`, else the repository or image name in snake_case. Not `persistence`, `global_median` or `seasonal_median`: chap-core v2.5.0 and later has models of these names, and refuses a service that uses one. |
 | service | `--service-id`, else the id with hyphens. Not one of the names varde uses itself - `chap`, `worker`, `redis`, `postgres`, `ocs`, `s3`, `s3-init`, `dhis2`, `dhis2-db`, `dhis2-prep`, `varde`, `marketplace` - which a model would be merged into or written over; `models add` and `sync` refuse them. |
 | name | `--name`, else the repository or image name. |
 | pin | The newest published `sha-` build of the branch, or the tag or digest that was named. |

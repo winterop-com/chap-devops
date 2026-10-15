@@ -301,8 +301,18 @@ pub fn check_id(id: &str) -> Result<()> {
             "`{id}` is not a usable id; use lowercase letters, digits and underscores"
         ));
     }
+    if BASELINE_IDS.contains(&id) {
+        return Err(anyhow::anyhow!(
+            "`{id}` is the name of a model built into chap-core, which refuses a service of \
+             that name; pass `--id <another>`"
+        ));
+    }
     Ok(())
 }
+
+/// The models built into chap-core v2.5.0 and later. chap-core refuses to
+/// store a template from a service with one of these ids.
+pub const BASELINE_IDS: &[&str] = &["persistence", "global_median", "seasonal_median"];
 
 /// Names a model's service id must not take: the services chap-core and the
 /// components run as, which a model of that name would be merged into, and

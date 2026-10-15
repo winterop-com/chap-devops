@@ -203,7 +203,7 @@ pub const UNMANAGED_NO_REVISION_WAY_OUT: &str =
 
 /// The words of chap-core's 409 for a template whose service reports no
 /// revision: `... its source now reports revision None`.
-const NO_REVISION_REFUSAL: &str = "reports revision None";
+pub const NO_REVISION_REFUSAL: &str = "reports revision None";
 
 /// Whether a failed step for `service` failed because it reports no git
 /// revision: its registration says so, or chap-core's refusal does.
@@ -307,7 +307,16 @@ fn configure_one(
     if is_configured(models, &target.service_id, Some(version)) {
         return Outcome::AlreadyConfigured;
     }
-    let body = serde_json::json!({ "service_id": target.service_id }).to_string();
+    let source = match source(target) {
+        Ok(source) => source,
+        Err(err) => {
+            return Outcome::Failed {
+                error: err.to_string(),
+            };
+        }
+    };
+    let role = super::role_of(Some(&source));
+    let body = super::from_service_body(&target.service_id, role);
     let template = match post(api, FROM_SERVICE_PATH, &body) {
         Ok(template) => template,
         Err(error) => return Outcome::Failed { error },
@@ -328,14 +337,6 @@ fn configure_one(
     {
         return Outcome::AlreadyConfigured;
     }
-    let source = match source(target) {
-        Ok(source) => source,
-        Err(err) => {
-            return Outcome::Failed {
-                error: err.to_string(),
-            };
-        }
-    };
     let mut created = Vec::new();
     for request in requests(&source, template_id) {
         let body = serde_json::to_string(&request).unwrap_or_default();

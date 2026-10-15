@@ -150,6 +150,9 @@ fn what_cannot_be_added_says_why() {
 fn an_id_and_a_service_id_are_checked_against_what_names_a_volume() {
     check_id("chapkit_ghr_model").unwrap();
     check_id("m2").unwrap();
+    for baseline in BASELINE_IDS {
+        assert!(check_id(baseline).is_err(), "{baseline}");
+    }
     for bad in ["", "Chapkit", "chapkit-ghr", "chap kit", "chap.kit"] {
         assert!(check_id(bad).is_err(), "{bad}");
     }

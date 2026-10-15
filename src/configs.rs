@@ -190,6 +190,26 @@ pub fn template_named(api: &Api, name: &str) -> Result<Option<Template>> {
         .find(|template| template.name == name))
 }
 
+/// The body of `POST /v1/crud/model-templates/from-service`. chap-core sets
+/// the role on every call, so the call sends the role of the marketplace
+/// entry, and no key for a model without one: chap-core v2.4.0 knows no
+/// role.
+pub fn from_service_body(service_id: &str, role: Option<&str>) -> String {
+    match role {
+        Some(role) => serde_json::json!({ "service_id": service_id, "role": role }),
+        None => serde_json::json!({ "service_id": service_id }),
+    }
+    .to_string()
+}
+
+/// The role of a model from its source: the marketplace entry, else none.
+pub fn role_of(source: Option<&sync::Source>) -> Option<&str> {
+    match source {
+        Some(sync::Source::Marketplace(entry)) => entry.role.as_deref(),
+        _ => None,
+    }
+}
+
 /// The template of the version a registered service runs.
 ///
 /// The template list shows a new version only once it has a configured
@@ -200,8 +220,9 @@ pub fn template_of_service(
     api: &Api,
     model: &str,
     service_id: &str,
+    role: Option<&str>,
 ) -> std::result::Result<Template, String> {
-    let body = serde_json::json!({ "service_id": service_id }).to_string();
+    let body = from_service_body(service_id, role);
     let answer = api
         .send_json("POST", sync::FROM_SERVICE_PATH, Some(&body))
         .map_err(|err| err.to_string())?;
@@ -212,11 +233,17 @@ pub fn template_of_service(
                  this again when `varde status` shows it registered"
             ));
         }
-        409 => {
+        409 if answer.detail().contains(sync::NO_REVISION_REFUSAL) => {
             return Err(format!(
                 "chap-core refuses the template of {model}: {}; {}",
                 answer.detail(),
                 sync::NO_REVISION_WAY_OUT
+            ));
+        }
+        409 => {
+            return Err(format!(
+                "chap-core refuses the template of {model}: {}",
+                answer.detail()
             ));
         }
         _ if !answer.is_success() => {

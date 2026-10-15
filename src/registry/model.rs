@@ -55,6 +55,11 @@ pub struct Model {
     pub versions: Vec<Version>,
     #[serde(default)]
     pub configurations: BTreeMap<String, Configuration>,
+    /// What chap-core compares with the model: `comparison` flags a model
+    /// that is compared against on request. chap-core v2.5.0 and later stores
+    /// it on the template.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub role: Option<String>,
     /// Whether this entry is one the deployment defines itself
     /// ([`crate::project::ManualModel`]) rather than one the marketplace
     /// lists.

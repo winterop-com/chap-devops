@@ -107,8 +107,9 @@ fn template(
     model: &str,
     service: &str,
 ) -> Result<configs::Template, String> {
-    let mut template = configs::template_of_service(api, model, service)?;
     let source = crate::commands::configs::sync::source_of(registry, project, model);
+    let role = configs::role_of(Some(&source));
+    let mut template = configs::template_of_service(api, model, service, role)?;
     crate::commands::configs::allow_from(&mut template, Some(&source));
     Ok(template)
 }

@@ -58,8 +58,14 @@ fn a_built_in_model_is_not_a_model_id() {
 #[test]
 fn as_chapkit_is_read_as_a_flag_or_with_a_value() {
     assert!(as_chapkit(&strings(&["eval", "--run-config.as-chapkit"])));
-    assert!(as_chapkit(&strings(&["eval", "--run-config.as-chapkit=True"])));
-    assert!(!as_chapkit(&strings(&["eval", "--run-config.as-chapkit=false"])));
+    assert!(as_chapkit(&strings(&[
+        "eval",
+        "--run-config.as-chapkit=True"
+    ])));
+    assert!(!as_chapkit(&strings(&[
+        "eval",
+        "--run-config.as-chapkit=false"
+    ])));
     assert!(!as_chapkit(&strings(&["eval", "--model-name", "m"])));
 }
 
