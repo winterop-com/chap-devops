@@ -14,6 +14,7 @@ fn serve() -> Serve {
         registration: None,
         tty: false,
         pass: Vec::new(),
+        revision: None,
     }
 }
 
@@ -179,4 +180,49 @@ fn locate_finds_the_mlproject_file() {
     assert!(why.contains("has no `MLproject` file"), "{why}");
     let why = locate(temp.path(), Some("missing")).unwrap_err();
     assert!(why.contains("does not exist"), "{why}");
+}
+
+#[test]
+fn docker_args_give_chapkit_the_revision() {
+    let mut serve = serve();
+    assert!(!docker_args(&serve).join(" ").contains("GIT_REVISION"));
+    serve.revision = Some("abc123".to_string());
+    let joined = docker_args(&serve).join(" ");
+    assert!(
+        joined.contains("-e GIT_REVISION=abc123 --label"),
+        "{joined}"
+    );
+}
+
+#[test]
+fn the_revision_is_the_commit_and_says_when_there_are_changes() {
+    let tmp = tempfile::tempdir().unwrap();
+    let dir = tmp.path();
+    assert!(git_revision(dir).is_none());
+    let git = |args: &[&str]| {
+        let status = Command::new("git")
+            .arg("-C")
+            .arg(dir)
+            .args([
+                "-c",
+                "user.name=t",
+                "-c",
+                "user.email=t@t",
+                "-c",
+                "commit.gpgsign=false",
+            ])
+            .args(args)
+            .output()
+            .expect("git runs");
+        assert!(status.status.success(), "{args:?}");
+    };
+    git(&["init", "-q"]);
+    std::fs::write(dir.join("MLproject"), "name: m\n").unwrap();
+    git(&["add", "MLproject"]);
+    git(&["commit", "-q", "-m", "first"]);
+    let clean = git_revision(dir).expect("a revision");
+    assert_eq!(clean.commit.len(), 40);
+    assert!(!clean.dirty);
+    std::fs::write(dir.join("MLproject"), "name: changed\n").unwrap();
+    assert!(git_revision(dir).expect("a revision").dirty);
 }

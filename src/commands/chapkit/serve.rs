@@ -315,6 +315,9 @@ pub(super) struct Serve {
     pub registration: Option<Registration>,
     pub tty: bool,
     pub pass: Vec<String>,
+    /// The git commit of the model directory: chapkit reports it, and
+    /// chap-core stores a model template only with a revision.
+    pub revision: Option<String>,
 }
 
 /// The arguments of the `docker run` that serves the model.
@@ -346,6 +349,10 @@ pub(super) fn docker_args(serve: &Serve) -> Vec<String> {
         if registration.key {
             out.extend(["-e", crate::auth::REGISTRATION_KEY_ENV_VAR].map(str::to_string));
         }
+    }
+    if let Some(revision) = &serve.revision {
+        out.push("-e".to_string());
+        out.push(format!("GIT_REVISION={revision}"));
     }
     out.push("--label".to_string());
     out.push(format!("{}=cli", docker::KIND_LABEL));
@@ -409,6 +416,20 @@ pub(super) fn run(ctx: &Ctx, args: &ChapkitArgs, rest: &[String]) -> Result<()> 
         false => None,
     };
     let port = free_port(project.as_ref())?;
+    let revision = git_revision(&dir);
+    match &revision {
+        Some(Revision { dirty: true, .. }) => output::warn(&format!(
+            "{} has changes that are not committed, and the service reports the last commit; \
+             commit them, and raise `version` in MLproject, before chap-core stores this version",
+            dir.display()
+        )),
+        None if project.is_some() => output::warn(&format!(
+            "{} is not a git checkout, so chap-core cannot store the model; run `git init`, \
+             and commit, to add configured models",
+            dir.display()
+        )),
+        _ => {}
+    }
     let registration = project.as_ref().and_then(registration_of);
     let key = project.as_ref().and_then(registration_key);
 
@@ -426,6 +447,7 @@ pub(super) fn run(ctx: &Ctx, args: &ChapkitArgs, rest: &[String]) -> Result<()> 
         }),
         tty: std::io::stdin().is_terminal() && std::io::stdout().is_terminal(),
         pass: request.pass,
+        revision: revision.map(|revision| revision.commit),
     };
     let url = format!("http://localhost:{port}");
     output::notice(&format!(
@@ -580,6 +602,33 @@ fn ensure_image(image: &str) -> Result<()> {
         ))
         .into()),
     }
+}
+
+/// The git commit of a model directory, and whether it has changes that
+/// are not committed.
+struct Revision {
+    commit: String,
+    dirty: bool,
+}
+
+/// The revision of `dir`; `None` when it is not a git checkout, or git is
+/// not there.
+fn git_revision(dir: &Path) -> Option<Revision> {
+    let git = |args: &[&str]| {
+        Command::new("git")
+            .arg("-C")
+            .arg(dir)
+            .args(args)
+            .stdin(std::process::Stdio::null())
+            .stderr(std::process::Stdio::null())
+            .output()
+            .ok()
+            .filter(|out| out.status.success())
+            .map(|out| String::from_utf8_lossy(&out.stdout).trim().to_string())
+    };
+    let commit = git(&["rev-parse", "HEAD"]).filter(|commit| !commit.is_empty())?;
+    let dirty = git(&["status", "--porcelain", "--", "."]).is_some_and(|out| !out.is_empty());
+    Some(Revision { commit, dirty })
 }
 
 /// A free host port: from the deployment's range when there is one, else
