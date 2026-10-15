@@ -12,6 +12,8 @@ use crate::output::Message;
 use crate::project::EnabledModel;
 use std::time::{Duration, Instant};
 
+mod baselines;
+
 /// How often the dataset job is asked whether it has finished.
 const DATASET_POLL: Duration = Duration::from_secs(3);
 
@@ -268,7 +270,7 @@ pub(super) fn backtest_level(
     let started = match post(api, "/v1/analytics/create-backtest", &body) {
         Ok(started) => started,
         Err(err) => {
-            let cleanup = drop_rows(ctx, api, None, Some(dataset), args.keep);
+            let cleanup = drop_rows(ctx, api, None, Some(dataset), dataset_job, args.keep);
             return run.with_cleanup(cleanup).end(
                 Verdict::Skip,
                 "chap-core would not start the backtest",
@@ -281,7 +283,7 @@ pub(super) fn backtest_level(
         .and_then(|id| id.as_str())
         .map(str::to_string)
     else {
-        let cleanup = drop_rows(ctx, api, None, Some(dataset), args.keep);
+        let cleanup = drop_rows(ctx, api, None, Some(dataset), dataset_job, args.keep);
         return run.with_cleanup(cleanup).end(
             Verdict::Skip,
             "chap-core answered create-backtest without a job id",
@@ -294,7 +296,7 @@ pub(super) fn backtest_level(
         Ok(Some(status)) if jobs::Outcome::of(&status) == jobs::Outcome::Done => {}
         Ok(Some(_)) => {
             let (why, next) = job_failure(api, &backtest_job);
-            let cleanup = drop_rows(ctx, api, None, Some(dataset), args.keep);
+            let cleanup = drop_rows(ctx, api, None, Some(dataset), dataset_job, args.keep);
             return run
                 .with_cleanup(cleanup)
                 .end(Verdict::Fail, why, Some(next));
@@ -342,7 +344,7 @@ pub(super) fn backtest_level(
         None => "it finished, but chap-core reported no scores".to_string(),
     };
     run.metrics = metrics;
-    let cleanup = drop_rows(ctx, api, backtest, Some(dataset), args.keep);
+    let cleanup = drop_rows(ctx, api, backtest, Some(dataset), dataset_job, args.keep);
     run.with_cleanup(cleanup).end(Verdict::Pass, summary, None)
 }
 
@@ -494,30 +496,32 @@ fn job_failure(api: &Api, job: &str) -> (String, String) {
 
 /// Delete the rows this run created, and nothing else. Returns what was kept
 /// or left behind, for the closing lines.
+///
+/// The rows go in the order chap-core accepts: the backtests of the
+/// baselines and of the model first, in one request when there are several,
+/// then the dataset they point at.
 fn drop_rows(
     ctx: &Ctx,
     api: &Api,
     backtest: Option<i64>,
     dataset: Option<i64>,
+    dataset_job: &str,
     keep: bool,
 ) -> Vec<Message> {
+    let mut backtests = dataset
+        .map(|dataset| baselines::rows(ctx, api, dataset, dataset_job))
+        .unwrap_or_default();
+    backtests.extend(backtest);
+    backtests.sort_unstable();
+    let rows = row_paths(&backtests, dataset);
     let mut lines = Vec::new();
     if keep {
-        let kept: Vec<(&str, i64)> = [("backtests", backtest), ("datasets", dataset)]
-            .into_iter()
-            .filter_map(|(collection, row)| row.map(|row| (collection, row)))
-            .collect();
-        if !kept.is_empty() {
-            let named: Vec<String> = kept
+        if !rows.is_empty() {
+            let named: Vec<&str> = rows.iter().map(|(named, _)| named.as_str()).collect();
+            let commands: Vec<String> = rows
                 .iter()
-                .map(|(collection, row)| format!("{} {row}", collection.trim_end_matches('s')))
+                .map(|(_, path)| format!("`varde api DELETE {}`", shell_word(path)))
                 .collect();
-            let commands: Vec<String> = kept
-                .iter()
-                .map(|(collection, row)| format!("`varde api DELETE /v1/crud/{collection}/{row}`"))
-                .collect();
-            // The backtest first, because chap-core will not forget a dataset
-            // something still points at.
             lines.push(Message::info(format!(
                 "kept {}; remove them with {}",
                 named.join(" and "),
@@ -526,22 +530,66 @@ fn drop_rows(
         }
         return lines;
     }
-    // The backtest first: it points at the dataset, and chap-core refuses to
-    // forget a dataset something still references.
-    for (collection, row) in [("backtests", backtest), ("datasets", dataset)] {
-        let Some(row) = row else { continue };
-        let path = format!("/v1/crud/{collection}/{row}");
+    for (_, path) in rows {
+        let command = format!("`varde api DELETE {}`", shell_word(&path));
         match api.send("DELETE", &path, None) {
             Ok(answer) if answer.is_success() => ctx.out.verbose(&format!("deleted {path}")),
             Ok(answer) => lines.push(Message::warning(format!(
-                "could not delete {path} ({}); remove it with `varde api DELETE {path}`",
+                "could not delete {path} ({}); remove it with {command}",
                 answer.status_line()
             ))),
             Err(err) => lines.push(Message::warning(format!(
-                "could not delete {path} ({}); remove it with `varde api DELETE {path}`",
+                "could not delete {path} ({}); remove it with {command}",
                 first_line(&err.to_string())
             ))),
         }
     }
     lines
 }
+
+/// What to delete, in order, as `(what it is, the API path)`: the backtests,
+/// in one request when there are several, then the dataset.
+fn row_paths(backtests: &[i64], dataset: Option<i64>) -> Vec<(String, String)> {
+    let mut rows = Vec::new();
+    match backtests {
+        [] => {}
+        [one] => rows.push((
+            format!("backtest {one}"),
+            format!("/v1/crud/backtests/{one}"),
+        )),
+        several => {
+            let ids: Vec<String> = several.iter().map(i64::to_string).collect();
+            rows.push((
+                format!("backtests {}", and_list(&ids)),
+                format!("/v1/crud/backtests?ids={}", ids.join(",")),
+            ));
+        }
+    }
+    if let Some(dataset) = dataset {
+        rows.push((
+            format!("dataset {dataset}"),
+            format!("/v1/crud/datasets/{dataset}"),
+        ));
+    }
+    rows
+}
+
+/// A path as one shell word: a query string has `?`, which a shell expands.
+fn shell_word(path: &str) -> String {
+    match path.contains('?') {
+        true => format!("'{path}'"),
+        false => path.to_string(),
+    }
+}
+
+/// `a`, `a and b`, `a, b and c`.
+fn and_list(items: &[String]) -> String {
+    match items {
+        [] => String::new(),
+        [one] => one.clone(),
+        [rest @ .., last] => format!("{} and {last}", rest.join(", ")),
+    }
+}
+
+#[cfg(test)]
+mod tests;

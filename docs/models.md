@@ -826,7 +826,7 @@ Both levels put something in a database, and both delete it again unless
 | Level | What it creates | What is deleted |
 | --- | --- | --- |
 | model | one config named `test_config_<ulid>` and a few artifacts, in the **model service's own** database | The service's configs and artifacts are listed before the run and again after it, and exactly what appeared is deleted. Deleting a config cascades to the artifacts linked to it. |
-| `--backtest` | one dataset and one backtest row in **chap-core's** database, plus the jobs that made them | The backtest first, then the dataset, and nothing else. The jobs stay, because that is the record of what was run; they show up in [`varde jobs`](./jobs.md). |
+| `--backtest` | one dataset and one backtest row in **chap-core's** database, plus the jobs that made them. From chap-core v2.5.0, also one backtest for each built-in baseline | The backtests first, then the dataset, and nothing else. The jobs stay, because that is the record of what was run; they show up in [`varde jobs`](./jobs.md). |
 
 chap-core's model proxy is read-only by design, so a delete cannot go through
 it: the model level lists through the proxy and deletes with the `curl` every
@@ -846,6 +846,17 @@ With `--backtest`, the line names the two deletes:
 
 ```text
 kept backtest 8 and dataset 7; remove them with `varde api DELETE /v1/crud/backtests/8` then `varde api DELETE /v1/crud/datasets/7`
+```
+
+From chap-core v2.5.0, a backtest also starts one `run_baseline` job for each
+built-in baseline, and each job writes a backtest on the same dataset.
+chap-core leaves these out of the backtest lists, but it does not delete a
+dataset while they point at it. So varde waits up to a minute for the
+baselines of the run, and deletes their backtests with the backtest of the
+model, in one request. The line then names them all:
+
+```text
+kept backtests 25, 26, 27 and 28 and dataset 7; remove them with `varde api DELETE '/v1/crud/backtests?ids=25,26,27,28'` then `varde api DELETE /v1/crud/datasets/7`
 ```
 
 Both lines are closing lines of the command. They go to stdout, and `--json`

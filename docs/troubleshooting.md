@@ -292,6 +292,21 @@ still registers, so `varde status` shows it as `registered`.
 there, or that is empty. It writes no file when the directory has files.
 Give another directory, or remove the files in it first.
 
+## `could not delete /v1/crud/datasets/N (HTTP 500 Internal Server Error)`
+
+`varde models test --backtest` deletes the dataset it made, and chap-core
+refused, because a backtest still points at it. From chap-core v2.5.0, the
+built-in baselines write backtests on the dataset, and varde deletes them
+first. If a baseline was still running a minute after the test, varde could
+not delete its backtest yet.
+
+1. Run `varde jobs`, and wait until no `run_baseline` job is running.
+2. Run `varde api GET /v1/jobs`, and note the `result` of each `run_baseline`
+   job: it is the id of its backtest.
+3. Run `varde api DELETE '/v1/crud/backtests?ids=ID,ID,ID'` with these ids.
+4. Run the `varde api DELETE /v1/crud/datasets/N` command that the warning
+   names.
+
 ## `chap-core has no configured model for`
 
 ```text
