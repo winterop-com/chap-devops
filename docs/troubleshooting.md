@@ -1761,6 +1761,19 @@ the socket. varde did not find `docker_env` before the run, because it could
 not read the model's `MLproject` (for example, under `--offline`). Add
 `--docker`.
 
+## `needs chap-core v2.5.0 or later, and this run uses`
+
+```text
+error: built-in models need chap-core v2.5.0 or later, and this run uses v2.4.0; give a newer tag, such as `--tag master`
+```
+
+Built-in models (`builtin:NAME`), `--run-config.as-chapkit` and
+`chap simulate` are new in chap-core v2.5.0. Outside a deployment,
+`varde chap` uses the newest release; in a deployment, the tag of the
+deployment. varde stops before the run, because chap at an older tag ends in
+a traceback. Add `--tag master` until v2.5.0 is released, or `--tag v2.5.0`
+after.
+
 ## `Rscript: not found` from `varde chap`
 
 The model needs R, and it ran in the `chap-core` image, which has no R. varde

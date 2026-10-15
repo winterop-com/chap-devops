@@ -394,3 +394,33 @@ fn plot_dataset_is_refused_because_it_needs_a_browser() {
     assert!(needs_a_browser(&strings(&["plot-dataset", "--help"])).is_none());
     assert!(needs_a_browser(&strings(&["plot-backtest", "a.nc"])).is_none());
 }
+
+#[test]
+fn what_needs_v2_5_is_refused_at_an_older_release_only() {
+    let builtin = strings(&["eval", "--model-name", "builtin:seasonal_median"]);
+    let kind = model_kind(model_name(&builtin));
+    let why = too_old(&builtin, &kind, "v2.4.0").expect("refused");
+    assert!(
+        why.starts_with("built-in models need chap-core v2.5.0"),
+        "{why}"
+    );
+    assert!(why.contains("this run uses v2.4.0"), "{why}");
+    assert!(too_old(&builtin, &kind, "v2.5.0").is_none());
+    assert!(too_old(&builtin, &kind, "master").is_none());
+
+    let simulate = strings(&["simulate", "--model-name", "./m", "--out-file", "s.csv"]);
+    let kind = model_kind(model_name(&simulate));
+    assert!(
+        too_old(&simulate, &kind, "v2.4.0")
+            .unwrap()
+            .starts_with("`chap simulate` needs")
+    );
+
+    let as_chapkit = strings(&["eval", "--model-name", "./m", "--run-config.as-chapkit"]);
+    let kind = model_kind(model_name(&as_chapkit));
+    assert!(too_old(&as_chapkit, &kind, "v2.3.1").is_some());
+
+    let plain = strings(&["eval", "--model-name", "./m"]);
+    let kind = model_kind(model_name(&plain));
+    assert!(too_old(&plain, &kind, "v2.3.1").is_none());
+}

@@ -85,6 +85,9 @@ pub fn run(ctx: &Ctx, args: &ChapArgs) -> Result<()> {
         place.deployment.as_ref(),
         needs_worker,
     )?;
+    if let Some(why) = plan::too_old(&chap_args, &kind, &tag) {
+        return Err(ChapError::Usage(why).into());
+    }
     let image = args.image.unwrap_or_else(|| {
         let core = format!("{}:{tag}", plan::CORE_REPOSITORY);
         let worker = format!("{}:{tag}", plan::WORKER_REPOSITORY);

@@ -257,6 +257,38 @@ pub fn as_chapkit(args: &[String]) -> bool {
     })
 }
 
+/// The first chap-core release with built-in models, `--run-config.as-chapkit`
+/// and `chap simulate`.
+pub const FIRST_WITH_V2_5: (u64, u64, u64) = (2, 5, 0);
+
+/// What the arguments ask for that only chap-core v2.5.0 and later have, if
+/// anything, as the start of a sentence.
+pub fn needs_v2_5(args: &[String], kind: &ModelKind) -> Option<&'static str> {
+    let command = args.iter().find(|arg| !arg.starts_with('-'));
+    if command.is_some_and(|command| command == "simulate") {
+        Some("`chap simulate` needs")
+    } else if matches!(kind, ModelKind::Builtin(_)) {
+        Some("built-in models need")
+    } else if as_chapkit(args) {
+        Some("`--run-config.as-chapkit` needs")
+    } else {
+        None
+    }
+}
+
+/// Why a run cannot work at `tag`: it asks for something newer than the
+/// release. A moving tag, such as `master`, is not checked.
+pub fn too_old(args: &[String], kind: &ModelKind, tag: &str) -> Option<String> {
+    let what = needs_v2_5(args, kind)?;
+    let version = crate::chapcore::release_version(tag)?;
+    (version < FIRST_WITH_V2_5).then(|| {
+        format!(
+            "{what} chap-core v2.5.0 or later, and this run uses {tag}; give a newer \
+             tag, such as `--tag master`"
+        )
+    })
+}
+
 /// Whether an `MLproject` file asks for `docker_env`, which needs the docker
 /// socket.
 pub fn uses_docker_env(mlproject: &str) -> bool {
