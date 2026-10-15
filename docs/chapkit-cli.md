@@ -99,6 +99,9 @@ no R, so varde runs a chapkit `-cli` image instead:
 | `r-inla` | `ghcr.io/dhis2-chap/chapkit-r-inla-cli` (amd64 only) |
 | any other value | That image, such as one you built yourself |
 
+`varde chapkit --image`, with no value, lists the short names, what each image
+has, and whether this docker has it already.
+
 Without `--image`, the train command in `MLproject` selects the image: a
 `python` or `uv` command gets `py-data`, and an `Rscript` command gets
 `r-tidyverse`. A model that needs INLA, or packages that no `-cli` image has,

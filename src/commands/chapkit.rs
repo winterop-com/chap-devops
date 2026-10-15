@@ -35,6 +35,9 @@ const WRITTEN_LIMIT: usize = 8;
 
 /// Run the chapkit CLI in the chap-core image, and say what it wrote.
 pub fn run(ctx: &Ctx, args: &ChapkitArgs) -> Result<()> {
+    if args.image.as_deref() == Some("") {
+        return serve::list(ctx);
+    }
     if ctx.out.json {
         return Err(ChapError::Usage(
             "`varde chapkit` prints chapkit's own output, so --json does not apply; drop it"
