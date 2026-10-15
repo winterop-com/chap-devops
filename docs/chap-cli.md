@@ -220,10 +220,12 @@ varde chap --tag master eval --model-name ./my_model --run-config.as-chapkit \
   --dataset-csv laos_subset.csv --output-file my_model.nc
 ```
 
-The `MLproject` must use `uv_env` or `renv_env`. chap refuses `docker_env`,
-`conda_env` and `python_env` in this mode, so varde does not ask for
-`--docker`. To serve the same model outside chap, use `varde chapkit mlproject
-run` ([The chapkit CLI](chapkit-cli.md)).
+The `MLproject` can use `uv_env`, `renv_env`, or no environment. chap refuses
+`docker_env`, `conda_env` and `python_env` in this mode, so varde does not ask
+for `--docker`. An `MLproject` from `chapkit mlproject export` needs this mode:
+without it, its commands do not find `config.yml`. To serve the same model
+outside chap, use `varde chapkit mlproject run`
+([An MLproject model, with no image to build](use-cases/mlproject-model.md)).
 
 ## Simulate data
 

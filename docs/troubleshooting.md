@@ -239,11 +239,55 @@ service to test. Use `varde models test ID`: it runs `chapkit test` in the
 model's own container. For a model image that you built, start it first with
 `varde run IMAGE`.
 
-## `` `chapkit run` serves a model, and this container stops when the command ends ``
+## `No Python (.py) or R (.r/.R) scripts at the project root; cannot pick a base image.`
 
-`chapkit run` and `chapkit mlproject run` start a model service. The container
-of `varde chapkit` stops when the command ends, so the service would stop too.
-Build an image of the model, then start it with `varde run IMAGE`.
+`chapkit mlproject migrate` selects the base image from the scripts at the root
+of the model directory, and found none there. The `mlproject-*` templates of
+`varde models new` keep the scripts in `scripts/`. Give the image with
+`--base-image`: `chapkit-py`, `chapkit-r`, `chapkit-r-tidyverse` or
+`chapkit-r-inla`. The `README.md` of the project gives the command. See
+[Migrate an MLproject model](./chapkit-cli.md#migrate-an-mlproject-model).
+
+## `Only ShellModelRunner services can be exported`
+
+`chapkit mlproject export` writes an `MLproject` with train and predict
+commands, so the service must run scripts. A model in `main.py`, as in the
+`fn-py` template, has no commands to write. Move the model to scripts, as in
+the `shell-py` template, or keep it a chapkit service.
+
+## `No such file or directory: 'config.yml'` from `varde chap`
+
+The `MLproject` came from `chapkit mlproject export`. Its commands read a
+`config.yml` that chapkit writes, and chap writes it only with
+`--run-config.as-chapkit`. Add that option, or serve the model with
+`varde chapkit mlproject run DIR`. See
+[Export a service as an MLproject](./chapkit-cli.md#export-a-service-as-an-mlproject).
+
+## `the MLproject service on ... stopped, because its container got SIGTERM`
+
+`varde chapkit mlproject run` served a model, and something outside varde
+stopped its container: `docker stop`, or a restart of Docker. chapkit shut
+down normally, and `--rm` removed the container. To serve the model again, run
+the same `varde chapkit mlproject run` command.
+
+## `has changes that are not committed, and the service reports the last commit`
+
+`varde chapkit mlproject run` gives chapkit the git commit of the model
+directory. chap-core stores each version of a model with one revision, so a
+change that is not committed would run under the revision of the last commit.
+
+1. Commit the changes.
+2. Raise `version` in `MLproject`.
+3. Run `varde chapkit mlproject run DIR` again.
+
+## `is not a git checkout, so chap-core cannot store the model`
+
+The service registers with chap-core, but chap-core stores a model only with
+a git revision. Without it, `varde models configs sync` and
+`varde models test ID --backtest` fail with
+`is stored from revision None`. In the model directory, run `git init`,
+then `git add .` and `git commit`. Then run `varde chapkit mlproject run DIR`
+again.
 
 ## `chapkit did not accept the arguments, and its usage is above`
 

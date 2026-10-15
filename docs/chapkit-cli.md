@@ -1,15 +1,15 @@
 # The chapkit CLI
 
 chapkit is the framework of the model services. Its command line, `chapkit`,
-creates a model project and migrates an `MLproject` model to a chapkit
-service. It is usually installed with uv, which needs Python on the machine.
+creates a model project, changes an `MLproject` model to a chapkit service and
+back, and serves an `MLproject` model with no image to build. It is usually installed with uv, which needs Python on the machine.
 
 `varde chapkit` runs the same `chapkit` in a container. You need Docker and
 nothing more:
 
 ```sh
 varde chapkit mlproject migrate my-model
-varde chapkit --version
+varde chapkit mlproject run my-model
 ```
 
 Each argument after `chapkit` goes to chapkit unchanged. To read chapkit's own
@@ -75,9 +75,24 @@ varde run my-model:dev
 varde -C ~/.local/share/varde/run/default models test my_model
 ```
 
-This was tested with `minimalist_configurable_model` from chap-models, on
-chap-core v2.4.0 (chapkit 2.1.0): the migrated image passed the model-level
-test with 1 training and 1 prediction.
+chapkit selects the base image of the service from the scripts at the root of
+`DIR`: R scripts give an R image, Python scripts give `chapkit-py`. If the
+scripts are in a subdirectory, as in the `mlproject-*` templates of
+`varde models new`, chapkit stops with `No Python (.py) or R (.r/.R) scripts at
+the project root; cannot pick a base image.` Then give the image:
+
+```sh
+varde chapkit mlproject migrate my-model --yes --base-image chapkit-py
+```
+
+The values are `chapkit-py`, `chapkit-r`, `chapkit-r-tidyverse` and
+`chapkit-r-inla`. The `README.md` of a project from an `mlproject-*` template
+gives the command with the correct value.
+
+On chap-core `master` (chapkit 2.4.0), these models were migrated, built, and
+passed the model-level test with 1 training and 1 prediction:
+`minimalist_configurable_model` and `mean` from chap-models, and the
+`mlproject-py` and `mlproject-r` templates with `--base-image`.
 
 ## Export a service as an MLproject
 
@@ -94,6 +109,22 @@ chapkit imports `main.py` to read the service. This works in the chap-core
 image when `main.py` imports only chapkit and the Python standard library,
 as a service that runs scripts does. If `main.py` imports the packages of
 the model, the import can fail in the chap-core image.
+
+Only a service that runs scripts can be exported, such as one from the
+`shell-py` or `shell-r` template. For a model in `main.py` (the `fn-py`
+template), chapkit stops with `Only ShellModelRunner services can be
+exported`.
+
+The exported `MLproject` gives the train and predict commands a fixed
+`config.yml`, which chapkit writes. So it runs where chapkit runs it: with
+`varde chapkit mlproject run`, and with `varde chap --run-config.as-chapkit`.
+Without `--run-config.as-chapkit`, chap does not write `config.yml`, and the
+train command stops with `No such file or directory: 'config.yml'`.
+
+chapkit 2.4.0 also writes a warning that the `author_note` of the
+`MLproject` and of the service are not the same, when `main.py` has a
+`description` and no `author_note`. The `MLproject` is correct, and you can
+ignore the warning.
 
 ## Serve an MLproject model
 
@@ -131,7 +162,23 @@ does not have it.
 varde mounts the model directory at `/work` and publishes the service on the
 first free port from 5001 (in a deployment, from its port range). It prints
 the URL when the service answers at `/health`. The logs follow in the
-terminal, and Ctrl-C stops the service and removes its container.
+terminal, and Ctrl-C stops the service and removes its container. A `kill`
+of the varde process does the same, and so does `docker stop` of the
+container.
+
+The image has chapkit and the packages in the table above. varde does not
+install the dependencies that the `MLproject` names in `uv_env` or
+`renv_env`. If the model needs a package that the image does not have, the
+train job stops with an error such as `No module named 'cyclopts'`. Then
+give `--image` with an image that has the package, or let chap install
+them with `varde chap --run-config.as-chapkit`
+([The chap CLI](./chap-cli.md#an-mlproject-as-a-chapkit-service)).
+
+If the model directory is a git checkout, varde gives chapkit its commit as
+`GIT_REVISION`, as the `docker build` of an image does. chap-core stores a
+model only with a revision. If the directory has changes that are not
+committed, varde warns: the service reports the last commit, so commit the
+changes and raise `version` in `MLproject` first.
 
 The options of `chapkit mlproject run` after `DIR` go to chapkit unchanged,
 such as `--config-format flat` or `--log-level debug`. A relative `--database`
@@ -139,8 +186,25 @@ path is in the model directory. varde sets `--host` and `--port` itself.
 
 In a deployment that runs chap-core, the service joins the deployment network
 and registers with chap-core while it runs, with the registration key from
-`.env`. Outside a deployment, or with an external chap-core, it does not
-register; use the URL that varde prints.
+`.env`. Then the commands of the deployment use it by its id, the `name` in
+`MLproject`:
+
+```sh
+varde models configs sync my-model
+varde models test my-model --backtest
+```
+
+`varde status` does not show the service, because varde does not manage it.
+
+Outside a deployment, or with an external chap-core, it does not register;
+use the URL that varde prints. `varde chap` runs in a container, where
+`localhost` is the container, so give it the same port at
+`host.docker.internal`:
+
+```sh
+varde chap eval --model-name http://host.docker.internal:5001 \
+  --dataset-csv laos_subset.csv --output-file my-model.nc
+```
 
 ## What varde refuses
 

@@ -186,6 +186,7 @@ old one first as shown in [Every option: stop, start, remove](#every-option-stop
 | 20 | [Evaluate a model on my own data](#20-evaluate-a-model-on-my-own-data) | run `chap eval` on their CSV without installing Python or uv |
 | | **The chapkit CLI** | |
 | 21 | [Make my MLproject model a chapkit service](#21-make-my-mlproject-model-a-chapkit-service) | change a model with an `MLproject` file to a chapkit service, without installing Python or uv |
+| 22 | [Serve my MLproject model, with no build](#22-serve-my-mlproject-model-with-no-build) | evaluate and test a model with an `MLproject` file, without an image |
 
 ### 1. Chap in DHIS2, with the Modeling App
 
@@ -797,6 +798,12 @@ It worked when the last lines say `chapkit finished; it wrote ...` and
 is a warning that varde could not write `uv.lock`, the build fails; show them
 the warning.
 
+If chapkit stops with `No Python (.py) or R (.r/.R) scripts at the project
+root`, the scripts are in a subdirectory. Run the command again with
+`--base-image chapkit-py` for Python. For R, use `chapkit-r`,
+`chapkit-r-tidyverse` or `chapkit-r-inla`. A project from `varde models new`
+names the value in its `README.md`.
+
 Then build the image and test it:
 
 ```sh
@@ -810,6 +817,49 @@ The build needs a git commit for `GIT_REVISION`. It worked when the last line
 says `1 of 1 model passes`.
 
 More: [The chapkit CLI](./chapkit-cli.md).
+
+### 22. Serve my MLproject model, with no build
+
+They have a model directory with an `MLproject` file. Do not install Python,
+R or uv for them. Until chap-core v2.5.0 is released, add `--tag master` to
+`varde chap`. In the directory above the model:
+
+```sh
+varde chapkit mlproject run my-model
+```
+
+It worked when the line says `the MLproject service answers at
+http://localhost:PORT`. The service runs in the foreground. Leave it running,
+and use a second terminal for the next steps. Ctrl-C stops it.
+
+If the train job stops with `No module named`, the image does not have a
+package that the model needs. Run `varde chapkit --image`, and show them the
+list. Then run the command again with `--image NAME`.
+
+To evaluate it, give the same port at `host.docker.internal`:
+
+```sh
+varde chap --tag master eval --model-name http://host.docker.internal:PORT \
+  --dataset-csv laos_subset.csv --output-file my-model.nc
+```
+
+It worked when the line says `chap finished; it wrote my-model.nc`. For the
+data, see option 20.
+
+To test it through chap-core, commit the model directory first. Then start
+it from a deployment directory, such as `mychap` from option 2, with
+`varde chapkit mlproject run ../my-model`. In a second terminal, in that
+deployment directory:
+
+```sh
+varde models configs sync my-model
+varde models test my-model --backtest
+```
+
+Use the `name` in `MLproject` as the id. It worked when the last line says
+`1 of 1 model passes`.
+
+More: [An MLproject model, with no image to build](./use-cases/mlproject-model.md).
 
 ## What to try next without DHIS2
 
