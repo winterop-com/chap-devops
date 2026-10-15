@@ -85,6 +85,10 @@ pub fn chapkit_answers(image: &str, network: Option<&str>, url: &str) -> bool {
         args.push("--network".to_string());
         args.push(network.to_string());
     }
+    // The same host name as the run of chap, so the probe reaches what chap
+    // reaches.
+    args.push("--add-host".to_string());
+    args.push(format!("{}:host-gateway", crate::components::HOST_GATEWAY));
     args.extend(
         [
             "--entrypoint",

@@ -227,6 +227,10 @@ fn a_run_mounts_every_directory_at_the_same_path_and_runs_as_the_user() {
     assert!(env.contains(&"RENV_CONFIG_SANDBOX_ENABLED=FALSE"));
     assert!(values(&args, "--network").is_empty());
     assert_eq!(
+        values(&args, "--add-host"),
+        ["host.docker.internal:host-gateway"]
+    );
+    assert_eq!(
         args[args.len() - 5..],
         strings(&[
             "ghcr.io/dhis2-chap/chap-core:v2.3.1",

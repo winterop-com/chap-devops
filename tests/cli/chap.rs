@@ -561,7 +561,10 @@ fn a_model_url_on_localhost_is_refused_before_the_run() {
     .stderr(predicates::str::contains(
         "in the container `localhost` is the container itself",
     ))
-    .stderr(predicates::str::contains("--model-name auto_arima_chapkit"));
+    .stderr(predicates::str::contains(
+        "use `--model-name http://host.docker.internal:5001`",
+    ))
+    .stderr(predicates::str::contains("`auto_arima_chapkit`"));
     let calls = std::fs::read_to_string(&log).unwrap_or_default();
     assert!(!calls.contains("run --rm -i"), "nothing ran: {calls}");
 }

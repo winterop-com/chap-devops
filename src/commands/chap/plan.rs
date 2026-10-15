@@ -440,6 +440,10 @@ pub fn docker_args(spec: &RunSpec) -> Vec<String> {
         out.push("--network".to_string());
         out.push(network.clone());
     }
+    // Docker Desktop has this name already; on Linux, this adds it, so a
+    // service published on this machine is reachable from the container.
+    out.push("--add-host".to_string());
+    out.push(format!("{}:host-gateway", crate::components::HOST_GATEWAY));
     if let Some(group) = spec.docker {
         let socket = crate::docker::DOCKER_SOCKET;
         out.push("-v".to_string());

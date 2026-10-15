@@ -461,8 +461,9 @@ fn loopback_refusal(url: &str, port: u16, place: &Place) -> String {
         ),
         _ => format!(
             "`{url}` is this machine, and in the container `localhost` is the container \
-             itself; give the model id instead (`--model-name auto_arima_chapkit`), and \
-             varde starts the model and gives chap its URL on the network"
+             itself; use `--model-name http://{}:{port}`, or give a model id such as \
+             `auto_arima_chapkit` and varde starts it",
+            crate::components::HOST_GATEWAY
         ),
     }
 }

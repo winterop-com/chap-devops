@@ -1761,10 +1761,12 @@ Run the command again with a longer `--timeout`. The message names the
 
 `varde chap` got a model URL on `localhost` (or `127.0.0.1`). That is the URL
 `varde ps` shows, and it works from your machine. chap runs in a container,
-where `localhost` is the container, so the URL reaches nothing. Use the
-service URL from the `models:` line that `varde chap` writes before each run,
-for example `http://auto-arima-chapkit:8000`. When varde knows which model
-has that port, the message gives that URL.
+where `localhost` is the container, so the URL reaches nothing. When varde
+knows which model has that port, the message gives its service URL, for
+example `http://auto-arima-chapkit:8000`. Else it gives the same port at
+`host.docker.internal`, the name of this machine in the container. That is
+the URL for a service that `varde chapkit mlproject run` started outside a
+deployment.
 
 ## `stopped by Ctrl-C; ... is taken back out of ...`
 
