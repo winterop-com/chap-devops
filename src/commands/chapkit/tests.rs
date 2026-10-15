@@ -1,4 +1,4 @@
-use super::{refused, serve_arguments};
+use super::{command_name, refused, serve_arguments};
 
 fn strings(args: &[&str]) -> Vec<String> {
     args.iter().map(|arg| arg.to_string()).collect()
@@ -94,4 +94,18 @@ fn a_group_alone_gets_help() {
     );
     assert_eq!(super::with_group_help(&strings(&["init"])), ["init"]);
     assert!(super::with_group_help(&[]).is_empty());
+}
+
+#[test]
+fn the_command_name_has_the_command_of_a_group() {
+    assert_eq!(
+        command_name(&strings(&["mlproject", "export", "main.py"])),
+        "mlproject export"
+    );
+    assert_eq!(
+        command_name(&strings(&["mlproject", "--help"])),
+        "mlproject"
+    );
+    assert_eq!(command_name(&strings(&["init", "my-model"])), "init");
+    assert_eq!(command_name(&[]), "--help");
 }

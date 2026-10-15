@@ -35,7 +35,8 @@ fn chapkit_runs_in_the_core_image_in_the_current_directory() {
     assert_eq!(value_of(&args, "-w"), Some(workdir.as_str()));
     assert!(args.contains(&format!("{workdir}:{workdir}")));
     assert!(
-        stderr.contains("running `chapkit mlproject` in ghcr.io/dhis2-chap/chap-core:v2.3.1"),
+        stderr
+            .contains("running `chapkit mlproject migrate` in ghcr.io/dhis2-chap/chap-core:v2.3.1"),
         "{stderr}"
     );
     assert!(

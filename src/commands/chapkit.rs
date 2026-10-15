@@ -86,7 +86,7 @@ pub fn run(ctx: &Ctx, args: &ChapkitArgs) -> Result<()> {
         .map_err(|e| anyhow::anyhow!("creating {}: {e}", data.join("cache").display()))?;
 
     let help = plan::is_help(&chapkit_args);
-    let command = chapkit_args.first().map(String::as_str).unwrap_or("--help");
+    let command = command_name(&chapkit_args);
     let pull = match docker::image_is_local(&reference) {
         true => String::new(),
         false => format!(
@@ -198,6 +198,19 @@ fn refused(args: &[String]) -> Option<String> {
 /// their help and exits with 2, as Click does for `no_args_is_help`.
 const GROUPS: &[&str] = &["artifact", "mlproject"];
 
+/// The chapkit command the arguments name, for the line before the run:
+/// `mlproject export` for a command in a group, `init` for one that is not.
+fn command_name(args: &[String]) -> String {
+    match args.first().map(String::as_str) {
+        None => "--help".to_string(),
+        Some(group) if GROUPS.contains(&group) => match args.get(1) {
+            Some(next) if !next.starts_with('-') => format!("{group} {next}"),
+            _ => group.to_string(),
+        },
+        Some(first) => first.to_string(),
+    }
+}
+
 /// The arguments with `--help` added after a group with nothing after it,
 /// so chapkit prints the same help and exits with 0.
 fn with_group_help(args: &[String]) -> Vec<String> {
@@ -263,10 +276,9 @@ fn copies_lock(dockerfile: &str) -> bool {
 /// Run `uv lock` for `dir` in the image of `spec`, and say what came of it.
 fn lock(spec: &RunSpec, dir: &Path, cwd: &Path) {
     let shown = dir.strip_prefix(cwd).unwrap_or(dir).display().to_string();
-    let shown = if shown.is_empty() {
-        ".".to_string()
-    } else {
-        shown
+    let (shown, file) = match shown.is_empty() {
+        true => (".".to_string(), "uv.lock".to_string()),
+        false => (shown.clone(), format!("{shown}/uv.lock")),
     };
     let run = RunSpec {
         tty: false,
@@ -281,10 +293,10 @@ fn lock(spec: &RunSpec, dir: &Path, cwd: &Path) {
     };
     match docker::run_plain(&plan::docker_args(&run)) {
         Ok(0) if dir.join("uv.lock").exists() => output::notice(&format!(
-            "wrote {shown}/uv.lock with `uv lock` in the same image, so `docker build` works"
+            "wrote {file} with `uv lock` in the same image, so `docker build` works"
         )),
         _ => output::warn(&format!(
-            "could not write {shown}/uv.lock, and the `Dockerfile` copies it; run \
+            "could not write {file}, and the `Dockerfile` copies it; run \
              `varde chapkit --help` to make sure the image runs, then `uv lock` in {shown}"
         )),
     }
