@@ -942,7 +942,7 @@ Usage: varde chapkit [OPTIONS] [CHAPKIT_ARGS]...
 | Argument | Description |
 | --- | --- |
 | `--tag <TAG>` | chap-core image tag; the deployment's tag or the newest release if omitted. |
-| `--image <IMAGE>` | Image for `mlproject run`: py, r, r-tidyverse, r-inla, or an image name. |
+| `--image <IMAGE>` | Image for `mlproject run`: py, py-data, r, r-tidyverse, r-inla, or a name. |
 | `<CHAPKIT_ARGS>...` | Arguments for chapkit, such as `mlproject migrate DIR`. |
 
 ## varde backup

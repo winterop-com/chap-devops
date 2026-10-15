@@ -109,9 +109,12 @@ impl Template {
     }
 
     /// The base image. A chapkit service installs its own chapkit with
-    /// `uv sync`; an MLproject uses the `-cli` image, which has chapkit.
+    /// `uv sync`; an MLproject uses the `-cli` image, which has chapkit. A
+    /// Python MLproject uses `chapkit-py-data-cli`, which also has numpy,
+    /// pandas and the rest of the PyData stack, so it runs with no install.
     pub fn base_image(self) -> String {
         let name = match self.base() {
+            Base::Py if self.is_mlproject() => "chapkit-py-data",
             Base::Py => "chapkit-py",
             Base::R => "chapkit-r",
             Base::RTidyverse => "chapkit-r-tidyverse",

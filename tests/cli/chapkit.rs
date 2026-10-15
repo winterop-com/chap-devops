@@ -282,7 +282,7 @@ fn mlproject_run_says_when_the_image_cannot_be_pulled() {
     .assert()
     .code(2)
     .stderr(predicates::str::contains(
-        "this docker does not have ghcr.io/dhis2-chap/chapkit-py-cli:latest, and could not pull it",
+        "this docker does not have ghcr.io/dhis2-chap/chapkit-py-data-cli:latest, and could not pull it",
     ));
     assert!(
         !std::fs::read_to_string(&log)
@@ -301,7 +301,7 @@ fn mlproject_run_refuses_what_it_cannot_do() {
     for (args, message) in [
         (
             &["chapkit", "mlproject", "run", "model"][..],
-            "give `--image py`, `r`, `r-tidyverse`, `r-inla`",
+            "give `--image py-data`, `r-tidyverse`, `r-inla`",
         ),
         (
             &["chapkit", "mlproject", "run", "model", "--port", "9000"][..],

@@ -128,7 +128,7 @@ fn an_mlproject_has_no_chapkit_code() {
         "python scripts/train.py --data {train_data} --model {model} --config {model_config}"
     );
     let docker = file(&files, "Dockerfile");
-    assert!(docker.contains("FROM ghcr.io/dhis2-chap/chapkit-py-cli:latest"));
+    assert!(docker.contains("FROM ghcr.io/dhis2-chap/chapkit-py-data-cli:latest"));
     assert!(docker.contains("CMD [\"chapkit\", \"mlproject\", \"run\", \".\""));
     assert!(!file(&files, "pyproject.toml").contains("chapkit"));
 }

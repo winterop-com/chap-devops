@@ -909,13 +909,15 @@ no chapkit code: the image serves it with `chapkit mlproject run`.
 | `shell-r` | chapkit service | R scripts | `chapkit-r` |
 | `shell-r-tidyverse` | chapkit service | R scripts, with tidyverse and fable | `chapkit-r-tidyverse` |
 | `shell-r-inla` | chapkit service | R scripts, with INLA | `chapkit-r-inla` |
-| `mlproject-py` | MLproject | Python scripts | `chapkit-py-cli` |
+| `mlproject-py` | MLproject | Python scripts | `chapkit-py-data-cli` |
 | `mlproject-r` | MLproject | R scripts | `chapkit-r-cli` |
 | `mlproject-r-tidyverse` | MLproject | R scripts, with tidyverse and fable | `chapkit-r-tidyverse-cli` |
 | `mlproject-r-inla` | MLproject | R scripts, with INLA | `chapkit-r-inla-cli` |
 
 The base images are `ghcr.io/dhis2-chap/<name>:latest`. A `-cli` image has
-chapkit in it, which `chapkit mlproject run` needs. A chapkit service installs
+chapkit in it, which `chapkit mlproject run` needs. `chapkit-py-data-cli`
+also has numpy, pandas, scipy, scikit-learn, statsmodels, joblib, pyyaml and
+xarray, so a Python MLproject runs with no install of its own. A chapkit service installs
 its own chapkit with `uv sync` in the build, from the range in its
 `pyproject.toml` (`chapkit>=2.4.0,<3`). The INLA images are amd64 only, so
 those Dockerfiles pin `linux/amd64`.
