@@ -12,7 +12,8 @@ use tempfile::TempDir;
 /// is set, and for `run` touches `$WRITE` in the current directory and exits
 /// `$CHAP_EXIT`, the way chap does when it writes a file. The chapkit probe
 /// exits `$PROBE_EXIT`; compose lists `$RUNNING` as running, and
-/// `$SERVICES` as its services.
+/// `$SERVICES` as its services. Any other image is local when `$IMAGE_HERE`
+/// is set, and `pull` exits `$PULL_EXIT`.
 pub(crate) fn fake_docker() -> (TempDir, PathBuf, PathBuf) {
     let temp = tempfile::tempdir().expect("a directory for the fake docker");
     let bin = temp.path().join("bin");
@@ -29,6 +30,9 @@ pub(crate) fn fake_docker() -> (TempDir, PathBuf, PathBuf) {
          [ -n \"$WORKER_HERE\" ] && echo sha256:worker && exit 0; exit 1;;\n\
          'image inspect --format {{{{.Id}}}} ghcr.io/dhis2-chap/chap-core'*) \
          [ -n \"$CORE_HERE\" ] && echo sha256:core && exit 0; exit 1;;\n\
+         'image inspect --format {{{{.Id}}}} '*) \
+         [ -n \"$IMAGE_HERE\" ] && echo sha256:image && exit 0; exit 1;;\n\
+         pull*) exit \"${{PULL_EXIT:-0}}\";;\n\
          'run --rm -v /var/run/docker.sock'*) echo 0; exit 0;;\n\
          'run --rm --platform'*) exit \"${{PROBE_EXIT:-0}}\";;\n\
          run*) echo \"hints=$DOCKER_CLI_HINTS\" >> '{log}'; \

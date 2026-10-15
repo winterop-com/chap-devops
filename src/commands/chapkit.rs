@@ -5,6 +5,10 @@
 //! makes: the current directory is mounted at the same path, and the run is
 //! the user of the host, so every file chapkit writes is on the host. See
 //! `docs/chap-cli.md`.
+//!
+//! `mlproject run` is the exception: it serves a model, which needs the
+//! model's language and a port, so [`serve`] runs it in a chapkit `-cli`
+//! image instead.
 
 use super::chap::files::Snapshot;
 use super::chap::{host_user, plan, resolve_tag};
@@ -39,6 +43,17 @@ pub fn run(ctx: &Ctx, args: &ChapkitArgs) -> Result<()> {
         .into());
     }
     let chapkit_args = with_group_help(&args.args);
+    if let Some(rest) = serve_arguments(&chapkit_args) {
+        return serve::run(ctx, args, rest);
+    }
+    if args.image.is_some() {
+        return Err(ChapError::Usage(
+            "--image picks the image of `mlproject run` only; drop it, or use \
+             `varde chapkit --image IMAGE mlproject run DIR`"
+                .to_string(),
+        )
+        .into());
+    }
     if let Some(why) = refused(&chapkit_args) {
         return Err(ChapError::Usage(why).into());
     }
@@ -137,9 +152,28 @@ pub fn run(ctx: &Ctx, args: &ChapkitArgs) -> Result<()> {
     }
 }
 
+/// The arguments after `run` when they ask to serve an MLproject:
+/// `mlproject run ...`, or chapkit's older spelling `run ...`.
+fn serve_arguments(args: &[String]) -> Option<&[String]> {
+    let positions: Vec<usize> = args
+        .iter()
+        .enumerate()
+        .filter(|(_, arg)| !arg.starts_with('-'))
+        .map(|(index, _)| index)
+        .take(2)
+        .collect();
+    match positions.as_slice() {
+        [first, ..] if args[*first] == "run" => Some(&args[first + 1..]),
+        [first, second] if args[*first] == "mlproject" && args[*second] == "run" => {
+            Some(&args[second + 1..])
+        }
+        _ => None,
+    }
+}
+
 /// Why varde refuses the chapkit arguments, with the varde command that
-/// does the work: `chapkit test` and `chapkit run` need a service that the
-/// container can reach, and the container is on no network of a model.
+/// does the work: `chapkit test` needs a service that the container can
+/// reach, and the container is on no network of a model.
 fn refused(args: &[String]) -> Option<String> {
     let words: Vec<&str> = args
         .iter()
@@ -151,11 +185,6 @@ fn refused(args: &[String]) -> Option<String> {
         ["test", ..] => Some(
             "`chapkit test` in this container cannot reach a model service; use \
              `varde models test ID`, which runs it in the model's own container"
-                .to_string(),
-        ),
-        ["run", ..] | ["mlproject", "run"] => Some(
-            "`chapkit run` serves a model, and this container stops when the command ends; \
-             build an image and use `varde run IMAGE`"
                 .to_string(),
         ),
         _ => None,
@@ -272,6 +301,8 @@ fn report(written: &[PathBuf], cwd: &Path) {
         super::chap::files::describe(written, cwd, WRITTEN_LIMIT)
     ));
 }
+
+mod serve;
 
 #[cfg(test)]
 mod tests;

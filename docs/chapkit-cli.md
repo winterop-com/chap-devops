@@ -28,6 +28,9 @@ release; `--tag TAG` overrides both. See
 [Which version](./chap-cli.md#which-version). The image is amd64 only, so on
 an arm64 machine, such as a Mac with Apple silicon, it runs under emulation.
 
+`chapkit mlproject run` is the exception: it runs in a chapkit `-cli` image.
+See [Serve an MLproject model](#serve-an-mlproject-model).
+
 ## Your files
 
 varde mounts the current directory in the container at the same path, and the
@@ -73,15 +76,57 @@ This was tested with `minimalist_configurable_model` from chap-models, on
 chap-core v2.4.0 (chapkit 2.1.0): the migrated image passed the model-level
 test with 1 training and 1 prediction.
 
+## Serve an MLproject model
+
+`chapkit mlproject run DIR` serves an `MLproject` model as a chapkit service,
+with no image to build:
+
+```sh
+varde chapkit mlproject run my-model
+varde chapkit --image r-inla mlproject run my-model
+varde chapkit --image chapkit_ghr_model:dev mlproject run .
+```
+
+The model needs its language and chapkit in one image. The chap-core image has
+no R, so varde runs a chapkit `-cli` image instead:
+
+| `--image` | Image |
+| --- | --- |
+| `py` | `ghcr.io/dhis2-chap/chapkit-py-cli` |
+| `r` | `ghcr.io/dhis2-chap/chapkit-r-cli` |
+| `r-tidyverse` | `ghcr.io/dhis2-chap/chapkit-r-tidyverse-cli` |
+| `r-inla` | `ghcr.io/dhis2-chap/chapkit-r-inla-cli` (amd64 only) |
+| any other value | That image, such as one you built yourself |
+
+Without `--image`, the train command in `MLproject` selects the image: a
+`python` or `uv` command gets `py`, and an `Rscript` command gets
+`r-tidyverse`. A model that needs INLA, or packages that no `-cli` image has,
+needs `--image`. An image of your own must have chapkit 2.4.0 or later, such
+as an image built `FROM` a `-cli` image. varde pulls the image if this docker
+does not have it.
+
+varde mounts the model directory at `/work` and publishes the service on the
+first free port from 5001 (in a deployment, from its port range). It prints
+the URL when the service answers at `/health`. The logs follow in the
+terminal, and Ctrl-C stops the service and removes its container.
+
+The options of `chapkit mlproject run` after `DIR` go to chapkit unchanged,
+such as `--config-format flat` or `--log-level debug`. A relative `--database`
+path is in the model directory. varde sets `--host` and `--port` itself.
+
+In a deployment that runs chap-core, the service joins the deployment network
+and registers with chap-core while it runs, with the registration key from
+`.env`. Outside a deployment, or with an external chap-core, it does not
+register; use the URL that varde prints.
+
 ## What varde refuses
 
-Two chapkit commands need a model service, and the container stops when the
-command ends. varde refuses them and names the command that does the work:
+`chapkit test` needs a model service that the container can reach. varde
+refuses it and names the command that does the work:
 
 | Command | Use instead |
 | --- | --- |
 | `chapkit test` | `varde models test ID`, which runs `chapkit test` in the model's own container. |
-| `chapkit run`, `chapkit mlproject run` | Build an image, then `varde run IMAGE`. |
 
 If `uv lock` fails, varde gives a warning; see
 [`could not write DIR/uv.lock`](./troubleshooting.md#could-not-write-diruvlock-and-the-dockerfile-copies-it).

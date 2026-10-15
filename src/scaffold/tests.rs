@@ -225,7 +225,14 @@ fn a_missing_git_value_keeps_its_placeholder() {
 fn an_author_loses_the_characters_that_end_a_quoted_string() {
     let author = Author::from_values(Some("Kari \"KN\" Nord\\mann\n".to_string()), None);
     assert_eq!(author.name, "Kari KN Nordmann");
-    let files = render(&names("rain").unwrap(), &author, Template::MlprojectPy, false).unwrap();
-    let mlproject: serde_yaml_ng::Value = serde_yaml_ng::from_str(file(&files, "MLproject")).unwrap();
+    let files = render(
+        &names("rain").unwrap(),
+        &author,
+        Template::MlprojectPy,
+        false,
+    )
+    .unwrap();
+    let mlproject: serde_yaml_ng::Value =
+        serde_yaml_ng::from_str(file(&files, "MLproject")).unwrap();
     assert_eq!(mlproject["meta_data"]["author"], "Kari KN Nordmann");
 }
