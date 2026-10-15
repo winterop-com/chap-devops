@@ -3,7 +3,7 @@ CHAP model marketplace snapshot
 
 upstream:       https://github.com/dhis2-chap/model-marketplace
 ref:            main
-commit:         927697d76248f6421915419eeabe2e5dedd8c4f1
+commit:         b2ac5fefaae60f05ec767f4fedd36a83dc26eae1
 
 Files in this directory are verbatim copies of the upstream YAML. build.rs
 generates the table src/registry/embedded.rs compiles into the binary, which
