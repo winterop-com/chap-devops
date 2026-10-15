@@ -164,6 +164,31 @@ fn the_readme_gives_the_commands_for_this_project() {
 }
 
 #[test]
+fn an_mlproject_readme_serves_and_migrates_with_the_base_image() {
+    for (template, base) in [
+        (Template::MlprojectPy, "chapkit-py"),
+        (Template::MlprojectR, "chapkit-r"),
+        (Template::MlprojectRTidyverse, "chapkit-r-tidyverse"),
+        (Template::MlprojectRInla, "chapkit-r-inla"),
+    ] {
+        let files = rendered(template, false);
+        let readme = file(&files, "README.md");
+        assert!(
+            readme.contains("varde chapkit mlproject run ."),
+            "{template:?}"
+        );
+        assert!(
+            readme.contains(&format!(
+                "varde chapkit mlproject migrate . --yes --base-image {base}\n"
+            )),
+            "{template:?}"
+        );
+    }
+    let files = rendered(Template::ShellPy, false);
+    assert!(!file(&files, "README.md").contains("mlproject migrate"));
+}
+
+#[test]
 fn write_refuses_a_directory_that_is_not_empty() {
     let tmp = tempfile::tempdir().unwrap();
     std::fs::write(tmp.path().join("keep.txt"), "x").unwrap();

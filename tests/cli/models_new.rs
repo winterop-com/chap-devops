@@ -62,6 +62,11 @@ fn models_new_json_names_the_files_and_the_ids() {
     assert!(files.contains(&"MLproject"));
     assert!(files.contains(&"scripts/train.R"));
     assert!(!files.contains(&"main.py"));
+    assert_eq!(
+        report["messages"][1]["text"],
+        "next: run `varde chapkit mlproject run Rain Model` to serve it with no build, or build \
+         the image as `Rain Model/README.md` says"
+    );
     let mlproject = yaml(&sandbox.home.path().join("Rain Model/MLproject"));
     assert_eq!(mlproject["name"], "rain-model");
 }

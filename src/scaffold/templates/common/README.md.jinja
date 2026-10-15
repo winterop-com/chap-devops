@@ -74,6 +74,24 @@ varde models test {{ model_id }} --backtest
 The model registers with chap-core as `{{ service_id }}`. This id is the
 {% if is_mlproject %}`name` in `MLproject`{% else %}`id` in `main.py`{% endif %}. If you change it, add the image with
 `--service-id` and the new id.
+{% if is_mlproject %}
+
+To serve the model from this directory with no build, run
+`varde chapkit mlproject run .` here. Ctrl-C stops it.
+
+## Make it a chapkit service
+
+To change the model to a chapkit service with a `main.py`, commit first, then
+run this here:
+
+```sh
+varde chapkit mlproject migrate . --yes --base-image {{ migrate_base }}
+```
+
+chapkit moves `MLproject` and the files the service does not need to `_old/`.
+It looks for the scripts at the project root only, so `--base-image` is
+necessary for the scripts in `scripts/`.
+{% endif %}
 
 ## After a change
 

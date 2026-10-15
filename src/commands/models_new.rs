@@ -62,10 +62,16 @@ pub fn run(ctx: &Ctx, args: &ModelsNewArgs) -> Result<()> {
             args.template.as_str(),
             report.names.service_id
         ));
-        r.info(format!(
-            "next: build the image as `{shown}/README.md` says, then run `varde run {}:dev`",
-            report.names.service_id
-        ));
+        r.info(match args.template.is_mlproject() {
+            true => format!(
+                "next: run `varde chapkit mlproject run {shown}` to serve it with no build, or \
+                 build the image as `{shown}/README.md` says"
+            ),
+            false => format!(
+                "next: build the image as `{shown}/README.md` says, then run `varde run {}:dev`",
+                report.names.service_id
+            ),
+        });
         r.hint(format!("files: {}", report.files.join(", ")));
         r.hint(format!("base image: {}", report.base_image));
         let metadata = match args.template.is_mlproject() {
