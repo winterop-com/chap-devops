@@ -105,6 +105,15 @@ pub const OCS_DATA_SOURCE_ENV_VARS: &[&str] = &[
     "CDSE_S3_SECRET_KEY",
 ];
 
+/// The compute limits of OCS. Each is passed only when `.env` sets it: OCS
+/// computes its own default from the machine, and an empty value is not a
+/// number.
+pub const OCS_COMPUTE_ENV_VARS: &[&str] = &[
+    "CLIMATE_SERVICE_MAX_CONCURRENT_JOBS",
+    "DASK_NUM_WORKERS",
+    "TOKIO_WORKER_THREADS",
+];
+
 /// The Copernicus Climate Data Store endpoint, as the commented `.env`
 /// placeholder carries it: the one data source variable with a value worth
 /// pre-filling, since it is the same for everyone.

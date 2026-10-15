@@ -4,9 +4,10 @@
 use super::labels::{ROLE_OCS, ROLE_S3, labels_block};
 use super::{fill, normalize_newlines};
 use crate::components::{
-    OCS_BASE_URL_ENV_VAR, OCS_CONFIG_FILE, OCS_CONTAINER_PORT, OCS_DATA_SOURCE_ENV_VARS, OCS_DIR,
-    OCS_IMAGE, OCS_PLUGINS_DIR, OCS_PLUGINS_TARGET, OCS_TAG_ENV_VAR, S3_ACCESS_KEY_ENV_VAR,
-    S3_BUCKET, S3_CONTAINER_PORT, S3_IMAGE, S3_SECRET_KEY_ENV_VAR, S3_TAG_ENV_VAR,
+    OCS_BASE_URL_ENV_VAR, OCS_COMPUTE_ENV_VARS, OCS_CONFIG_FILE, OCS_CONTAINER_PORT,
+    OCS_DATA_SOURCE_ENV_VARS, OCS_DIR, OCS_IMAGE, OCS_PLUGINS_DIR, OCS_PLUGINS_TARGET,
+    OCS_TAG_ENV_VAR, S3_ACCESS_KEY_ENV_VAR, S3_BUCKET, S3_CONTAINER_PORT, S3_IMAGE,
+    S3_SECRET_KEY_ENV_VAR, S3_TAG_ENV_VAR,
 };
 use crate::compose::spec::{OcsConfigSpec, OcsSpec, S3Spec};
 use std::sync::LazyLock;
@@ -71,6 +72,11 @@ pub fn render_ocs(spec: &OcsSpec) -> String {
     );
     for var in OCS_DATA_SOURCE_ENV_VARS {
         data_source_lines.push_str(&format!("      {var}: ${{{var}:-}}\n"));
+    }
+    // No value: compose passes the variable from `.env` when it is set
+    // there, and leaves it out of the container when it is not.
+    for var in OCS_COMPUTE_ENV_VARS {
+        data_source_lines.push_str(&format!("      {var}:\n"));
     }
     let mut port_lines = format!("    expose:\n      - \"{OCS_CONTAINER_PORT}\"\n");
     if let Some(port) = spec.host_port {

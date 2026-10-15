@@ -993,6 +993,20 @@ waits fifteen minutes.
 `varde sync --check` reports drift without writing, and exits non-zero, which
 makes it a usable pre-commit or CI check.
 
+## `scheduler.dataset_sync is no longer supported`
+
+OCS does not start, and `varde logs ocs` shows this line. The current OCS
+keeps its schedules in its data volume, not in `ocs/climate-service.yaml`.
+
+1. Write down the datasets and the times in the `dataset_sync:` list.
+2. Remove the `dataset_sync:` list from `ocs/climate-service.yaml`. Keep
+   `enabled: true`.
+3. Run `varde restart ocs`.
+4. Make the schedules again in the Schedule tab of each dataset in the OCS web
+   UI. OCS does not import the old list.
+
+See [Schedules](components.md#schedules).
+
 ## An OCS dataset plugin does not appear after a restart
 
 You put a plugin in `ocs/plugins/datasets/`, ran `varde restart` - or

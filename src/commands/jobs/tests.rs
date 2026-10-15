@@ -148,7 +148,11 @@ fn a_body_that_is_not_a_list_is_named_in_the_error() {
 
 #[test]
 fn every_backtest_job_type_names_the_backtests() {
-    for kind in ["create_backtest", "create_backtest_from_data", "run_baseline"] {
+    for kind in [
+        "create_backtest",
+        "create_backtest_from_data",
+        "run_baseline",
+    ] {
         assert_eq!(collection_of(kind), Some("backtests"), "{kind}");
     }
     assert_eq!(collection_of("something_new"), None);

@@ -10,7 +10,7 @@ extent:
 
 data_dir: /app/data   # the ocs_data volume
 
-# Recurring checks and event-driven workflows go here; OCS's own
-# climate-service.yaml.example shows the shape.
+# The scheduler runs the schedules made in the OCS web UI (the Schedule tab of
+# a dataset) or through POST /schedules/sync.
 # scheduler:
 #   enabled: true

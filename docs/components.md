@@ -494,6 +494,38 @@ OCS's own documentation describes every other field, including the scheduler
 and the workflow triggers: see the
 [instance guide](https://dhis2.github.io/open-climate-service/instance_guide/).
 
+### Schedules
+
+OCS can sync a dataset again on a schedule. The file only turns the scheduler
+on:
+
+```yaml
+scheduler:
+  enabled: true
+```
+
+Make the schedules in the Schedule tab of a dataset in the OCS web UI, or with
+`POST /schedules/sync`. OCS keeps them in `schedules.json` in its data volume,
+so `varde backup` keeps them too. A read-only instance refuses changes to them.
+
+An older OCS read a `dataset_sync:` list under `scheduler:`. The current OCS
+refuses that list, and does not start; see
+[`scheduler.dataset_sync is no longer supported`](troubleshooting.md#schedulerdataset_sync-is-no-longer-supported).
+
+### Compute limits
+
+Three variables in `.env` limit what OCS does at the same time. varde passes
+each one only when `.env` sets it; else OCS uses its own default:
+
+| Variable | Default | What it limits |
+| --- | --- | --- |
+| `CLIMATE_SERVICE_MAX_CONCURRENT_JOBS` | 2 | Ingestion, sync, export and openEO jobs that run at the same time. The others wait in the queue. |
+| `DASK_NUM_WORKERS` | half the cores | The threads of every dask computation. |
+| `TOKIO_WORKER_THREADS` | one per core | The threads that read and write the data store. |
+
+On a machine with 8 GB of memory or less, set
+`CLIMATE_SERVICE_MAX_CONCURRENT_JOBS=1`. Then run `varde restart ocs`.
+
 ### Data source credentials
 
 Two of the dataset families OCS can ingest need an account. WorldPop and CHIRPS3
