@@ -24,8 +24,8 @@ For people who use the chap CLI already
 1. What changes for you, and what does not
 2. How `varde chap` runs chap: the container, the mounts, the user
 3. Which image and which chap-core version it runs
-4. Models: GitHub, directories, URLs, and marketplace ids
-5. Models that run in docker
+4. Models: GitHub, directories, URLs, marketplace ids and built-in models
+5. Models that run in docker, and an MLproject as a chapkit service
 6. Your files: what is visible, what is written, what varde reports
 7. Every message that stops a run, and what to do
 8. A full example: three models, compared
@@ -76,7 +76,7 @@ varde chap plot-backtest r.nc --output-file r.html
 | `chap validate data.csv` | `varde chap validate data.csv` |
 | `chap --help` | `varde chap` |
 | `chap eval --help` | `varde chap eval --help` |
-| `uvx --from chap-core==2.3.1 chap ...` | `varde chap --tag v2.3.1 ...` |
+| `uvx --from chap-core==2.4.0 chap ...` | `varde chap --tag v2.4.0 ...` |
 
 ---
 
@@ -108,7 +108,7 @@ docker run --rm -i [-t] --init --platform linux/amd64
   -e HOME=/tmp -e CHAP_RUNS_DIR=<data>/chap/runs ...
   [--network <deployment>_default]
   --label com.winterop.varde.kind=cli
-  ghcr.io/dhis2-chap/chap-worker:v2.3.1 chap eval ...
+  ghcr.io/dhis2-chap/chap-worker:v2.4.0 chap eval ...
 ```
 
 - `--rm`: the container goes when chap stops. `--init` passes Ctrl-C on.
@@ -155,7 +155,8 @@ With the sandbox off, `rm -rf ~/.local/share/varde/chap` deletes all of it.
 | `--model-name` | Image | Size on disk |
 | --- | --- | --- |
 | a GitHub repository, a model directory | `chap-worker` | about 12 GB |
-| a chapkit URL, a model id | `chap-core` | about 2.4 GB |
+| a chapkit URL, a model id | the image on this machine; else `chap-core` | |
+| `builtin:NAME` | the image on this machine; else `chap-core` | |
 | no model (`plot-backtest`, `export-metrics`) | `chap-core` | about 2.4 GB |
 | anything, in a deployment | `chap-worker` | already there |
 
@@ -187,7 +188,7 @@ newest image on this machine
 ## The lines before the run
 
 ```text
-running `chap eval` in ghcr.io/dhis2-chap/chap-worker:v2.3.1; the first run pulls it, about 12 GB
+running `chap eval` in ghcr.io/dhis2-chap/chap-worker:v2.4.0; the first run pulls it, about 12 GB
 files: chap reads and writes in /home/me/work
 model: auto_arima_chapkit at http://auto-arima-chapkit:8000 answers
 ```
@@ -201,7 +202,7 @@ only the first line.
 
 ---
 
-## Models: four kinds
+## Models: five kinds
 
 | `--model-name` | What happens |
 | --- | --- |
@@ -209,6 +210,7 @@ only the first line.
 | `./my_model` (a directory) | chap runs it from your directory |
 | `http://...` (a chapkit service) | varde checks that it answers, then chap calls it |
 | **`auto_arima_chapkit` (an id)** | **varde starts the model, then chap calls it** |
+| `builtin:seasonal_median` | chap runs it itself; varde starts nothing |
 
 A word is a model id only when no file or directory of that name is in the
 current directory. A directory of the same name wins, as it does for chap.
@@ -221,7 +223,7 @@ Outside a deployment, varde starts the model in a `varde run` group:
 
 ```text
 starting auto-arima-chapkit (auto_arima_chapkit in ~/.local/share/varde/run/default)
-running `chap eval` in ghcr.io/dhis2-chap/chap-core:v2.3.1
+running `chap eval` in ghcr.io/dhis2-chap/chap-core:v2.4.0
 model: auto_arima_chapkit at http://auto-arima-chapkit:8000 answers
 chap finished; it wrote arima.nc
 auto_arima_chapkit keeps running for the next run; `varde stop auto_arima_chapkit`
@@ -300,8 +302,10 @@ error: `http://localhost:5001` is this machine, and in the container
 http://auto-arima-chapkit:8000`, the same model on the network
 ```
 
-When varde knows which model has that port, the message names its service
-URL. Otherwise, it tells you to give the model id.
+- When varde knows which model has that port, the message names its
+  service URL.
+- For a service on this machine, use `http://host.docker.internal:PORT`.
+  In the container, that name is this machine.
 
 ---
 
@@ -340,6 +344,40 @@ The socket is full control of docker. So `--docker` is never the default.
 
 ---
 
+## Built-in models
+
+From chap-core v2.5.0, chap has baselines of its own. Give them with the
+`builtin:` prefix:
+
+```sh
+varde chap --tag master eval --model-name builtin:seasonal_median \
+  --dataset-csv laos_subset.csv --output-file seasonal_median.nc
+```
+
+- The names are `persistence`, `global_median` and `seasonal_median`.
+- chap runs them itself, so varde starts no model, and either image works.
+- An older tag does not have them. Until v2.5.0 is released, use
+  `--tag master`.
+
+---
+
+## An MLproject as a chapkit service
+
+From chap-core v2.5.0, `--run-config.as-chapkit` starts a model directory or a
+GitHub repository as a chapkit service in the container:
+
+```sh
+varde chap --tag master eval --model-name ./my_model --run-config.as-chapkit \
+  --dataset-csv laos_subset.csv --output-file my_model.nc
+```
+
+- The `MLproject` can use `uv_env`, `renv_env` or no environment.
+- chap refuses `docker_env`, `conda_env` and `python_env` in this mode. So
+  varde does not ask for `--docker`.
+- An `MLproject` from `chapkit mlproject export` needs this mode.
+
+---
+
 ## Your files: what varde does for you
 
 - **Output directories:** varde makes the directory of each `--output-file`
@@ -347,6 +385,7 @@ The socket is full control of docker. So `--docker` is never the default.
 - **Paths outside the directory:** `../out/r.nc`, `/data/r.nc` or
   `--output-file=/data/r.nc`. varde mounts the nearest existing directory
   above the path, at the same path.
+- **`--out-file`** (`chap simulate`): varde makes its directory too.
 - **The deployment directory:** if you run `varde chap` there, varde tells
   you that a subdirectory (`mkdir eval && cd eval`) keeps chap's files apart
   from the compose files.
@@ -396,6 +435,7 @@ error: chap exited with status 1; its own message is above
 | `export-metrics` | yes |
 | `validate` | yes |
 | `test` | yes |
+| `simulate` | yes, from v2.5.0: it writes a CSV with `--out-file` |
 | `plot-dataset` | **no**: it opens a browser, and a container has none |
 
 varde refuses `plot-dataset` before the run and names `plot-backtest`.
@@ -482,3 +522,5 @@ varde chap
   **https://winterop-com.github.io/varde/use-cases/evaluate-with-chap-cli.html**
 - The chapter about `varde chap`:
   **https://winterop-com.github.io/varde/chap-cli.html**
+- A model in the MLproject format: `varde chapkit mlproject run DIR`
+  serves it with no build. See the **MLproject models** deck.

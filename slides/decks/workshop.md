@@ -46,8 +46,8 @@ and about **25 GB** of free disk space.
 | `chapkit_simple_multistep_model` | less than 1 GB | the third model |
 
 ```sh
-docker pull --platform linux/amd64 ghcr.io/dhis2-chap/chap-worker:v2.3.1
-docker pull --platform linux/amd64 ghcr.io/dhis2-chap/chap-core:v2.3.1
+docker pull --platform linux/amd64 ghcr.io/dhis2-chap/chap-worker:v2.4.0
+docker pull --platform linux/amd64 ghcr.io/dhis2-chap/chap-core:v2.4.0
 varde run auto_arima_chapkit && varde stop auto_arima_chapkit
 varde run chapkit_simple_multistep_model && varde stop chapkit_simple_multistep_model
 ```
@@ -220,7 +220,7 @@ varde chap eval \
 ## What happened
 
 ```text
-running `chap eval` in ghcr.io/dhis2-chap/chap-worker:v2.3.1
+running `chap eval` in ghcr.io/dhis2-chap/chap-worker:v2.4.0
 files: chap reads and writes in /home/me/chap-workshop
 ...
 chap finished; it wrote out/minimalist_r.nc
@@ -403,8 +403,8 @@ Your `.nc`, `.html` and `.csv` files stay in `~/chap-workshop/out`.
 ## Where to go next
 
 - **Your own data:** the same columns, a GeoJSON of the same name.
-- **Your own model:** see the model template, and `varde run` for a model
-  service of your own.
+- **Your own model:** `varde models new my-model` makes the project, and
+  `varde run` starts the model service.
 - **DHIS2 and the Modeling App:** `varde init mychap --with dhis2`, then
   `varde dhis2 connect`.
 - **More about the chap CLI in varde:** the deck "The chap CLI, without

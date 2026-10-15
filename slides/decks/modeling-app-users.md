@@ -118,6 +118,8 @@ before that.
   finishes, and the log shows no Java error.
 - `varde doctor` warns below 6 GB for docker, and fails below 4 GB.
 - On Docker Desktop, raise the VM's memory: Settings, Resources.
+- With OCS on 8 GB or less: set `CLIMATE_SERVICE_MAX_CONCURRENT_JOBS=1` in
+  `.env`, then run `varde restart ocs`.
 
 ```ini
 # DHIS2_JAVA_TOOL_OPTIONS=-Xms2g -Xmx4g -XX:+UseG1GC
@@ -390,6 +392,24 @@ varde open ocs
   `.env`.
 - `ocs/climate-service.yaml` is the instance's configuration. Edit it: it
   ships with example values.
+
+---
+
+## OCS: schedules
+
+OCS can sync a dataset again on a schedule. The file only turns the
+scheduler on:
+
+```yaml
+scheduler:
+  enabled: true
+```
+
+- Make the schedules in the Schedule tab of a dataset in the OCS web UI.
+- Or make them with `POST /schedules/sync`. `varde backup` keeps them.
+- An old `dataset_sync:` list stops OCS with
+  `scheduler.dataset_sync is no longer supported`. Remove the list, run
+  `varde restart ocs`, and make the schedules again.
 
 ---
 

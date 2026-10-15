@@ -117,6 +117,27 @@ varde run my-dengue-model:dev
 
 ---
 
+## An MLproject directory: `varde chapkit mlproject run`
+
+A model in the MLproject format is a directory, not an image. Serve it with
+no build:
+
+```sh
+varde chapkit mlproject run rain-model
+```
+
+```text
+serving /home/me/rain-model with `chapkit mlproject run`
+  in ghcr.io/dhis2-chap/chapkit-r-tidyverse-cli:latest (...)
+starting it on http://localhost:5001; the logs follow, and Ctrl-C stops it
+the MLproject service answers at http://localhost:5001
+```
+
+- It runs in the foreground, with the logs. Ctrl-C stops it.
+- See the **MLproject models** deck.
+
+---
+
 ## Where the model runs: groups
 
 Outside a deployment, `varde run` keeps its models in a **group**:
@@ -328,7 +349,7 @@ starts it in a group, as `varde run` does:
 
 ```text
 starting auto-arima-chapkit (auto_arima_chapkit in /home/me/.local/share/varde/run/default)
-running `chap eval` in ghcr.io/dhis2-chap/chap-core:v2.3.1
+running `chap eval` in ghcr.io/dhis2-chap/chap-core:v2.4.0
 model: auto_arima_chapkit at http://auto-arima-chapkit:8000 answers
 chap finished; it wrote arima.nc
 auto_arima_chapkit keeps running for the next run; `varde stop auto_arima_chapkit`
@@ -411,10 +432,10 @@ varde --json run chapkit_simple_multistep_model
 | --- | --- |
 | a model and its URL | `varde run ID` |
 | a model in the foreground, with its log | `varde run ID -a` |
-| the models that run | `varde ps` |
-| a live view | `varde top` |
+| the models that run, or a live view | `varde ps`, or `varde top` |
 | its log | `varde -C ~/.local/share/varde/run/default logs SERVICE` |
 | to evaluate it | `varde chap eval --model-name ID ...` |
+| an MLproject directory as a service | `varde chapkit mlproject run DIR` |
 | to register it with your chap-core | `varde run ID --chap-core URL` |
 | to stop it | `varde stop ID`, or Ctrl-C with `-a` |
 | to remove it and its data | `varde stop ID --purge` |

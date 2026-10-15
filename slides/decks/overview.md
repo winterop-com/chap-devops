@@ -209,7 +209,7 @@ varde auth show --reveal                         # read the token
 
 - **Models**: an image tag, a `sha-<commit>` build for marketplace images.
 - **chap-core**: a release tag. `init` resolves `latest` to the release it
-  points at today, for example `v2.3.1`.
+  points at today, for example `v2.4.0`.
 - **DHIS2**: a minor line, `2.42`, so a patch release comes with a pull.
 - **OCS and S3**: moving tags (`main`, `latest`), because they publish no
   releases. Set `OCS_IMAGE_TAG` in `.env` to pin one.
@@ -241,7 +241,7 @@ Each run ends with one of these lines:
 ```text
 already up to date
 updated 1 model pin; restart needed: chap, worker (run `varde restart`)
-updated chap-core v2.3.0 -> v2.3.1; Chap is not running, the new versions start with `varde up`
+updated chap-core v2.3.1 -> v2.4.0; Chap is not running, the new versions start with `varde up`
 updated 1 model pin; nothing needs a restart
 pulled a new image for ocs; restart needed: ocs (run `varde restart`)
 ```
@@ -254,7 +254,7 @@ database. `varde backup create` comes before it.
 ## `varde status`
 
 ```text
-chap-core   up   http://localhost:8700   v2.3.1   auth: on
+chap-core   up   http://localhost:8700   2.4.0   auth: on
 ocs         up   http://localhost:8790   3 datasets   212.0 MB data
 
 MODEL                             STATE                    REACH          LAST PING
@@ -295,6 +295,27 @@ e3e9f243...  create_backtest    eval-chapkit-rwanda-malaria-bym-model  FAILURE  
 - A failed job says why in `varde jobs logs ID`, and nowhere else.
 - `varde jobs show`, `cancel` and `delete` take an id, or its first characters.
 - `--status FAILURE`, `--type create_backtest` and `--limit N` filter the list.
+
+---
+
+## Jobs of one backtest, from chap-core v2.5.0
+
+One backtest also starts one `run_baseline` job for each built-in model,
+named `baseline/<model>`. So one backtest is four jobs:
+
+```text
+ID           TYPE             NAME                                      STATUS   STARTED  DURATION
+002a1f4d...  run_baseline     baseline/seasonal_median                  SUCCESS  17s ago  4s
+11bee580...  run_baseline     baseline/persistence                      SUCCESS  17s ago  4s
+12fbf146...  create_backtest  varde-test-t-mlproject-r-20261015-161535  SUCCESS  17s ago  8s
+58fcabe2...  run_baseline     baseline/global_median                    SUCCESS  17s ago  4s
+4202aea8...  create_dataset   varde-test-t-mlproject-r-20261015-161535  SUCCESS  20s ago  2s
+
+5 jobs: 5 done
+```
+
+This is `varde jobs` after one `varde models test --backtest` on chap-core
+`master`.
 
 ---
 
@@ -353,7 +374,7 @@ Every container that varde starts carries labels:
 | --- | --- |
 | `com.winterop.varde.role` | `chap-core`, `model`, `ocs`, `s3` or `dhis2` |
 | `com.winterop.varde.model` | the marketplace id of a model |
-| `com.winterop.varde.kind` | `init` for a deployment, `run` for a `varde run` group |
+| `com.winterop.varde.kind` | `init` for a deployment, `run` for a `varde run` group, `cli` for the one-shot container of `varde chap` and `varde chapkit` |
 
 `varde top` uses them to show every deployment on the machine as one live
 tree: each service with its state, CPU, memory and URL. `l` shows a log, `s`
@@ -405,6 +426,26 @@ varde chap plot-backtest arima.nc --output-file arima.html
 - A model id starts that model only. No `varde up`, no chap-core.
 
 See the **chap CLI** deck.
+
+---
+
+## The chapkit CLI, without Python: `varde chapkit`
+
+```sh
+varde chapkit mlproject run rain-model
+```
+
+```text
+the MLproject service answers at http://localhost:5001
+```
+
+- chapkit's own `chapkit` CLI runs in a container. You need only Docker.
+- `mlproject run` serves a model in the MLproject format, with no image to
+  build. Ctrl-C stops it.
+- `mlproject migrate` makes it a chapkit service, and `mlproject export` goes
+  back.
+
+See the **MLproject models** deck.
 
 ---
 

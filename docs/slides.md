@@ -1,6 +1,6 @@
 # Slides
 
-Six slide decks, one for each audience. Each one is a web page that you can
+Seven slide decks, one for each audience. Each one is a web page that you can
 present in a browser, and a PDF in 16:9. <a href="slides/index.html" target="_blank" rel="noopener">All the decks on one page</a>.
 
 | Deck | For | Web | PDF |
@@ -11,6 +11,7 @@ present in a browser, and a PDF in 16:9. <a href="slides/index.html" target="_bl
 | Chap behind the Modeling App | people who use DHIS2 and the Modeling App | <a href="slides/modeling-app-users.html" target="_blank" rel="noopener">open</a> | <a href="slides/modeling-app-users.pdf" target="_blank" rel="noopener">PDF</a> |
 | A workshop | students, in a hands-on session of about one hour | <a href="slides/workshop.html" target="_blank" rel="noopener">open</a> | <a href="slides/workshop.pdf" target="_blank" rel="noopener">PDF</a> |
 | Developing a model | people who write forecasting models | <a href="slides/model-developers.html" target="_blank" rel="noopener">open</a> | <a href="slides/model-developers.pdf" target="_blank" rel="noopener">PDF</a> |
+| MLproject models with varde | people who have a model in the MLproject format | <a href="slides/mlproject-models.html" target="_blank" rel="noopener">open</a> | <a href="slides/mlproject-models.pdf" target="_blank" rel="noopener">PDF</a> |
 
 In the web page, the arrow keys move between the slides, and `f` shows the
 deck on the full screen.

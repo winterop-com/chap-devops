@@ -40,11 +40,26 @@ only when the step needs it.
 | What it is | a service: a container with an HTTP API | a directory with an `MLproject` file |
 | How chap uses it | over HTTP | it runs the `train` and `predict` commands |
 | Environment | the image | `uv_env`, `renv_env` or `docker_env` |
-| In a deployment | yes, as a service | no |
-| With `varde chap eval` | by id or URL | by GitHub URL or directory |
+| In a deployment | yes, as a service | yes, with `varde chapkit mlproject run` |
+| With `varde chap eval` | by id or URL | by GitHub URL or directory, or with `--run-config.as-chapkit` |
 
-The marketplace and the Modeling App use **chapkit models**. The rest of this
-deck is mostly about them.
+The marketplace and the Modeling App use **chapkit models**. This deck is
+about them. The **MLproject models** deck is about the other kind.
+
+---
+
+## A model in the MLproject format
+
+```sh
+varde chapkit mlproject run my-model       # serve it, with no build
+varde chapkit mlproject migrate my-model   # make it a chapkit service
+```
+
+- `mlproject run` serves the directory as a chapkit service. In a
+  deployment, it registers with chap-core.
+- `mlproject migrate` writes the `Dockerfile` and `main.py` of a chapkit
+  service.
+- See the deck **MLproject models with varde**.
 
 ---
 
@@ -67,8 +82,6 @@ One container that listens on port 8000:
 
 ## Start a new model
 
-varde makes the project for you. Docker builds it, so Python is not necessary:
-
 ```sh
 varde models new my-model
 varde models new my-r-model --template shell-r
@@ -81,8 +94,8 @@ varde models new my-r-model --template shell-r
 | `shell-r-tidyverse`, `shell-r-inla` | the same, with tidyverse and fable, or INLA |
 | `mlproject-py`, `mlproject-r`, ... | an `MLproject` file and scripts, no chapkit code |
 
-It also makes a `Dockerfile`, a `README.md` with the commands, and a workflow
-that publishes the image.
+Docker builds it, so Python is not necessary. `mlproject-py` builds `FROM
+chapkit-py-data-cli`. The author comes from git `user.name` and `user.email`.
 
 ---
 
@@ -219,7 +232,7 @@ entry gave it.
 
 | Flag | What it sets | Without it |
 | --- | --- | --- |
-| `--id` | the model id; `auto` picks a free one | the name in snake_case |
+| `--id` | the model id; `auto` picks a free one. Not `persistence`, `global_median` or `seasonal_median` | the name in snake_case |
 | `--service-id` | the compose service and DNS name | the id with hyphens |
 | `--name` | the display name | the repository or image name |
 | `--port N\|auto`, `--bind` | a host port, and its address | no host port |
@@ -394,6 +407,25 @@ that the test made, and nothing else.
 
 ---
 
+## More work for the model level
+
+These flags are for the model level only. `--backtest` refuses them.
+
+| Flag | What it does |
+| --- | --- |
+| `--configs N` | the configs that `chapkit test` makes (1) |
+| `--trainings N` | the trainings of each config (1) |
+| `--predictions N` | the predictions of each trained model (1) |
+| `--rows N` | the rows of the training data (250) |
+| `--predict-rows N` | the rows of the data of each prediction (150) |
+
+```sh
+varde models test my_model --rows 600 --predict-rows 300
+varde models test my_model --configs 2 --trainings 2
+```
+
+---
+
 ## Evaluate on real data
 
 In a subdirectory of the deployment (`mkdir eval && cd eval`):
@@ -425,7 +457,10 @@ varde chap export-metrics mine.nc arima.nc --output-file comparison.csv
 varde chap plot-backtest mine.nc --output-file mine.html
 ```
 
-One row for each model: `crps`, `mae`, `rmse`, the interval coverage and more.
+- One row for each model: `crps`, `mae`, `rmse`, the interval coverage and
+  more.
+- A baseline: `--model-name builtin:seasonal_median`. It needs chap-core
+  v2.5.0, or `--tag master` until v2.5.0 is released.
 
 ---
 
@@ -476,6 +511,8 @@ varde doctor                    # the machine and the deployment
 ```
 
 - A failed backtest says why in `varde jobs logs` and nowhere else.
+- From chap-core v2.5.0, `varde jobs` also shows a `baseline/<model>` job for
+  each built-in model of a backtest.
 - A model test failure names the phase (`train`, `predict`) and the first line
   of the model's error. Add `-vv` for the whole output.
 
