@@ -1,4 +1,4 @@
-use super::refused;
+use super::{refused, serve_arguments};
 
 fn strings(args: &[&str]) -> Vec<String> {
     args.iter().map(|arg| arg.to_string()).collect()
@@ -19,10 +19,23 @@ fn test_is_refused_with_the_varde_command() {
 }
 
 #[test]
-fn run_is_refused_in_both_spellings() {
-    for args in [&["run", "."][..], &["mlproject", "run", "."][..]] {
-        let why = refused(&strings(args)).expect("refused");
-        assert!(why.contains("`varde run IMAGE`"), "{why}");
+fn run_serves_in_both_spellings() {
+    let args = strings(&["mlproject", "run", "model", "--config-format", "flat"]);
+    assert_eq!(
+        serve_arguments(&args),
+        Some(&strings(&["model", "--config-format", "flat"])[..])
+    );
+    let args = strings(&["run", "."]);
+    assert_eq!(serve_arguments(&args), Some(&strings(&["."])[..]));
+    let args = strings(&["mlproject", "run"]);
+    assert_eq!(serve_arguments(&args), Some(&[][..]));
+    for args in [
+        &["mlproject", "migrate", "model"][..],
+        &["init", "run"][..],
+        &["--help"][..],
+    ] {
+        assert_eq!(serve_arguments(&strings(args)), None, "{args:?}");
+        assert_eq!(refused(&strings(args)), None, "{args:?}");
     }
 }
 

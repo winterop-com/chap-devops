@@ -156,8 +156,12 @@ impl Author {
 
     /// An author from the two git values; a missing one keeps its placeholder.
     pub fn from_values(name: Option<String>, email: Option<String>) -> Self {
-        let name = name.map(|value| clean(&value)).filter(|value| !value.is_empty());
-        let email = email.map(|value| clean(&value)).filter(|value| !value.is_empty());
+        let name = name
+            .map(|value| clean(&value))
+            .filter(|value| !value.is_empty());
+        let email = email
+            .map(|value| clean(&value))
+            .filter(|value| !value.is_empty());
         let placeholder = Self::default();
         Self {
             from_git: name.is_some() || email.is_some(),

@@ -173,7 +173,7 @@ See [Authentication](./auth.md).
 | Command | What it does |
 | --- | --- |
 | `varde chap [--tag TAG] [--image core\|worker] [--group NAME] [--stop] [--timeout S] [--docker] CHAP_ARGS..` | Run chap-core's own `chap` CLI in a container, with the current directory mounted at the same path, so its file arguments and outputs are on this machine. A model id in `--model-name` starts that model, without chap-core and without `varde up`, and `--stop` stops it after the run. The image follows `--model-name`; a deployment gives its tag and its network. `--docker` gives the container the docker socket, for `docker_env` models. Works anywhere. |
-| `varde chapkit [--tag TAG] CHAPKIT_ARGS..` | Run the `chapkit` CLI in the chap-core image, with the current directory mounted at the same path. `mlproject migrate DIR` makes a chapkit service from an `MLproject` model, and varde then writes its `uv.lock`. Works anywhere. |
+| `varde chapkit [--tag TAG] [--image IMAGE] CHAPKIT_ARGS..` | Run the `chapkit` CLI in the chap-core image, with the current directory mounted at the same path. `mlproject migrate DIR` makes a chapkit service from an `MLproject` model, and varde then writes its `uv.lock`. `mlproject run DIR` serves an `MLproject` model in the foreground, in a chapkit `-cli` image or `--image`. Works anywhere. |
 
 You need no Python, uv or R for it. See [The chap CLI](./chap-cli.md).
 
