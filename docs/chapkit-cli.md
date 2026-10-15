@@ -20,7 +20,10 @@ the options of varde itself.
 
 chapkit is a dependency of chap-core, so the chap-core image has the chapkit
 CLI. varde runs it in that image, and there is no other image to pin or to
-update. The chap-core image v2.4.0 has chapkit 2.1.0.
+update. The chap-core image v2.4.0 has chapkit 2.1.0. From v2.5.0 it has
+chapkit 2.4.0, which adds `chapkit mlproject export` and writes the full
+MLproject contract with `migrate`. Until v2.5.0 is released, use `--tag
+master` for these.
 
 The version follows the rules of `varde chap`: in a deployment, the
 deployment's chap-core tag; outside a deployment, the newest chap-core
@@ -75,6 +78,22 @@ varde -C ~/.local/share/varde/run/default models test my_model
 This was tested with `minimalist_configurable_model` from chap-models, on
 chap-core v2.4.0 (chapkit 2.1.0): the migrated image passed the model-level
 test with 1 training and 1 prediction.
+
+## Export a service as an MLproject
+
+`chapkit mlproject export` reads the `main.py` of a chapkit service, and
+writes the `MLproject` file that describes the same model. It needs chapkit
+2.4.0, so use chap-core v2.5.0 or `--tag master`:
+
+```sh
+cd my-service
+varde chapkit --tag master mlproject export main.py -o MLproject
+```
+
+chapkit imports `main.py` to read the service. This works in the chap-core
+image when `main.py` imports only chapkit and the Python standard library,
+as a service that runs scripts does. If `main.py` imports the packages of
+the model, the import can fail in the chap-core image.
 
 ## Serve an MLproject model
 
