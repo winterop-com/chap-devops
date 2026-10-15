@@ -28,7 +28,7 @@ Usage: varde [OPTIONS] <COMMAND>
 | `--offline` | Never touch the network; use what is cached or on this machine. |
 | `--cache-dir <DIR>` | Cache directory: the registry snapshot and the self-update downloads. |
 
-Subcommands: [`varde init`](#varde-init), [`varde run`](#varde-run), [`varde ps`](#varde-ps), [`varde stop`](#varde-stop), [`varde top`](#varde-top), [`varde models`](#varde-models), [`varde components`](#varde-components), [`varde ui`](#varde-ui), [`varde registry`](#varde-registry), [`varde sync`](#varde-sync), [`varde update`](#varde-update), [`varde up`](#varde-up), [`varde down`](#varde-down), [`varde logs`](#varde-logs), [`varde restart`](#varde-restart), [`varde docker`](#varde-docker), [`varde backup`](#varde-backup), [`varde status`](#varde-status), [`varde open`](#varde-open), [`varde jobs`](#varde-jobs), [`varde api`](#varde-api), [`varde chap`](#varde-chap), [`varde chapkit`](#varde-chapkit), [`varde doctor`](#varde-doctor), [`varde cleanup`](#varde-cleanup), [`varde auth`](#varde-auth), [`varde dhis2`](#varde-dhis2), [`varde self`](#varde-self), [`varde completions`](#varde-completions)
+Subcommands: [`varde init`](#varde-init), [`varde components`](#varde-components), [`varde models`](#varde-models), [`varde registry`](#varde-registry), [`varde sync`](#varde-sync), [`varde update`](#varde-update), [`varde auth`](#varde-auth), [`varde dhis2`](#varde-dhis2), [`varde up`](#varde-up), [`varde down`](#varde-down), [`varde restart`](#varde-restart), [`varde status`](#varde-status), [`varde logs`](#varde-logs), [`varde open`](#varde-open), [`varde ui`](#varde-ui), [`varde run`](#varde-run), [`varde ps`](#varde-ps), [`varde stop`](#varde-stop), [`varde jobs`](#varde-jobs), [`varde api`](#varde-api), [`varde chap`](#varde-chap), [`varde chapkit`](#varde-chapkit), [`varde backup`](#varde-backup), [`varde doctor`](#varde-doctor), [`varde docker`](#varde-docker), [`varde top`](#varde-top), [`varde cleanup`](#varde-cleanup), [`varde self`](#varde-self), [`varde completions`](#varde-completions)
 
 ## varde init
 
@@ -70,71 +70,64 @@ Usage: varde init [OPTIONS] [DIR]
 
 Registry options: `--registry-url <URL>`, `--offline`, `--cache-dir <DIR>` (see [varde](#varde)).
 
-## varde run
+## varde components
 
-Start one model and print where it answers.
+Show and change what this deployment is made of.
 
 ```text
-Usage: varde run [OPTIONS] <MODEL>
+Usage: varde components [OPTIONS] <COMMAND>
+```
+
+Subcommands: [`varde components list`](#varde-components-list), [`varde components enable`](#varde-components-enable), [`varde components disable`](#varde-components-disable)
+
+## varde components list
+
+List every component and whether this deployment has it.
+
+```text
+Usage: varde components list [OPTIONS]
+```
+
+## varde components enable
+
+Enable a component, or change the settings of an enabled one.
+
+```text
+Usage: varde components enable [OPTIONS] <NAME>
 ```
 
 | Argument | Description |
 | --- | --- |
-| `<MODEL>` | Marketplace id, GitHub repository URL, ghcr image, or local image:tag. |
-| `--port <PORT\|auto>` | Host port to publish the model on, or auto for a free one. Default: `auto`. |
-| `--bind <ADDR>` | Host address to publish the port on, e.g. 0.0.0.0 for the network. |
-| `--id <ID\|auto>` | Identifier to record an added model under, or auto for a free one. |
-| `--group <NAME>` | Group to start it in, outside a deployment; ps and stop take it too. |
-| `--allow-template` | Start a marketplace template, which is not a deployable model. |
-| `--no-wait` | Return once the container started, without waiting for it to answer. |
-| `-a, --attach, --foreground` | Run in the foreground and stream its log (Ctrl-C stops the model). |
-| `--rm` | With --attach, Ctrl-C also removes the model's data volume. |
-| `--chap-core <URL>` | A chap-core elsewhere for the group's models to register with. |
-| `--models-host <HOST>` | Host that chap-core calls the models back at; detected if omitted. |
-| `--timeout <SECONDS>` | How long to wait for the model to answer, in seconds. Default: `300`. |
+| `<NAME>` | Component name: ocs, s3, dhis2 or chap-core. |
+| `--port <PORT\|none>` | Host port to publish on, or none to keep it internal. |
+| `--base-url <URL>` | Public URL OCS is reached at, for a proxied instance. |
+| `--read-only` | Refuse ingestion over HTTP on this OCS instance. |
+| `--read-write` | Allow ingestion over HTTP again. |
+| `--url <URL>` | chap-core only: use the chap-core at URL instead of running one. |
+| `--tag <TAG>` | dhis2 only: the DHIS2 version to run, an image tag such as 2.43. |
+| `--image <REPO>` | dhis2 only: the image repository, e.g. dhis2/core-dev. |
+| `--seed <SPEC>` | dhis2 only: dump for a new database: default, none, URL or path. |
+| `--models-host <HOST>` | With --url: the host that chap-core calls the models back at. |
+| `--ocs-name <NAME>` | Country or region the OCS instance covers, e.g. Malawi. |
+| `--ocs-country <CODE>` | ISO 3166-1 alpha-3 country code for the OCS extent. |
+| `--ocs-bbox <BBOX>` | OCS extent as xmin,ymin,xmax,ymax in degrees. |
 
 Registry options: `--registry-url <URL>`, `--offline`, `--cache-dir <DIR>` (see [varde](#varde)).
 
-## varde ps
+## varde components disable
 
-List the models that run, and where each one answers.
+Disable a component and remove its compose file.
 
 ```text
-Usage: varde ps [OPTIONS]
+Usage: varde components disable [OPTIONS] <NAME>
 ```
 
 | Argument | Description |
 | --- | --- |
-| `--group <NAME>` | List this group only; every group when omitted. |
-
-## varde stop
-
-Stop a model and remove its compose overlay; its data stays.
-
-```text
-Usage: varde stop [OPTIONS] [ID]
-```
-
-| Argument | Description |
-| --- | --- |
-| `<ID>` | Id or service id of the model. |
-| `--group <NAME>` | Group to stop in; every model in it when no id is given. |
-| `--all` | Stop every model in the group, or in every group. |
-| `--purge` | Delete the data volumes too, and a group left empty with them. |
+| `<NAME>` | Component name: ocs, s3, dhis2 or chap-core. |
+| `--purge` | Delete the component's data volume as well. |
 
 Registry options: `--registry-url <URL>`, `--offline`, `--cache-dir <DIR>` (see [varde](#varde)).
-
-## varde top
-
-Watch every varde deployment on this machine as a live tree.
-
-```text
-Usage: varde top [OPTIONS]
-```
-
-| Argument | Description |
-| --- | --- |
-| `--interval <SECONDS>` | Seconds between two looks at docker. Default: `2`. |
 
 ## varde models
 
@@ -445,75 +438,6 @@ Usage: varde models unexpose [OPTIONS] <ID>
 
 Registry options: `--registry-url <URL>`, `--offline`, `--cache-dir <DIR>` (see [varde](#varde)).
 
-## varde components
-
-Show and change what this deployment is made of.
-
-```text
-Usage: varde components [OPTIONS] <COMMAND>
-```
-
-Subcommands: [`varde components list`](#varde-components-list), [`varde components enable`](#varde-components-enable), [`varde components disable`](#varde-components-disable)
-
-## varde components list
-
-List every component and whether this deployment has it.
-
-```text
-Usage: varde components list [OPTIONS]
-```
-
-## varde components enable
-
-Enable a component, or change the settings of an enabled one.
-
-```text
-Usage: varde components enable [OPTIONS] <NAME>
-```
-
-| Argument | Description |
-| --- | --- |
-| `<NAME>` | Component name: ocs, s3, dhis2 or chap-core. |
-| `--port <PORT\|none>` | Host port to publish on, or none to keep it internal. |
-| `--base-url <URL>` | Public URL OCS is reached at, for a proxied instance. |
-| `--read-only` | Refuse ingestion over HTTP on this OCS instance. |
-| `--read-write` | Allow ingestion over HTTP again. |
-| `--url <URL>` | chap-core only: use the chap-core at URL instead of running one. |
-| `--tag <TAG>` | dhis2 only: the DHIS2 version to run, an image tag such as 2.43. |
-| `--image <REPO>` | dhis2 only: the image repository, e.g. dhis2/core-dev. |
-| `--seed <SPEC>` | dhis2 only: dump for a new database: default, none, URL or path. |
-| `--models-host <HOST>` | With --url: the host that chap-core calls the models back at. |
-| `--ocs-name <NAME>` | Country or region the OCS instance covers, e.g. Malawi. |
-| `--ocs-country <CODE>` | ISO 3166-1 alpha-3 country code for the OCS extent. |
-| `--ocs-bbox <BBOX>` | OCS extent as xmin,ymin,xmax,ymax in degrees. |
-
-Registry options: `--registry-url <URL>`, `--offline`, `--cache-dir <DIR>` (see [varde](#varde)).
-
-## varde components disable
-
-Disable a component and remove its compose file.
-
-```text
-Usage: varde components disable [OPTIONS] <NAME>
-```
-
-| Argument | Description |
-| --- | --- |
-| `<NAME>` | Component name: ocs, s3, dhis2 or chap-core. |
-| `--purge` | Delete the component's data volume as well. |
-
-Registry options: `--registry-url <URL>`, `--offline`, `--cache-dir <DIR>` (see [varde](#varde)).
-
-## varde ui
-
-Open the browser: marketplace models and components.
-
-```text
-Usage: varde ui [OPTIONS]
-```
-
-Registry options: `--registry-url <URL>`, `--offline`, `--cache-dir <DIR>` (see [varde](#varde)).
-
 ## varde registry
 
 Inspect and refresh the marketplace registry.
@@ -577,359 +501,6 @@ Usage: varde update [OPTIONS]
 | `--yes` | Answer yes to the confirmation a backwards move asks for. |
 
 Registry options: `--registry-url <URL>`, `--offline`, `--cache-dir <DIR>` (see [varde](#varde)).
-
-## varde up
-
-Sync, then start Chap (docker compose up).
-
-```text
-Usage: varde up [OPTIONS] [EXTRA]...
-```
-
-| Argument | Description |
-| --- | --- |
-| `-a, --attach, --foreground` | Run in the foreground and stream all logs (Ctrl-C stops Chap). |
-| `--pull` | Pull every image first (docker compose up --pull always). |
-| `--no-preflight` | Do not check the host ports first. |
-| `--replace` | First stop the other varde deployments that hold these ports. |
-| `--wait` | Return only once chap-core, the models, OCS and DHIS2 answer. |
-| `--timeout <SECONDS>` | How long --wait waits before it fails, in seconds. Default: `300`. |
-| `<EXTRA>...` | Extra arguments passed through to docker compose up. |
-
-Registry options: `--registry-url <URL>`, `--offline`, `--cache-dir <DIR>` (see [varde](#varde)).
-
-## varde down
-
-Stop Chap (docker compose down).
-
-```text
-Usage: varde down [OPTIONS] [EXTRA]...
-```
-
-| Argument | Description |
-| --- | --- |
-| `--volumes` | Also remove this deployment's volumes, destroying its data. |
-| `-y, --yes` | Skip the confirmation. |
-| `<EXTRA>...` | Extra arguments passed through to docker compose down. |
-
-## varde logs
-
-Show container logs (docker compose logs).
-
-```text
-Usage: varde logs [OPTIONS] [SERVICE]...
-```
-
-| Argument | Description |
-| --- | --- |
-| `-f, --follow` | Show new output when it arrives. |
-| `--tail <N>` | Show only the last N lines of each service's log. |
-| `<SERVICE>...` | Services to show logs for; all of them when omitted. |
-
-## varde restart
-
-Recreate the services whose image or configuration changed.
-
-```text
-Usage: varde restart [OPTIONS] [SERVICE]...
-```
-
-| Argument | Description |
-| --- | --- |
-| `--all` | Recreate the named services even when nothing changed. |
-| `<SERVICE>...` | Services to restart; the whole deployment when omitted. |
-
-## varde docker
-
-Use Docker directly: containers, images, compose.
-
-```text
-Usage: varde docker [OPTIONS] <COMMAND>
-```
-
-Subcommands: [`varde docker ps`](#varde-docker-ps), [`varde docker pull`](#varde-docker-pull), [`varde docker exec`](#varde-docker-exec), [`varde docker run`](#varde-docker-run), [`varde docker config`](#varde-docker-config)
-
-## varde docker ps
-
-List the containers this deployment is running.
-
-```text
-Usage: varde docker ps [OPTIONS] [EXTRA]...
-```
-
-| Argument | Description |
-| --- | --- |
-| `<EXTRA>...` | Extra arguments passed through to docker compose ps. |
-
-## varde docker pull
-
-Download the pinned images into the local Docker daemon.
-
-```text
-Usage: varde docker pull [OPTIONS]
-```
-
-## varde docker exec
-
-Run a command inside one of the running containers.
-
-```text
-Usage: varde docker exec [OPTIONS] <SERVICE> [CMD]...
-```
-
-| Argument | Description |
-| --- | --- |
-| `<SERVICE>` | Service to run the command in. |
-| `<CMD>...` | Command to run; a shell (sh) when omitted. |
-
-## varde docker run
-
-Run any docker compose command against this deployment.
-
-```text
-Usage: varde docker run [OPTIONS] [ARGS]...
-```
-
-| Argument | Description |
-| --- | --- |
-| `<ARGS>...` | Arguments passed to docker compose after the -f list. |
-
-## varde docker config
-
-Print every compose file merged into one document.
-
-```text
-Usage: varde docker config [OPTIONS] [EXTRA]...
-```
-
-| Argument | Description |
-| --- | --- |
-| `<EXTRA>...` | Extra arguments passed through to docker compose config. |
-
-## varde backup
-
-Create or restore a backup of this deployment.
-
-```text
-Usage: varde backup [OPTIONS] <COMMAND>
-```
-
-Subcommands: [`varde backup create`](#varde-backup-create), [`varde backup restore`](#varde-backup-restore)
-
-## varde backup create
-
-Write a tar.gz of the database, the data and the files.
-
-```text
-Usage: varde backup create [OPTIONS]
-```
-
-| Argument | Description |
-| --- | --- |
-| `--out <PATH>` | Where to write the archive: a file, or a directory. |
-| `--no-db` | Do not put the chap-core database in the archive. |
-| `--no-models` | Do not put the model data volumes in the archive. |
-| `--no-components` | Do not put the component data volumes in the archive. |
-
-## varde backup restore
-
-Put a deployment back from a backup archive.
-
-```text
-Usage: varde backup restore [OPTIONS] <ARCHIVE>
-```
-
-| Argument | Description |
-| --- | --- |
-| `<ARCHIVE>` | The tar.gz written by varde backup create. |
-| `--yes` | Skip the confirmation. |
-| `--files-only` | Restore only the deployment files; no Docker needed. |
-| `--db-only` | Restore only the chap-core database. |
-| `--no-models` | Leave the model data volumes as they are. |
-| `--no-components` | Leave the component data volumes as they are. |
-| `--adopt-identity` | Use the compose project name from the archive. |
-| `--no-start` | Do not start the deployment at the end. |
-
-Registry options: `--registry-url <URL>`, `--offline`, `--cache-dir <DIR>` (see [varde](#varde)).
-
-## varde status
-
-Show chap-core health and which models registered.
-
-```text
-Usage: varde status [OPTIONS]
-```
-
-| Argument | Description |
-| --- | --- |
-| `--url <URL>` | Base URL of the chap-core API. |
-| `--timeout <SECONDS>` | Request timeout in seconds. Default: `5`. |
-
-## varde open
-
-Open a component's web interface in a browser.
-
-```text
-Usage: varde open [OPTIONS] [NAME]
-```
-
-| Argument | Description |
-| --- | --- |
-| `<NAME>` | Component to open (chap-core, ocs, dhis2), or an enabled model's id. |
-| `--no-browser` | Print the address instead of opening a browser. |
-
-## varde jobs
-
-List the backtests and predictions chap-core has run.
-
-```text
-Usage: varde jobs [OPTIONS]
-       varde jobs <COMMAND>
-```
-
-| Argument | Description |
-| --- | --- |
-| `--status <STATUS>` | Only jobs in this status; repeat for more than one. |
-| `--type <TYPE>` | Only jobs of this type, such as create_backtest. |
-| `--limit <N>` | Show at most this many jobs. |
-
-Subcommands: [`varde jobs list`](#varde-jobs-list), [`varde jobs show`](#varde-jobs-show), [`varde jobs logs`](#varde-jobs-logs), [`varde jobs cancel`](#varde-jobs-cancel), [`varde jobs delete`](#varde-jobs-delete)
-
-## varde jobs list
-
-List the jobs chap-core knows about, newest first.
-
-```text
-Usage: varde jobs list [OPTIONS]
-```
-
-| Argument | Description |
-| --- | --- |
-| `--status <STATUS>` | Only jobs in this status; repeat for more than one. |
-| `--type <TYPE>` | Only jobs of this type, such as create_backtest. |
-| `--limit <N>` | Show at most this many jobs. |
-
-## varde jobs show
-
-Show everything chap-core records about one job.
-
-```text
-Usage: varde jobs show [OPTIONS] <ID>
-```
-
-| Argument | Description |
-| --- | --- |
-| `<ID>` | Job id, or enough of its start to name one job. |
-
-## varde jobs logs
-
-Print one job's log, which is where a failure says why.
-
-```text
-Usage: varde jobs logs [OPTIONS] <ID>
-```
-
-| Argument | Description |
-| --- | --- |
-| `<ID>` | Job id, or enough of its start to name one job. |
-| `--tail <N>` | Print only the last N lines of the log. |
-
-## varde jobs cancel
-
-Ask chap-core to stop a job that is still running.
-
-```text
-Usage: varde jobs cancel [OPTIONS] <ID>
-```
-
-| Argument | Description |
-| --- | --- |
-| `<ID>` | Job id, or enough of its start to name one job. |
-
-## varde jobs delete
-
-Remove a finished job from chap-core's list.
-
-```text
-Usage: varde jobs delete [OPTIONS] <ID>
-```
-
-| Argument | Description |
-| --- | --- |
-| `<ID>` | Job id, or enough of its start to name one job. |
-
-## varde api
-
-Send one authenticated request to chap-core's API.
-
-```text
-Usage: varde api [OPTIONS] <METHOD> <PATH>
-```
-
-| Argument | Description |
-| --- | --- |
-| `<METHOD>` | GET, POST, PUT, PATCH or DELETE; case does not matter. |
-| `<PATH>` | Request path starting with /, query string and all. |
-| `--data <JSON\|@FILE\|->` | JSON body: inline, @file, or - to read stdin. |
-| `--url <URL>` | Base URL of the chap-core API. |
-| `--raw` | Print the body exactly as it arrived. |
-| `--timeout <SECONDS>` | Request timeout in seconds. Default: `30`. |
-
-## varde chap
-
-Run the chap CLI in a container, with no Python or uv installed.
-
-```text
-Usage: varde chap [OPTIONS] [CHAP_ARGS]...
-```
-
-| Argument | Description |
-| --- | --- |
-| `--tag <TAG>` | chap-core image tag; the deployment's tag or the newest release if omitted. |
-| `--image <IMAGE>` | Image to run in; chosen from --model-name when omitted. Values: `core`, `worker`. |
-| `--group <NAME>` | `varde run` group whose network the container joins. |
-| `--docker` | Give the container the docker socket, for docker_env models. |
-| `--stop` | Stop the model this run started, once chap is done. |
-| `--timeout <SECONDS>` | How long a model this run starts may take to answer, in seconds. Default: `300`. |
-| `<CHAP_ARGS>...` | Arguments for chap, such as `eval --model-name URL ...`. |
-
-Registry options: `--registry-url <URL>`, `--offline`, `--cache-dir <DIR>` (see [varde](#varde)).
-
-## varde chapkit
-
-Run the chapkit CLI in the chap-core image, with no Python installed.
-
-```text
-Usage: varde chapkit [OPTIONS] [CHAPKIT_ARGS]...
-```
-
-| Argument | Description |
-| --- | --- |
-| `--tag <TAG>` | chap-core image tag; the deployment's tag or the newest release if omitted. |
-| `<CHAPKIT_ARGS>...` | Arguments for chapkit, such as `mlproject migrate DIR`. |
-
-## varde doctor
-
-Run a checklist over this machine and this deployment.
-
-```text
-Usage: varde doctor [OPTIONS]
-```
-
-Registry options: `--registry-url <URL>`, `--offline`, `--cache-dir <DIR>` (see [varde](#varde)).
-
-## varde cleanup
-
-Delete what deployments whose directory is gone left in docker.
-
-```text
-Usage: varde cleanup [OPTIONS]
-```
-
-| Argument | Description |
-| --- | --- |
-| `-n, --dry-run` | List what would be deleted and change nothing. |
-| `--yes` | Delete without asking first. |
 
 ## varde auth
 
@@ -1091,6 +662,435 @@ Usage: varde dhis2 use [OPTIONS] [URL]
 | `<URL>` | DHIS2's URL, as this machine reaches it. |
 | `--chap-url <URL>` | chap-core's URL, as that DHIS2 reaches it; the route points here. |
 | `--clear` | Forget the external DHIS2 and use the dhis2 component again. |
+
+## varde up
+
+Sync, then start Chap (docker compose up).
+
+```text
+Usage: varde up [OPTIONS] [EXTRA]...
+```
+
+| Argument | Description |
+| --- | --- |
+| `-a, --attach, --foreground` | Run in the foreground and stream all logs (Ctrl-C stops Chap). |
+| `--pull` | Pull every image first (docker compose up --pull always). |
+| `--no-preflight` | Do not check the host ports first. |
+| `--replace` | First stop the other varde deployments that hold these ports. |
+| `--wait` | Return only once chap-core, the models, OCS and DHIS2 answer. |
+| `--timeout <SECONDS>` | How long --wait waits before it fails, in seconds. Default: `300`. |
+| `<EXTRA>...` | Extra arguments passed through to docker compose up. |
+
+Registry options: `--registry-url <URL>`, `--offline`, `--cache-dir <DIR>` (see [varde](#varde)).
+
+## varde down
+
+Stop Chap (docker compose down).
+
+```text
+Usage: varde down [OPTIONS] [EXTRA]...
+```
+
+| Argument | Description |
+| --- | --- |
+| `--volumes` | Also remove this deployment's volumes, destroying its data. |
+| `-y, --yes` | Skip the confirmation. |
+| `<EXTRA>...` | Extra arguments passed through to docker compose down. |
+
+## varde restart
+
+Recreate the services whose image or configuration changed.
+
+```text
+Usage: varde restart [OPTIONS] [SERVICE]...
+```
+
+| Argument | Description |
+| --- | --- |
+| `--all` | Recreate the named services even when nothing changed. |
+| `<SERVICE>...` | Services to restart; the whole deployment when omitted. |
+
+## varde status
+
+Show chap-core health and which models registered.
+
+```text
+Usage: varde status [OPTIONS]
+```
+
+| Argument | Description |
+| --- | --- |
+| `--url <URL>` | Base URL of the chap-core API. |
+| `--timeout <SECONDS>` | Request timeout in seconds. Default: `5`. |
+
+## varde logs
+
+Show container logs (docker compose logs).
+
+```text
+Usage: varde logs [OPTIONS] [SERVICE]...
+```
+
+| Argument | Description |
+| --- | --- |
+| `-f, --follow` | Show new output when it arrives. |
+| `--tail <N>` | Show only the last N lines of each service's log. |
+| `<SERVICE>...` | Services to show logs for; all of them when omitted. |
+
+## varde open
+
+Open a component's web interface in a browser.
+
+```text
+Usage: varde open [OPTIONS] [NAME]
+```
+
+| Argument | Description |
+| --- | --- |
+| `<NAME>` | Component to open (chap-core, ocs, dhis2), or an enabled model's id. |
+| `--no-browser` | Print the address instead of opening a browser. |
+
+## varde ui
+
+Open the browser: marketplace models and components.
+
+```text
+Usage: varde ui [OPTIONS]
+```
+
+Registry options: `--registry-url <URL>`, `--offline`, `--cache-dir <DIR>` (see [varde](#varde)).
+
+## varde run
+
+Start one model and print where it answers.
+
+```text
+Usage: varde run [OPTIONS] <MODEL>
+```
+
+| Argument | Description |
+| --- | --- |
+| `<MODEL>` | Marketplace id, GitHub repository URL, ghcr image, or local image:tag. |
+| `--port <PORT\|auto>` | Host port to publish the model on, or auto for a free one. Default: `auto`. |
+| `--bind <ADDR>` | Host address to publish the port on, e.g. 0.0.0.0 for the network. |
+| `--id <ID\|auto>` | Identifier to record an added model under, or auto for a free one. |
+| `--group <NAME>` | Group to start it in, outside a deployment; ps and stop take it too. |
+| `--allow-template` | Start a marketplace template, which is not a deployable model. |
+| `--no-wait` | Return once the container started, without waiting for it to answer. |
+| `-a, --attach, --foreground` | Run in the foreground and stream its log (Ctrl-C stops the model). |
+| `--rm` | With --attach, Ctrl-C also removes the model's data volume. |
+| `--chap-core <URL>` | A chap-core elsewhere for the group's models to register with. |
+| `--models-host <HOST>` | Host that chap-core calls the models back at; detected if omitted. |
+| `--timeout <SECONDS>` | How long to wait for the model to answer, in seconds. Default: `300`. |
+
+Registry options: `--registry-url <URL>`, `--offline`, `--cache-dir <DIR>` (see [varde](#varde)).
+
+## varde ps
+
+List the models that run, and where each one answers.
+
+```text
+Usage: varde ps [OPTIONS]
+```
+
+| Argument | Description |
+| --- | --- |
+| `--group <NAME>` | List this group only; every group when omitted. |
+
+## varde stop
+
+Stop a model and remove its compose overlay; its data stays.
+
+```text
+Usage: varde stop [OPTIONS] [ID]
+```
+
+| Argument | Description |
+| --- | --- |
+| `<ID>` | Id or service id of the model. |
+| `--group <NAME>` | Group to stop in; every model in it when no id is given. |
+| `--all` | Stop every model in the group, or in every group. |
+| `--purge` | Delete the data volumes too, and a group left empty with them. |
+
+Registry options: `--registry-url <URL>`, `--offline`, `--cache-dir <DIR>` (see [varde](#varde)).
+
+## varde jobs
+
+List the backtests and predictions chap-core has run.
+
+```text
+Usage: varde jobs [OPTIONS]
+       varde jobs <COMMAND>
+```
+
+| Argument | Description |
+| --- | --- |
+| `--status <STATUS>` | Only jobs in this status; repeat for more than one. |
+| `--type <TYPE>` | Only jobs of this type, such as create_backtest. |
+| `--limit <N>` | Show at most this many jobs. |
+
+Subcommands: [`varde jobs list`](#varde-jobs-list), [`varde jobs show`](#varde-jobs-show), [`varde jobs logs`](#varde-jobs-logs), [`varde jobs cancel`](#varde-jobs-cancel), [`varde jobs delete`](#varde-jobs-delete)
+
+## varde jobs list
+
+List the jobs chap-core knows about, newest first.
+
+```text
+Usage: varde jobs list [OPTIONS]
+```
+
+| Argument | Description |
+| --- | --- |
+| `--status <STATUS>` | Only jobs in this status; repeat for more than one. |
+| `--type <TYPE>` | Only jobs of this type, such as create_backtest. |
+| `--limit <N>` | Show at most this many jobs. |
+
+## varde jobs show
+
+Show everything chap-core records about one job.
+
+```text
+Usage: varde jobs show [OPTIONS] <ID>
+```
+
+| Argument | Description |
+| --- | --- |
+| `<ID>` | Job id, or enough of its start to name one job. |
+
+## varde jobs logs
+
+Print one job's log, which is where a failure says why.
+
+```text
+Usage: varde jobs logs [OPTIONS] <ID>
+```
+
+| Argument | Description |
+| --- | --- |
+| `<ID>` | Job id, or enough of its start to name one job. |
+| `--tail <N>` | Print only the last N lines of the log. |
+
+## varde jobs cancel
+
+Ask chap-core to stop a job that is still running.
+
+```text
+Usage: varde jobs cancel [OPTIONS] <ID>
+```
+
+| Argument | Description |
+| --- | --- |
+| `<ID>` | Job id, or enough of its start to name one job. |
+
+## varde jobs delete
+
+Remove a finished job from chap-core's list.
+
+```text
+Usage: varde jobs delete [OPTIONS] <ID>
+```
+
+| Argument | Description |
+| --- | --- |
+| `<ID>` | Job id, or enough of its start to name one job. |
+
+## varde api
+
+Send one authenticated request to chap-core's API.
+
+```text
+Usage: varde api [OPTIONS] <METHOD> <PATH>
+```
+
+| Argument | Description |
+| --- | --- |
+| `<METHOD>` | GET, POST, PUT, PATCH or DELETE; case does not matter. |
+| `<PATH>` | Request path starting with /, query string and all. |
+| `--data <JSON\|@FILE\|->` | JSON body: inline, @file, or - to read stdin. |
+| `--url <URL>` | Base URL of the chap-core API. |
+| `--raw` | Print the body exactly as it arrived. |
+| `--timeout <SECONDS>` | Request timeout in seconds. Default: `30`. |
+
+## varde chap
+
+Run the chap CLI in a container, with no Python or uv installed.
+
+```text
+Usage: varde chap [OPTIONS] [CHAP_ARGS]...
+```
+
+| Argument | Description |
+| --- | --- |
+| `--tag <TAG>` | chap-core image tag; the deployment's tag or the newest release if omitted. |
+| `--image <IMAGE>` | Image to run in; chosen from --model-name when omitted. Values: `core`, `worker`. |
+| `--group <NAME>` | `varde run` group whose network the container joins. |
+| `--docker` | Give the container the docker socket, for docker_env models. |
+| `--stop` | Stop the model this run started, once chap is done. |
+| `--timeout <SECONDS>` | How long a model this run starts may take to answer, in seconds. Default: `300`. |
+| `<CHAP_ARGS>...` | Arguments for chap, such as `eval --model-name URL ...`. |
+
+Registry options: `--registry-url <URL>`, `--offline`, `--cache-dir <DIR>` (see [varde](#varde)).
+
+## varde chapkit
+
+Run the chapkit CLI in the chap-core image, with no Python installed.
+
+```text
+Usage: varde chapkit [OPTIONS] [CHAPKIT_ARGS]...
+```
+
+| Argument | Description |
+| --- | --- |
+| `--tag <TAG>` | chap-core image tag; the deployment's tag or the newest release if omitted. |
+| `<CHAPKIT_ARGS>...` | Arguments for chapkit, such as `mlproject migrate DIR`. |
+
+## varde backup
+
+Create or restore a backup of this deployment.
+
+```text
+Usage: varde backup [OPTIONS] <COMMAND>
+```
+
+Subcommands: [`varde backup create`](#varde-backup-create), [`varde backup restore`](#varde-backup-restore)
+
+## varde backup create
+
+Write a tar.gz of the database, the data and the files.
+
+```text
+Usage: varde backup create [OPTIONS]
+```
+
+| Argument | Description |
+| --- | --- |
+| `--out <PATH>` | Where to write the archive: a file, or a directory. |
+| `--no-db` | Do not put the chap-core database in the archive. |
+| `--no-models` | Do not put the model data volumes in the archive. |
+| `--no-components` | Do not put the component data volumes in the archive. |
+
+## varde backup restore
+
+Put a deployment back from a backup archive.
+
+```text
+Usage: varde backup restore [OPTIONS] <ARCHIVE>
+```
+
+| Argument | Description |
+| --- | --- |
+| `<ARCHIVE>` | The tar.gz written by varde backup create. |
+| `--yes` | Skip the confirmation. |
+| `--files-only` | Restore only the deployment files; no Docker needed. |
+| `--db-only` | Restore only the chap-core database. |
+| `--no-models` | Leave the model data volumes as they are. |
+| `--no-components` | Leave the component data volumes as they are. |
+| `--adopt-identity` | Use the compose project name from the archive. |
+| `--no-start` | Do not start the deployment at the end. |
+
+Registry options: `--registry-url <URL>`, `--offline`, `--cache-dir <DIR>` (see [varde](#varde)).
+
+## varde doctor
+
+Run a checklist over this machine and this deployment.
+
+```text
+Usage: varde doctor [OPTIONS]
+```
+
+Registry options: `--registry-url <URL>`, `--offline`, `--cache-dir <DIR>` (see [varde](#varde)).
+
+## varde docker
+
+Use Docker directly: containers, images, compose.
+
+```text
+Usage: varde docker [OPTIONS] <COMMAND>
+```
+
+Subcommands: [`varde docker ps`](#varde-docker-ps), [`varde docker pull`](#varde-docker-pull), [`varde docker exec`](#varde-docker-exec), [`varde docker run`](#varde-docker-run), [`varde docker config`](#varde-docker-config)
+
+## varde docker ps
+
+List the containers this deployment is running.
+
+```text
+Usage: varde docker ps [OPTIONS] [EXTRA]...
+```
+
+| Argument | Description |
+| --- | --- |
+| `<EXTRA>...` | Extra arguments passed through to docker compose ps. |
+
+## varde docker pull
+
+Download the pinned images into the local Docker daemon.
+
+```text
+Usage: varde docker pull [OPTIONS]
+```
+
+## varde docker exec
+
+Run a command inside one of the running containers.
+
+```text
+Usage: varde docker exec [OPTIONS] <SERVICE> [CMD]...
+```
+
+| Argument | Description |
+| --- | --- |
+| `<SERVICE>` | Service to run the command in. |
+| `<CMD>...` | Command to run; a shell (sh) when omitted. |
+
+## varde docker run
+
+Run any docker compose command against this deployment.
+
+```text
+Usage: varde docker run [OPTIONS] [ARGS]...
+```
+
+| Argument | Description |
+| --- | --- |
+| `<ARGS>...` | Arguments passed to docker compose after the -f list. |
+
+## varde docker config
+
+Print every compose file merged into one document.
+
+```text
+Usage: varde docker config [OPTIONS] [EXTRA]...
+```
+
+| Argument | Description |
+| --- | --- |
+| `<EXTRA>...` | Extra arguments passed through to docker compose config. |
+
+## varde top
+
+Watch every varde deployment on this machine as a live tree.
+
+```text
+Usage: varde top [OPTIONS]
+```
+
+| Argument | Description |
+| --- | --- |
+| `--interval <SECONDS>` | Seconds between two looks at docker. Default: `2`. |
+
+## varde cleanup
+
+Delete what deployments whose directory is gone left in docker.
+
+```text
+Usage: varde cleanup [OPTIONS]
+```
+
+| Argument | Description |
+| --- | --- |
+| `-n, --dry-run` | List what would be deleted and change nothing. |
+| `--yes` | Delete without asking first. |
 
 ## varde self
 

@@ -266,26 +266,11 @@ pub enum Command {
     /// Create a deployment directory: compose files, .env and .varde/
     Init(Box<InitArgs>),
 
-    /// Start one model and print where it answers
-    Run(ModelRunArgs),
-
-    /// List the models that run, and where each one answers
-    Ps(ModelPsArgs),
-
-    /// Stop a model and remove its compose overlay; its data stays
-    Stop(ModelStopArgs),
-
-    /// Watch every varde deployment on this machine as a live tree
-    Top(TopArgs),
-
-    /// Browse and manage marketplace models
-    Models(ModelsArgs),
-
     /// Show and change what this deployment is made of
     Components(ComponentsArgs),
 
-    /// Open the browser: marketplace models and components
-    Ui(UiArgs),
+    /// Browse and manage marketplace models
+    Models(ModelsArgs),
 
     /// Inspect and refresh the marketplace registry
     Registry(RegistryArgs),
@@ -296,29 +281,41 @@ pub enum Command {
     /// Move the pins to what upstream publishes now, and pull
     Update(UpdateArgs),
 
+    /// Enable or disable API authentication, and show the token
+    Auth(AuthArgs),
+
+    /// Let the DHIS2 Modeling App reach this deployment's Chap
+    Dhis2(Dhis2Args),
+
     /// Sync, then start Chap (docker compose up)
     Up(UpArgs),
 
     /// Stop Chap (docker compose down)
     Down(DownArgs),
 
-    /// Show container logs (docker compose logs)
-    Logs(LogsArgs),
-
     /// Recreate the services whose image or configuration changed
     Restart(RestartArgs),
-
-    /// Use Docker directly: containers, images, compose
-    Docker(DockerArgs),
-
-    /// Create or restore a backup of this deployment
-    Backup(BackupArgs),
 
     /// Show chap-core health and which models registered
     Status(StatusArgs),
 
+    /// Show container logs (docker compose logs)
+    Logs(LogsArgs),
+
     /// Open a component's web interface in a browser
     Open(OpenArgs),
+
+    /// Open the browser: marketplace models and components
+    Ui(UiArgs),
+
+    /// Start one model and print where it answers
+    Run(ModelRunArgs),
+
+    /// List the models that run, and where each one answers
+    Ps(ModelPsArgs),
+
+    /// Stop a model and remove its compose overlay; its data stays
+    Stop(ModelStopArgs),
 
     /// List the backtests and predictions chap-core has run
     Jobs(JobsArgs),
@@ -332,17 +329,20 @@ pub enum Command {
     /// Run the chapkit CLI in the chap-core image, with no Python installed
     Chapkit(ChapkitArgs),
 
+    /// Create or restore a backup of this deployment
+    Backup(BackupArgs),
+
     /// Run a checklist over this machine and this deployment
     Doctor(DoctorArgs),
 
+    /// Use Docker directly: containers, images, compose
+    Docker(DockerArgs),
+
+    /// Watch every varde deployment on this machine as a live tree
+    Top(TopArgs),
+
     /// Delete what deployments whose directory is gone left in docker
     Cleanup(CleanupArgs),
-
-    /// Enable or disable API authentication, and show the token
-    Auth(AuthArgs),
-
-    /// Let the DHIS2 Modeling App reach this deployment's Chap
-    Dhis2(Dhis2Args),
 
     /// Update varde itself, and report what this build is
     #[command(name = "self")]
