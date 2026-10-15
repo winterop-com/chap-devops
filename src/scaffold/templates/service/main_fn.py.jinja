@@ -107,12 +107,12 @@ info = MLServiceInfo(
     version="0.1.0",
     description="Predicts the mean of the last periods of each location.",
     model_metadata=ModelMetadata(
-        author="Your Name",
+        author="{{ author }}",
         # The maturity that the Modeling App shows: green (validated), yellow
         # (ready for testing), orange (promising), red (experimental), gray
         # (deprecated).
         author_assessed_status=AssessedStatus.red,
-        contact_email="your.email@example.com",
+        contact_email="{{ contact_email }}",
     ),
     period_type=PeriodType.monthly,
     min_prediction_periods=0,
