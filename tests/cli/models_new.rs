@@ -113,3 +113,46 @@ fn models_new_does_not_need_a_deployment() {
         .success();
     assert!(sandbox.home.path().join("free/main.py").is_file());
 }
+
+#[test]
+fn models_new_takes_the_author_from_git_config() {
+    let sandbox = Sandbox::new();
+    let config = sandbox.home.path().join("gitconfig");
+    std::fs::write(
+        &config,
+        "[user]\n\tname = Kari Nordmann\n\temail = kari@example.org\n",
+    )
+    .unwrap();
+    chap_in(
+        &sandbox,
+        sandbox.home.path(),
+        &["-v", "models", "new", "rain", "--template", "mlproject-r"],
+    )
+    .env("GIT_CONFIG_GLOBAL", &config)
+    .env("GIT_CONFIG_NOSYSTEM", "1")
+    .assert()
+    .success()
+    .stdout(predicate::str::contains(
+        "author: Kari Nordmann <kari@example.org>, from git config; edit MLproject to change it",
+    ));
+    let mlproject = read(&sandbox.home.path().join("rain/MLproject"));
+    assert!(mlproject.contains("author: \"Kari Nordmann\""), "{mlproject}");
+    assert!(mlproject.contains("contact_email: \"kari@example.org\""), "{mlproject}");
+}
+
+#[test]
+fn models_new_keeps_the_placeholders_without_git_config() {
+    let sandbox = Sandbox::new();
+    let config = sandbox.home.path().join("empty-gitconfig");
+    std::fs::write(&config, "").unwrap();
+    chap_in(&sandbox, sandbox.home.path(), &["-v", "models", "new", "rain"])
+        .env("GIT_CONFIG_GLOBAL", &config)
+        .env("GIT_CONFIG_NOSYSTEM", "1")
+        .assert()
+        .success()
+        .stdout(predicate::str::contains(
+            "author: the placeholders in main.py; set git config user.name and user.email",
+        ));
+    let main = read(&sandbox.home.path().join("rain/main.py"));
+    assert!(main.contains("author=\"Your Name\""), "{main}");
+}

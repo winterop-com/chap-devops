@@ -955,6 +955,12 @@ The names come from the directory name:
 A name can have letters, digits, spaces, `-`, `_` and `.`. A name that starts
 with a digit gets `model-` in front of its service id.
 
+The author in the model metadata comes from git: `user.name` is the
+`author`, and `user.email` is the `contact_email`, in `main.py` or in
+`MLproject`. If git has no value, the project gets a placeholder (`Your Name`,
+`your.email@example.com`) for you to edit. With `-v`, `models new` says which
+of the two it used.
+
 ### From the project to a backtest
 
 In the project:

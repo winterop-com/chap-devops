@@ -7,7 +7,7 @@ fn all() -> Vec<Template> {
 
 fn rendered(template: Template, with_validation: bool) -> Vec<(&'static str, String)> {
     let names = names("My Model").unwrap();
-    render(&names, template, with_validation).unwrap()
+    render(&names, &Author::default(), template, with_validation).unwrap()
 }
 
 fn file<'a>(files: &'a [(&str, String)], path: &str) -> &'a str {
@@ -186,4 +186,46 @@ fn write_fills_an_empty_directory() {
         written,
         vec![tmp.path().join(".github/workflows/publish.yml")]
     );
+}
+
+#[test]
+fn an_author_from_git_fills_the_metadata_of_every_type() {
+    let names = names("Rain Model").unwrap();
+    let author = Author::from_values(
+        Some("Kari Nordmann".to_string()),
+        Some("kari@example.org".to_string()),
+    );
+    assert!(author.from_git);
+    for (template, path) in [
+        (Template::FnPy, "main.py"),
+        (Template::ShellR, "main.py"),
+        (Template::MlprojectR, "MLproject"),
+    ] {
+        let files = render(&names, &author, template, false).unwrap();
+        let body = file(&files, path);
+        assert!(body.contains("Kari Nordmann"), "{path}: {body}");
+        assert!(body.contains("kari@example.org"), "{path}: {body}");
+        assert!(!body.contains(PLACEHOLDER_NAME), "{path}: {body}");
+    }
+}
+
+#[test]
+fn a_missing_git_value_keeps_its_placeholder() {
+    let author = Author::from_values(Some("Kari Nordmann".to_string()), None);
+    assert_eq!(author.name, "Kari Nordmann");
+    assert_eq!(author.email, PLACEHOLDER_EMAIL);
+    assert!(author.from_git);
+
+    let none = Author::from_values(None, Some("  ".to_string()));
+    assert_eq!(none, Author::default());
+    assert!(!none.from_git);
+}
+
+#[test]
+fn an_author_loses_the_characters_that_end_a_quoted_string() {
+    let author = Author::from_values(Some("Kari \"KN\" Nord\\mann\n".to_string()), None);
+    assert_eq!(author.name, "Kari KN Nordmann");
+    let files = render(&names("rain").unwrap(), &author, Template::MlprojectPy, false).unwrap();
+    let mlproject: serde_yaml_ng::Value = serde_yaml_ng::from_str(file(&files, "MLproject")).unwrap();
+    assert_eq!(mlproject["meta_data"]["author"], "Kari KN Nordmann");
 }

@@ -7,7 +7,7 @@
 use crate::cli::ModelsNewArgs;
 use crate::commands::Ctx;
 use crate::error::{ChapError, Result};
-use crate::scaffold::{self, Names, Template};
+use crate::scaffold::{self, Author, Names, Template};
 use anyhow::Context;
 use serde::Serialize;
 
@@ -19,6 +19,8 @@ struct NewReport {
     #[serde(flatten)]
     names: Names,
     base_image: String,
+    /// The author in the model metadata: from git, or the placeholders.
+    author: Author,
     /// The files written, relative to `dir`.
     files: Vec<String>,
 }
@@ -40,7 +42,8 @@ pub fn run(ctx: &Ctx, args: &ModelsNewArgs) -> Result<()> {
         .map(|name| name.to_string_lossy().into_owned())
         .with_context(|| format!("{} has no directory name", args.dir.display()))?;
     let names = scaffold::names(&dir_name)?;
-    let files = scaffold::render(&names, args.template, args.with_validation)?;
+    let author = Author::from_git();
+    let files = scaffold::render(&names, &author, args.template, args.with_validation)?;
     scaffold::write(&dir, &files)?;
 
     let shown = args.dir.display().to_string();
@@ -48,6 +51,7 @@ pub fn run(ctx: &Ctx, args: &ModelsNewArgs) -> Result<()> {
         dir: dir.display().to_string(),
         template: args.template,
         base_image: args.template.base_image(),
+        author,
         files: files.iter().map(|(path, _)| path.to_string()).collect(),
         names,
     };
@@ -64,5 +68,19 @@ pub fn run(ctx: &Ctx, args: &ModelsNewArgs) -> Result<()> {
         ));
         r.hint(format!("files: {}", report.files.join(", ")));
         r.hint(format!("base image: {}", report.base_image));
+        let metadata = match args.template.is_mlproject() {
+            true => "MLproject",
+            false => "main.py",
+        };
+        match report.author.from_git {
+            true => r.hint(format!(
+                "author: {} <{}>, from git config; edit {metadata} to change it",
+                report.author.name, report.author.email
+            )),
+            false => r.hint(format!(
+                "author: the placeholders in {metadata}; set git config user.name and user.email \
+                 to fill them in a new project"
+            )),
+        };
     })
 }

@@ -122,6 +122,74 @@ impl Template {
     }
 }
 
+/// The author that a new project names in its model metadata.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+pub struct Author {
+    pub name: String,
+    pub email: String,
+    /// Whether the values come from git, and not from the placeholders.
+    #[serde(skip)]
+    pub from_git: bool,
+}
+
+/// The author name when git has no `user.name`.
+pub const PLACEHOLDER_NAME: &str = "Your Name";
+/// The contact email when git has no `user.email`.
+pub const PLACEHOLDER_EMAIL: &str = "your.email@example.com";
+
+impl Default for Author {
+    fn default() -> Self {
+        Self {
+            name: PLACEHOLDER_NAME.to_string(),
+            email: PLACEHOLDER_EMAIL.to_string(),
+            from_git: false,
+        }
+    }
+}
+
+impl Author {
+    /// The `user.name` and `user.email` of git, each replaced by its
+    /// placeholder when git has no value or is not installed.
+    pub fn from_git() -> Self {
+        Self::from_values(git_config("user.name"), git_config("user.email"))
+    }
+
+    /// An author from the two git values; a missing one keeps its placeholder.
+    pub fn from_values(name: Option<String>, email: Option<String>) -> Self {
+        let name = name.map(|value| clean(&value)).filter(|value| !value.is_empty());
+        let email = email.map(|value| clean(&value)).filter(|value| !value.is_empty());
+        let placeholder = Self::default();
+        Self {
+            from_git: name.is_some() || email.is_some(),
+            name: name.unwrap_or(placeholder.name),
+            email: email.unwrap_or(placeholder.email),
+        }
+    }
+}
+
+/// One value of `git config`, or `None` when it is not set or git is missing.
+fn git_config(key: &str) -> Option<String> {
+    let output = std::process::Command::new("git")
+        .args(["config", "--get", key])
+        .output()
+        .ok()?;
+    output
+        .status
+        .success()
+        .then(|| String::from_utf8_lossy(&output.stdout).trim().to_string())
+}
+
+/// The value without the characters that would end a quoted string in the
+/// templates: quotes, backslashes and control characters.
+fn clean(value: &str) -> String {
+    value
+        .chars()
+        .filter(|c| !matches!(c, '"' | '\\') && !c.is_control())
+        .collect::<String>()
+        .trim()
+        .to_string()
+}
+
 /// The names a project gets from its directory name.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct Names {
@@ -296,9 +364,16 @@ pub fn plan(template: Template) -> Vec<(&'static str, &'static str)> {
 }
 
 /// The values the templates read.
-fn context(names: &Names, template: Template, with_validation: bool) -> minijinja::Value {
+fn context(
+    names: &Names,
+    author: &Author,
+    template: Template,
+    with_validation: bool,
+) -> minijinja::Value {
     let is_r = template.is_r();
     minijinja::context! {
+        author => author.name,
+        contact_email => author.email,
         name => names.name,
         service_id => names.service_id,
         model_id => names.model_id,
@@ -325,6 +400,7 @@ fn context(names: &Names, template: Template, with_validation: bool) -> minijinj
 /// the content.
 pub fn render(
     names: &Names,
+    author: &Author,
     template: Template,
     with_validation: bool,
 ) -> Result<Vec<(&'static str, String)>> {
@@ -336,7 +412,7 @@ pub fn render(
         env.add_template(name, source)
             .with_context(|| format!("the embedded template {name} does not parse"))?;
     }
-    let ctx = context(names, template, with_validation);
+    let ctx = context(names, author, template, with_validation);
     plan(template)
         .into_iter()
         .map(|(path, source)| {
