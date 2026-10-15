@@ -132,9 +132,21 @@ rain-model    pass      13s   crps 31.4  mae 31.4  rmse 37.5
 1 of 1 model passes
 ```
 
-It worked when the last line says `1 of 1 model passes`. With DHIS2 in the
-deployment, the Modeling App shows the configured model while the service
-runs.
+It worked when the last line says `1 of 1 model passes`.
+
+With DHIS2 in the deployment, the Modeling App shows the configured model
+while the service runs. **Select model** lists it by its `name`, with the
+commit that varde gave chapkit:
+
+![rain-model in the model list of the Modeling App](../images/modeling-app/mlproject-select-model.png)
+
+An evaluation runs as for any other model. For `rain-model`, map only
+**Disease cases**, because the model has no covariates. See
+[Your first forecast in the Modeling App](../modeling-app.md). This was tested
+with Modeling App 7.2.0, DHIS2 2.42.6 and chap-core `master`: the evaluation
+of the 18 provinces, 2019 to 2024, took 19 seconds.
+
+![The evaluation of rain-model](../images/modeling-app/mlproject-evaluation.png)
 
 varde gives chapkit the git commit of the model directory, and chap-core
 stores the version of the model with it. After a change, commit it, and
