@@ -8,8 +8,10 @@ chap-core and change it without a `docker build`. When the model is ready,
 its own, and `varde chapkit mlproject export` goes the other way. Python, uv,
 R and the chapkit CLI are not necessary on the machine.
 
-This page needs chapkit 2.4.0: chap-core v2.5.0, or `--tag master` (and
-`--chap-tag master` for `varde init`) until v2.5.0 is released.
+`mlproject run` uses chapkit images of its own, so it works with chap-core
+v2.4.0 and `master`; both were tested. `export` needs chapkit 2.4.0 in the
+chap-core image: chap-core v2.5.0, or `--tag master` until v2.5.0 is
+released. The other commands below have `--tag master` for the same reason.
 
 ## Make or bring the model
 
@@ -104,7 +106,7 @@ and the commands of the deployment use it by its id, the `name` in
 `MLproject`:
 
 ```sh
-varde init lab --models none --chap-tag master
+varde init lab --models none
 cd lab
 varde up --wait
 varde chapkit mlproject run ../rain-model
