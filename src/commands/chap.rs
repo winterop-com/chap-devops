@@ -102,7 +102,7 @@ pub fn run(ctx: &Ctx, args: &ChapArgs) -> Result<()> {
              without --image, varde runs this model in the worker image",
         );
     }
-    if !args.docker && runs_in_docker(ctx, &kind, &cwd) {
+    if !args.docker && !plan::as_chapkit(&chap_args) && runs_in_docker(ctx, &kind, &cwd) {
         return Err(ChapError::Usage(format!(
             "`{}` runs in docker (`docker_env` in its MLproject), and the container has no \
              docker socket; run it again with `varde chap --docker ...`",

@@ -11,6 +11,9 @@ pub const CORE_REPOSITORY: &str = "ghcr.io/dhis2-chap/chap-core";
 /// The image chap-core's worker runs models in: uv, R and INLA as well.
 pub const WORKER_REPOSITORY: &str = "ghcr.io/dhis2-chap/chap-worker";
 
+/// The prefix of a model built into chap-core, such as `builtin:persistence`.
+pub const BUILTIN_PREFIX: &str = "builtin:";
+
 /// The port a chapkit model answers on inside its container.
 pub const MODEL_PORT: u16 = 8000;
 
@@ -44,6 +47,9 @@ pub enum ModelKind {
         repo: String,
         git_ref: Option<String>,
     },
+    /// A model built into chap-core, `builtin:<name>[@<version>]`. It runs
+    /// in chap itself, in either image.
+    Builtin(String),
     /// A model directory on this machine.
     Local(PathBuf),
 }
@@ -63,13 +69,16 @@ pub fn model_name(args: &[String]) -> Option<&str> {
 }
 
 /// What kind of model a `--model-name` value is, the way chap-core decides
-/// it: a GitHub URL is cloned, any other URL is a chapkit service, and
-/// anything else is a directory.
+/// it: `builtin:` names a model in chap-core, a GitHub URL is cloned, any
+/// other URL is a chapkit service, and anything else is a directory.
 pub fn model_kind(name: Option<&str>) -> ModelKind {
     let Some(name) = name else {
         return ModelKind::None;
     };
     let lower = name.to_ascii_lowercase();
+    if lower.starts_with(BUILTIN_PREFIX) {
+        return ModelKind::Builtin(name.to_string());
+    }
     let without_scheme = lower
         .strip_prefix("https://")
         .or_else(|| lower.strip_prefix("http://"));
@@ -175,17 +184,27 @@ pub fn unreachable_message(url: &str) -> String {
     }
 }
 
-/// The values of `--output-file` in the chap arguments, in either spelling.
+/// The options that name a file chap writes: `--output-file`, and
+/// `--out-file` of `chap simulate`.
+const OUTPUT_OPTIONS: &[&str] = &["--output-file", "--out-file"];
+
+/// The values of the output options in the chap arguments, in either
+/// spelling.
 pub fn output_files(args: &[String]) -> Vec<String> {
     let mut found = Vec::new();
     let mut rest = args.iter();
     while let Some(arg) = rest.next() {
-        if arg == "--output-file" {
-            if let Some(value) = rest.next() {
-                found.push(value.clone());
+        for option in OUTPUT_OPTIONS {
+            if arg == option {
+                if let Some(value) = rest.next() {
+                    found.push(value.clone());
+                }
+            } else if let Some(value) = arg
+                .strip_prefix(option)
+                .and_then(|tail| tail.strip_prefix('='))
+            {
+                found.push(value.to_string());
             }
-        } else if let Some(value) = arg.strip_prefix("--output-file=") {
-            found.push(value.to_string());
         }
     }
     found
@@ -215,12 +234,25 @@ pub fn needs_a_browser(args: &[String]) -> Option<String> {
 pub fn image_for(kind: &ModelKind, core_here: bool, worker_here: bool) -> ChapImage {
     match kind {
         ModelKind::GitHub { .. } | ModelKind::Local(_) => ChapImage::Worker,
-        // A model id resolves to a chapkit service before the run.
-        ModelKind::None | ModelKind::Chapkit(_) => match (core_here, worker_here) {
+        // A model id resolves to a chapkit service before the run, and a
+        // built-in model runs in chap itself.
+        ModelKind::None | ModelKind::Builtin(_) | ModelKind::Chapkit(_) => match (core_here, worker_here) {
             (false, true) => ChapImage::Worker,
             _ => ChapImage::Core,
         },
     }
+}
+
+/// Whether the chap arguments ask chap to start the MLproject as a chapkit
+/// service (`--run-config.as-chapkit`, chap-core v2.5.0 and later). chap
+/// refuses `docker_env` itself in that mode.
+pub fn as_chapkit(args: &[String]) -> bool {
+    args.iter().any(|arg| {
+        arg == "--run-config.as-chapkit"
+            || arg
+                .strip_prefix("--run-config.as-chapkit=")
+                .is_some_and(|value| value.eq_ignore_ascii_case("true"))
+    })
 }
 
 /// Whether an `MLproject` file asks for `docker_env`, which needs the docker

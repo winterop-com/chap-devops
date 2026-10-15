@@ -20,6 +20,10 @@ fn the_model_name_is_read_in_both_spellings() {
 fn a_model_name_is_a_chapkit_service_a_repository_or_a_directory() {
     assert_eq!(model_kind(None), ModelKind::None);
     assert_eq!(
+        model_kind(Some("builtin:seasonal_median@1.0.0")),
+        ModelKind::Builtin("builtin:seasonal_median@1.0.0".to_string())
+    );
+    assert_eq!(
         model_kind(Some("http://auto-arima:8000")),
         ModelKind::Chapkit("http://auto-arima:8000".to_string())
     );
@@ -46,12 +50,29 @@ fn a_model_name_is_a_chapkit_service_a_repository_or_a_directory() {
 }
 
 #[test]
+fn a_built_in_model_is_not_a_model_id() {
+    let kind = model_kind(Some("builtin:persistence"));
+    assert_eq!(id_candidate(&kind, false), None);
+}
+
+#[test]
+fn as_chapkit_is_read_as_a_flag_or_with_a_value() {
+    assert!(as_chapkit(&strings(&["eval", "--run-config.as-chapkit"])));
+    assert!(as_chapkit(&strings(&["eval", "--run-config.as-chapkit=True"])));
+    assert!(!as_chapkit(&strings(&["eval", "--run-config.as-chapkit=false"])));
+    assert!(!as_chapkit(&strings(&["eval", "--model-name", "m"])));
+}
+
+#[test]
 fn only_the_models_that_are_not_chapkit_services_need_the_worker_image() {
     let repo = model_kind(Some("https://github.com/o/r"));
     let chapkit = model_kind(Some("http://m:8000"));
     // Nothing here: the smaller download.
     assert_eq!(image_for(&ModelKind::None, false, false), ChapImage::Core);
     assert_eq!(image_for(&chapkit, false, false), ChapImage::Core);
+    let builtin = model_kind(Some("builtin:persistence"));
+    assert_eq!(image_for(&builtin, false, false), ChapImage::Core);
+    assert_eq!(image_for(&builtin, false, true), ChapImage::Worker);
     // An R model needs the worker image, whatever is here.
     assert_eq!(image_for(&repo, true, false), ChapImage::Worker);
     assert_eq!(
@@ -351,6 +372,8 @@ fn the_output_files_are_read_in_both_spellings() {
     ]);
     assert_eq!(output_files(&args), ["out/a.nc", "b.html"]);
     assert!(output_files(&strings(&["validate", "d.csv"])).is_empty());
+    let simulate = strings(&["simulate", "--out-file", "sim/out.csv"]);
+    assert_eq!(output_files(&simulate), ["sim/out.csv"]);
 }
 
 #[test]

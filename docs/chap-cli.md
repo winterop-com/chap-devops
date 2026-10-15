@@ -78,6 +78,7 @@ chap-core publishes two images with the same tags. varde selects one from
 | --- | --- | --- |
 | A GitHub repository, or a model directory | `chap-worker` | about 12 GB |
 | A chapkit service (an `http://` URL that is not GitHub, or a model id) | the image that is on this machine; else `chap-core` | |
+| A built-in model (`builtin:persistence`) | the image that is on this machine; else `chap-core` | |
 | No model (`--help`, `plot-backtest`, `export-metrics`, ...) | the image that is on this machine; else `chap-core` | |
 
 The worker image has uv, R and INLA, and chap-core's own worker runs models in
@@ -192,6 +193,49 @@ varde reads the `MLproject` before the run: from the directory, or from
 GitHub. If the model uses `docker_env` and `--docker` is not given, varde
 stops before the run and tells you to add the flag. If varde cannot read the
 file (for example, with `--offline`), it does not check it.
+
+## Built-in models
+
+From chap-core v2.5.0, chap has models of its own. They are baselines to
+compare a model with. Give them with the `builtin:` prefix:
+
+```sh
+varde chap eval --model-name builtin:seasonal_median \
+  --dataset-csv laos_subset.csv --output-file seasonal_median.nc
+```
+
+The names are `persistence`, `global_median` and `seasonal_median`. A
+built-in model runs in chap itself, so varde starts no model and uses either
+image. An older tag does not have these models. Until v2.5.0 is released, use `--tag
+master`.
+
+## An MLproject as a chapkit service
+
+From chap-core v2.5.0, `--run-config.as-chapkit` makes chap start a model
+directory or a GitHub repository as a chapkit service in the container. chap
+then talks to it over HTTP, as it does to a deployed model:
+
+```sh
+varde chap --tag master eval --model-name ./my_model --run-config.as-chapkit \
+  --dataset-csv laos_subset.csv --output-file my_model.nc
+```
+
+The `MLproject` must use `uv_env` or `renv_env`. chap refuses `docker_env`,
+`conda_env` and `python_env` in this mode, so varde does not ask for
+`--docker`. To serve the same model outside chap, use `varde chapkit mlproject
+run` ([The chapkit CLI](chapkit-cli.md)).
+
+## Simulate data
+
+From chap-core v2.5.0, `chap simulate` runs the `simulate` entry point of a
+model, and writes the covariates with a simulated target to a CSV file:
+
+```sh
+varde chap simulate --model-name ./my_model --dataset-csv covariates.csv \
+  --out-file sim/simulated.csv
+```
+
+varde makes the directory of `--out-file`, as it does for `--output-file`.
 
 ## The caches
 
