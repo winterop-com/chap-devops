@@ -20,7 +20,7 @@ use std::path::{Path, PathBuf};
 
 /// The chapkit versions a new chapkit service depends on: the release the
 /// templates were checked against, up to the next major version.
-pub const CHAPKIT_REQUIREMENT: &str = "chapkit>=2.3.1,<3";
+pub const CHAPKIT_REQUIREMENT: &str = "chapkit>=2.4.0,<3";
 
 /// Where the chapkit base images are published.
 const IMAGE_PREFIX: &str = "ghcr.io/dhis2-chap/";
