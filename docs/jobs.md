@@ -47,11 +47,16 @@ shown with `-v`: for a finished job, the row in chap-core's database and the
 | Column | What it holds |
 | --- | --- |
 | `ID` | The job id, cut to its first eight characters while those tell the listed jobs apart, and printed in full when they do not. Every subcommand takes the short form. |
-| `TYPE` | chap-core's own job type: `create_dataset`, `create_backtest`, `create_prediction`. |
+| `TYPE` | chap-core's own job type: `create_dataset`, `create_backtest`, `create_backtest_from_data`, `create_prediction`, `run_baseline`. |
 | `NAME` | The name whoever started the job gave it, which is the only field a person chose. |
 | `STATUS` | The worker's state, unchanged. See the table below. |
 | `STARTED` | How long ago the job began, or `queued` for one that has not. |
 | `DURATION` | How long it took, for a job that has finished. `-` while it runs. |
+
+From chap-core v2.5.0, a backtest also starts one `run_baseline` job for
+each model built into chap-core, named `baseline/<model>`. chap-core starts
+them once for each backtest setup, so that every model can be compared with
+the baselines. Thus one backtest can show as four jobs.
 
 `--status` filters (repeat it for more than one), `--type` filters by job type
 and `--limit` keeps the newest N after the ordering, so `varde jobs --limit 5`

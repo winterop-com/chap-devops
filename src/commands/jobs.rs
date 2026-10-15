@@ -193,7 +193,7 @@ fn next_step(job: &Job, status: &str, database_result: Option<i64>, lines: &mut 
 fn collection_of(kind: &str) -> Option<&'static str> {
     match kind.trim() {
         "create_dataset" => Some("datasets"),
-        "create_backtest" => Some("backtests"),
+        "create_backtest" | "create_backtest_from_data" | "run_baseline" => Some("backtests"),
         "create_prediction" => Some("predictions"),
         _ => None,
     }
