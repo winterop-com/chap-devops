@@ -173,6 +173,9 @@ const DOCKER_RUN_FAILED: i32 = 125;
 /// The exit code of a container whose command is not in the image.
 const COMMAND_NOT_FOUND: i32 = 127;
 
+/// The exit code of a container that SIGTERM stopped, as `docker stop` does.
+const STOPPED_BY_SIGTERM: i32 = 143;
+
 /// The arguments after `mlproject run`, as varde reads them.
 #[derive(Debug, Default, PartialEq, Eq)]
 pub(super) struct Request {
@@ -448,6 +451,13 @@ pub(super) fn run(ctx: &Ctx, args: &ChapkitArgs, rest: &[String]) -> Result<()> 
         output::notice(&format!("stopped the MLproject service on {url}"));
         return Ok(());
     }
+    if code == STOPPED_BY_SIGTERM {
+        output::notice(&format!(
+            "the MLproject service on {url} stopped, because its container got SIGTERM \
+             (from `docker stop` or a restart of docker)"
+        ));
+        return Ok(());
+    }
     match code {
         DOCKER_RUN_FAILED => Err(ChapError::Exited {
             command: "docker run",
@@ -474,16 +484,26 @@ pub(super) fn run(ctx: &Ctx, args: &ChapkitArgs, rest: &[String]) -> Result<()> 
 }
 
 /// Wait for the container to stop, and say once when the service answers.
+///
+/// A Ctrl-C in a terminal reaches `docker run` too, but a signal sent to
+/// varde alone (`kill -INT`, a process manager) does not: so on a request
+/// to stop, varde stops the container itself.
 fn watch(child: &mut std::process::Child, url: &str, registers: bool, name: &str) -> Result<i32> {
     let started = Instant::now();
     let mut answered = false;
     let mut slow = false;
+    let mut stopping = false;
     loop {
         if let Some(status) = child
             .try_wait()
             .map_err(|e| anyhow::anyhow!("waiting for docker: {e}"))?
         {
             return Ok(status.code().unwrap_or(interrupt::EXIT_CODE));
+        }
+        if !stopping && interrupt::requested() {
+            stopping = true;
+            stop_container(name);
+            continue;
         }
         if !answered && !interrupt::requested() {
             let health = format!("{url}{}", crate::status::HEALTH_PATH);
@@ -506,6 +526,18 @@ fn watch(child: &mut std::process::Child, url: &str, registers: bool, name: &str
         }
         std::thread::sleep(POLL);
     }
+}
+
+/// `docker stop <name>`, best-effort and silent: chapkit gets SIGTERM and
+/// shuts down, and `--rm` removes the container.
+fn stop_container(name: &str) {
+    output::verbose(&format!("$ docker stop {name}"));
+    let _ = Command::new("docker")
+        .args(["stop", name])
+        .stdin(std::process::Stdio::null())
+        .stdout(std::process::Stdio::null())
+        .stderr(std::process::Stdio::null())
+        .status();
 }
 
 /// Run `chapkit mlproject run --help` in the image, so the help matches it.
