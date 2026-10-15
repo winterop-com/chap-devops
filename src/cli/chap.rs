@@ -45,7 +45,7 @@ pub struct ChapkitArgs {
     #[arg(long, value_name = "TAG")]
     pub tag: Option<String>,
 
-    /// Image for `mlproject run`: py, r, r-tidyverse, r-inla, or an image name
+    /// Image for `mlproject run`: py, py-data, r, r-tidyverse, r-inla, or a name
     #[arg(long, value_name = "IMAGE")]
     pub image: Option<String>,
 

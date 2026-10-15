@@ -17,7 +17,9 @@ WORKDIR /work
 # RUN Rscript -e 'install.packages(c("forecast"), repos = "https://cloud.r-project.org")'
 {% else %}
 
-# The Python packages of the scripts, from pyproject.toml.
+# The base image has numpy, pandas, scipy, scikit-learn, statsmodels,
+# joblib, pyyaml and xarray. Add other packages of the scripts to
+# pyproject.toml.
 COPY pyproject.toml ./
 RUN --mount=type=cache,target=/root/.cache/uv \
     uv pip install --python /app/.venv/bin/python -r pyproject.toml

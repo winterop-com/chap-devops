@@ -93,13 +93,14 @@ no R, so varde runs a chapkit `-cli` image instead:
 | `--image` | Image |
 | --- | --- |
 | `py` | `ghcr.io/dhis2-chap/chapkit-py-cli` |
+| `py-data` | `ghcr.io/dhis2-chap/chapkit-py-data-cli`, with numpy, pandas, scipy, scikit-learn, statsmodels, joblib, pyyaml and xarray |
 | `r` | `ghcr.io/dhis2-chap/chapkit-r-cli` |
 | `r-tidyverse` | `ghcr.io/dhis2-chap/chapkit-r-tidyverse-cli` |
 | `r-inla` | `ghcr.io/dhis2-chap/chapkit-r-inla-cli` (amd64 only) |
 | any other value | That image, such as one you built yourself |
 
 Without `--image`, the train command in `MLproject` selects the image: a
-`python` or `uv` command gets `py`, and an `Rscript` command gets
+`python` or `uv` command gets `py-data`, and an `Rscript` command gets
 `r-tidyverse`. A model that needs INLA, or packages that no `-cli` image has,
 needs `--image`. An image of your own must have chapkit 2.4.0 or later, such
 as an image built `FROM` a `-cli` image. varde pulls the image if this docker

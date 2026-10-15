@@ -2,8 +2,9 @@
 //! `chapkit mlproject run`, in the foreground, in an image that has chapkit.
 //!
 //! The chap-core image has chapkit but no R, so it cannot serve most
-//! MLproject models. This runs a chapkit `-cli` image (Python, R, R with
-//! tidyverse, or R with INLA, each with chapkit), or an image of your own,
+//! MLproject models. This runs a chapkit `-cli` image (Python, Python with
+//! the PyData stack, R, R with tidyverse, or R with INLA, each with chapkit),
+//! or an image of your own,
 //! with the MLproject directory mounted at `/work`. In a deployment that runs
 //! chap-core, the service joins the deployment network and registers with
 //! chap-core while it runs. Ctrl-C stops it. See `docs/chapkit-cli.md`.
@@ -29,6 +30,7 @@ const IMAGE_PREFIX: &str = "ghcr.io/dhis2-chap/";
 /// The short names `--image` takes, and the chapkit `-cli` image of each.
 pub(super) const FLAVOURS: &[(&str, &str)] = &[
     ("py", "chapkit-py-cli"),
+    ("py-data", "chapkit-py-data-cli"),
     ("r", "chapkit-r-cli"),
     ("r-tidyverse", "chapkit-r-tidyverse-cli"),
     ("r-inla", "chapkit-r-inla-cli"),
@@ -166,7 +168,7 @@ pub(super) fn image_for(choice: &str) -> String {
 }
 
 /// The short name for the language of the train command, and the command:
-/// `py` for Python, `r-tidyverse` for R. `None` when the MLproject has no
+/// `py-data` for Python, `r-tidyverse` for R. `None` when the MLproject has no
 /// train command or the command is in another language.
 pub(super) fn default_flavour(mlproject: &str) -> Option<(&'static str, String)> {
     let value: serde_yaml_ng::Value = serde_yaml_ng::from_str(mlproject).ok()?;
@@ -176,7 +178,7 @@ pub(super) fn default_flavour(mlproject: &str) -> Option<(&'static str, String)>
         .to_string();
     let program = command.split_whitespace().next()?.rsplit('/').next()?;
     let flavour = match program {
-        "python" | "python3" | "uv" | "uvx" => "py",
+        "python" | "python3" | "uv" | "uvx" => "py-data",
         "Rscript" | "R" => "r-tidyverse",
         _ => return None,
     };
@@ -284,7 +286,7 @@ pub(super) fn run(ctx: &Ctx, args: &ChapkitArgs, rest: &[String]) -> Result<()> 
             None => {
                 return Err(ChapError::Usage(format!(
                     "varde cannot tell the language of the train command in {}; give \
-                     `--image py`, `r`, `r-tidyverse`, `r-inla`, or an image name",
+                     `--image py-data`, `r-tidyverse`, `r-inla`, or an image name",
                     mlproject_file.display()
                 ))
                 .into());
@@ -356,7 +358,7 @@ pub(super) fn run(ctx: &Ctx, args: &ChapkitArgs, rest: &[String]) -> Result<()> 
             command: "chapkit",
             code,
             next: format!(
-                "{image} may have no `chapkit`; use `--image py`, `r`, `r-tidyverse`, `r-inla`, \
+                "{image} may have no `chapkit`; use `--image py-data`, `r-tidyverse`, `r-inla`, \
                  or an image built on one of them"
             ),
         }

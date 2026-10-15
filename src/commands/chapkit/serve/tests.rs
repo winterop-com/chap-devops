@@ -60,6 +60,10 @@ fn parse_refuses_what_varde_sets_and_a_second_directory() {
 fn image_for_maps_the_short_names_and_keeps_an_image_name() {
     assert_eq!(image_for("py"), "ghcr.io/dhis2-chap/chapkit-py-cli:latest");
     assert_eq!(
+        image_for("py-data"),
+        "ghcr.io/dhis2-chap/chapkit-py-data-cli:latest"
+    );
+    assert_eq!(
         image_for("r-inla"),
         "ghcr.io/dhis2-chap/chapkit-r-inla-cli:latest"
     );
@@ -82,11 +86,11 @@ fn the_default_image_follows_the_train_command() {
     );
     assert_eq!(
         default_flavour(&mlproject("python train.py")).map(|(f, _)| f),
-        Some("py")
+        Some("py-data")
     );
     assert_eq!(
         default_flavour(&mlproject("uv run train.py")).map(|(f, _)| f),
-        Some("py")
+        Some("py-data")
     );
     assert_eq!(default_flavour(&mlproject("julia train.jl")), None);
     assert_eq!(default_flavour("name: m\n"), None);
