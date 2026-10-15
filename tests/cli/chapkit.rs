@@ -397,3 +397,43 @@ fn mlproject_run_in_a_deployment_registers_with_its_chap_core() {
             .any(|arg| arg.starts_with("SERVICEKIT_REGISTRATION_KEY="))
     );
 }
+
+#[test]
+fn image_alone_lists_the_short_names() {
+    let sandbox = Sandbox::new();
+    let work = workdir(&sandbox);
+    let (_temp, bin, log) = fake_docker();
+
+    let out = chap_with_docker(&sandbox, &work, &bin, &["chapkit", "--image"])
+        .assert()
+        .success()
+        .get_output()
+        .clone();
+    let stdout = String::from_utf8_lossy(&out.stdout);
+    for name in ["py-data", "r-tidyverse", "r-inla"] {
+        assert!(
+            stdout.contains(&format!("ghcr.io/dhis2-chap/chapkit-{name}-cli:latest")),
+            "{stdout}"
+        );
+    }
+    assert!(
+        stdout.contains("`varde chapkit --image NAME mlproject run DIR`"),
+        "{stdout}"
+    );
+    assert!(
+        !std::fs::read_to_string(&log)
+            .unwrap_or_default()
+            .contains("run --rm")
+    );
+
+    let (_temp, bin, _log) = fake_docker();
+    let report = json_of(
+        chap_with_docker(&sandbox, &work, &bin, &["--json", "chapkit", "--image"])
+            .env("IMAGE_HERE", "1"),
+    );
+    let images = report["images"].as_array().expect("an image list");
+    assert_eq!(images.len(), 5);
+    assert_eq!(images[1]["name"], "py-data");
+    assert_eq!(images[4]["platforms"], "amd64");
+    assert!(images.iter().all(|image| image["local"] == true));
+}

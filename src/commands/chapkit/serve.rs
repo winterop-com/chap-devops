@@ -18,6 +18,7 @@ use crate::interrupt::{self, Throwaway};
 use crate::output;
 use crate::ports;
 use crate::project::{DEFAULT_PORT_RANGE, Project, VARDE_DIR};
+use serde::Serialize;
 use std::collections::BTreeSet;
 use std::io::IsTerminal;
 use std::path::{Path, PathBuf};
@@ -27,14 +28,114 @@ use std::time::{Duration, Instant};
 /// Where the chapkit images are published.
 const IMAGE_PREFIX: &str = "ghcr.io/dhis2-chap/";
 
-/// The short names `--image` takes, and the chapkit `-cli` image of each.
-pub(super) const FLAVOURS: &[(&str, &str)] = &[
-    ("py", "chapkit-py-cli"),
-    ("py-data", "chapkit-py-data-cli"),
-    ("r", "chapkit-r-cli"),
-    ("r-tidyverse", "chapkit-r-tidyverse-cli"),
-    ("r-inla", "chapkit-r-inla-cli"),
+/// A short name that `--image` takes, and the chapkit `-cli` image it means.
+pub(super) struct Flavour {
+    pub name: &'static str,
+    pub image: &'static str,
+    /// What the image has, besides chapkit.
+    pub has: &'static str,
+}
+
+/// The short names `--image` takes.
+pub(super) const FLAVOURS: &[Flavour] = &[
+    Flavour {
+        name: "py",
+        image: "chapkit-py-cli",
+        has: "Python",
+    },
+    Flavour {
+        name: "py-data",
+        image: "chapkit-py-data-cli",
+        has: "Python, numpy, pandas, scipy, scikit-learn, statsmodels, ...",
+    },
+    Flavour {
+        name: "r",
+        image: "chapkit-r-cli",
+        has: "R, renv, pak",
+    },
+    Flavour {
+        name: "r-tidyverse",
+        image: "chapkit-r-tidyverse-cli",
+        has: "R, tidyverse, fable, tsibble, forecast, xgboost, ...",
+    },
+    Flavour {
+        name: "r-inla",
+        image: "chapkit-r-inla-cli",
+        has: "R, tidyverse, INLA, sf, spdep, dlnm, ...",
+    },
 ];
+
+/// One row of `varde chapkit --image`, and of its `--json`.
+#[derive(Debug, Serialize)]
+struct ImageRow {
+    name: &'static str,
+    image: String,
+    has: &'static str,
+    platforms: &'static str,
+    /// Whether this docker has the image, so a run does not pull it.
+    local: bool,
+}
+
+/// What `varde chapkit --image` prints.
+#[derive(Debug, Serialize)]
+struct ImageList {
+    images: Vec<ImageRow>,
+}
+
+/// List the images that `--image` takes by short name.
+pub(super) fn list(ctx: &Ctx) -> Result<()> {
+    let images: Vec<ImageRow> = FLAVOURS
+        .iter()
+        .map(|flavour| {
+            let image = image_for(flavour.name);
+            ImageRow {
+                name: flavour.name,
+                platforms: match amd64_only(&image) {
+                    true => "amd64",
+                    false => "amd64, arm64",
+                },
+                local: docker::image_is_local(&image),
+                has: flavour.has,
+                image,
+            }
+        })
+        .collect();
+    if !ctx.out.json {
+        let rows: Vec<Vec<String>> = images
+            .iter()
+            .map(|row| {
+                vec![
+                    row.name.to_string(),
+                    row.image.clone(),
+                    row.platforms.to_string(),
+                    match row.local {
+                        true => ctx.out.ok("yes"),
+                        false => ctx.out.dim("no"),
+                    },
+                    ctx.out.dim(row.has),
+                ]
+            })
+            .collect();
+        print!(
+            "{}",
+            ctx.out.table(
+                &["NAME", "IMAGE", "PLATFORMS", "LOCAL", "WHAT IT HAS"],
+                &rows
+            )
+        );
+    }
+    let list = ImageList { images };
+    ctx.out.report(&list, |r| {
+        r.info(
+            "`varde chapkit --image NAME mlproject run DIR` serves an MLproject in one; \
+             an image name works too",
+        );
+        r.hint(
+            "without --image, the train command selects one: `python` or `uv` gets py-data, \
+             `Rscript` gets r-tidyverse",
+        );
+    })
+}
 
 /// The file names chapkit looks for in an MLproject directory.
 const MLPROJECT_FILES: &[&str] = &["MLproject", "MLproject.yaml", "MLproject.yml"];
@@ -161,8 +262,8 @@ pub(super) fn locate(
 /// The image for `--image`: a short name maps to its chapkit `-cli` image,
 /// anything else is an image name.
 pub(super) fn image_for(choice: &str) -> String {
-    match FLAVOURS.iter().find(|(name, _)| *name == choice) {
-        Some((_, image)) => format!("{IMAGE_PREFIX}{image}:latest"),
+    match FLAVOURS.iter().find(|flavour| flavour.name == choice) {
+        Some(flavour) => format!("{IMAGE_PREFIX}{}:latest", flavour.image),
         None => choice.to_string(),
     }
 }
