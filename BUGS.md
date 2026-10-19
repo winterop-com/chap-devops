@@ -2,7 +2,8 @@
 
 Bugs in the systems that chap-devops deploys, found by running them for real.
 Bugs in chap-devops itself are fixed in the same session and are not listed.
-Each entry names where it was seen, what happens, and what would fix it.
+Each entry names where it was seen, what happens, and what would fix it. A
+bug that is fixed leaves the file.
 
 ## Modeling App
 
@@ -65,40 +66,6 @@ Each entry names where it was seen, what happens, and what would fix it.
 
 - It answers `"SUCCESS"`, while `GET /v1/jobs` gives the whole job, with its
   start time and result.
-
-## chapkit (2.4.0)
-
-### `chapkit --version` prints the servicekit version
-
-- It prints `servicekit version 3.0.0`; the chapkit version is 2.4.0.
-
-### `chapkit --help` hides `mlproject` where `export` is used
-
-- `chapkit --help` lists `mlproject` only when the current directory has an
-  `MLproject` file (`hidden=not _has_mlproject()` in `cli/cli.py`). But
-  `mlproject export` runs in a chapkit service directory, which has a
-  `main.py` and no `MLproject`, and `mlproject run DIR` and `migrate DIR` take
-  a directory elsewhere. So the help does not show them where people need
-  them. chap-devops now adds a line after the help that names
-  `chapkit mlproject --help`.
-
-### `chapkit mlproject export` warns about `author_note` on every service
-
-- A service with a `description` and no `author_note` gets `WARNING:
-  info.model_metadata: the MLproject gives {'author_note': ...}`.
-  `cli/mlproject.py` uses `description` when `author_note` is missing; the
-  self-check of the export does not.
-
-### `chapkit mlproject migrate` finds scripts at the project root only
-
-- `No Python (.py) or R (.r/.R) scripts at the project root; cannot pick a
-  base image.` for a model with its scripts in `scripts/`. It could read the
-  script paths in the train and predict commands.
-
-### The `-cli` images log an error at start
-
-- `SQLAlchemyInstrumentor only instruments "sqlalchemy >= 1.0.0, < 2.1.0",
-  but currently installed version ("sqlalchemy 2.1.4")`, at level `error`.
 
 ## Open Climate Service (`main`)
 
