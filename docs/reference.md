@@ -377,12 +377,12 @@ Registry options: `--registry-url <URL>`, `--offline`, `--cache-dir <DIR>` (see 
 Enable a model and write its compose overlay.
 
 ```text
-Usage: chap-devops models enable [OPTIONS] <ID>
+Usage: chap-devops models enable [OPTIONS] <ID>...
 ```
 
 | Argument | Description |
 | --- | --- |
-| `<ID>` | Marketplace id or service id. |
+| `<ID>...` | Marketplace ids or service ids, separated by spaces or commas. |
 | `--channel <CHANNEL>` | Follow a release channel instead of pinning a version. Values: `stable`, `latest`. |
 | `--version <VERSION>` | Pin an exact version from the model's versions list. |
 | `--port <PORT\|auto>` | Host port to publish the model on, or auto for a free one. |

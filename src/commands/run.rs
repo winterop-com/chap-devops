@@ -428,7 +428,7 @@ fn enable_source(
             ctx,
             project,
             &ModelsEnableArgs {
-                id: id.clone(),
+                ids: vec![id.clone()],
                 channel: None,
                 version: None,
                 port: Some(args.port),

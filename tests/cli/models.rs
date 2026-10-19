@@ -592,3 +592,43 @@ fn a_second_enable_or_expose_says_nothing_changed() {
         port
     );
 }
+
+#[test]
+fn enable_takes_several_ids_and_refuses_the_options_of_one_model() {
+    let sandbox = Sandbox::new();
+    let dir = sandbox.project();
+    sandbox.init(&["--models", "none"]).assert().success();
+
+    sandbox
+        .models(&["enable", "chapkit_ewars_model,auto_arima_chapkit"])
+        .assert()
+        .success();
+    sandbox
+        .models(&["enable", "chapkit_simple_multistep_model"])
+        .assert()
+        .success();
+    let models = state(&dir)["models"].clone();
+    for id in [
+        "chapkit_ewars_model",
+        "auto_arima_chapkit",
+        "chapkit_simple_multistep_model",
+    ] {
+        assert!(!models[id].is_null(), "{id} is enabled: {models}");
+    }
+    assert_eq!(includes(&dir).len(), 3);
+
+    sandbox
+        .models(&[
+            "enable",
+            "chapkit_rwanda_malaria_bym_model",
+            "chapkit_ghr_model",
+            "--version",
+            "1.0.0",
+        ])
+        .assert()
+        .code(2)
+        .stderr(predicates::str::contains(
+            "--version is for one model, and this names 2",
+        ));
+    assert!(state(&dir)["models"]["chapkit_ghr_model"].is_null());
+}

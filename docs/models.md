@@ -167,7 +167,7 @@ and the DNS name).
 ## Enabling and disabling
 
 ```sh
-chap-devops models enable ID [--channel stable|latest | --version X]
+chap-devops models enable ID [ID..] [--channel stable|latest | --version X]
                        [--port N|auto] [--bind ADDR] [--data-dir PATH]
                        [--user USER:GROUP] [--allow-template]
 chap-devops models disable ID [--purge]
@@ -175,6 +175,12 @@ chap-devops models expose ID [--port N|auto] [--bind ADDR]
 chap-devops models unexpose ID
 chap-devops up                            # apply any of them
 ```
+
+`models enable` takes several ids, separated by spaces or commas, as
+`chap-devops init --models` does. `--channel`, `--port auto`, `--bind` and
+`--allow-template` then apply to each model. `--version`, `--port N`,
+`--data-dir` and `--user` are for one model, and `enable` refuses them with
+more than one id.
 
 `--bind ADDR` sets the host address of the model port; see
 [Which address a model port is published on](./ports.md#which-address-a-model-port-is-published-on).

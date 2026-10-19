@@ -16,8 +16,8 @@ use crate::registry::{Channel, Registry, VersionSelector};
 use std::collections::BTreeSet;
 use std::path::PathBuf;
 
-/// Enable one model: resolve its version, write the overlay, sync the compose
-/// files and update .chap-devops/models.yaml.
+/// Enable one or more models: resolve each version, write the overlays, sync
+/// the compose files and update .chap-devops/models.yaml.
 ///
 /// No host port unless `--port` asks for one: chap-core reaches the service
 /// over the compose network, which is the URL the service registers.
@@ -38,6 +38,10 @@ pub(crate) fn enable_in(
 ) -> Result<ApplyReport> {
     let registry = super::registry_for(ctx, Some(project))?;
 
+    if let Some(why) = one_model_only(args) {
+        return Err(ChapError::Usage(why).into());
+    }
+
     // --version and --channel conflict in the parser, so at most one is set.
     let selector = match (&args.version, args.channel) {
         (Some(version), _) => VersionSelector::Exact(version.clone()),
@@ -45,25 +49,50 @@ pub(crate) fn enable_in(
         (None, None) => VersionSelector::Channel(Channel::Stable),
     };
     let selection = Selection {
-        enable: vec![EnableRequest {
-            id: args.id.clone(),
-            selector,
-            port: args.port.map(|p| p.0),
-            bind: args.bind,
-            data_dir: args.data_dir.clone(),
-            user: args.user.clone(),
-            user_from: None,
-            allow_template: args.allow_template,
-            // `models enable` is where a version is decided, so it always
-            // resolves: that is what `--version` and `--channel` are for, and
-            // a bare run follows the stable channel.
-            keep_version: false,
-        }],
+        enable: args
+            .ids
+            .iter()
+            .map(|id| EnableRequest {
+                id: id.clone(),
+                selector: selector.clone(),
+                port: args.port.map(|p| p.0),
+                bind: args.bind,
+                data_dir: args.data_dir.clone(),
+                user: args.user.clone(),
+                user_from: None,
+                allow_template: args.allow_template,
+                // `models enable` is where a version is decided, so it
+                // always resolves: that is what `--version` and `--channel`
+                // are for, and a bare run follows the stable channel.
+                keep_version: false,
+            })
+            .collect(),
         ..Selection::default()
     };
 
     let endpoints = crate::manual::Endpoints::from_env(ctx.registry.offline);
     apply(project, &registry, &selection, &endpoints)
+}
+
+/// Why the options cannot go with several ids, if they cannot: a version, a
+/// fixed port, a data directory and a user belong to one model.
+pub(crate) fn one_model_only(args: &ModelsEnableArgs) -> Option<String> {
+    if args.ids.len() < 2 {
+        return None;
+    }
+    let fixed_port = matches!(args.port, Some(crate::cli::PortArg(PortRequest::Fixed(_))));
+    let option = match () {
+        _ if args.version.is_some() => "--version",
+        _ if fixed_port => "--port PORT",
+        _ if args.data_dir.is_some() => "--data-dir",
+        _ if args.user.is_some() => "--user",
+        _ => return None,
+    };
+    Some(format!(
+        "{option} is for one model, and this names {}; enable that model alone with \
+         `chap-devops models enable ID {option}`",
+        args.ids.len()
+    ))
 }
 
 /// One model a command left enabled, the way a `--json` caller wants it: the

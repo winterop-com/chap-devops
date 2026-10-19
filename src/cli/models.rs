@@ -333,9 +333,9 @@ pub struct ModelsRemoveArgs {
 /// Enable a model and write its compose overlay
 #[derive(Debug, Clone, Args)]
 pub struct ModelsEnableArgs {
-    /// Marketplace id or service id
-    #[arg(value_name = "ID")]
-    pub id: String,
+    /// Marketplace ids or service ids, separated by spaces or commas
+    #[arg(value_name = "ID", required = true, num_args = 1.., value_delimiter = ',')]
+    pub ids: Vec<String>,
 
     /// Follow a release channel instead of pinning a version
     #[arg(long, value_name = "CHANNEL", conflicts_with = "version")]

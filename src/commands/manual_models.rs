@@ -131,7 +131,7 @@ pub(crate) fn add_in(
                 ctx,
                 project,
                 &crate::cli::ModelsEnableArgs {
-                    id,
+                    ids: vec![id],
                     channel: None,
                     version,
                     port: args.port,
