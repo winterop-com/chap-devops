@@ -321,7 +321,7 @@ chapkit finished; it wrote MLproject
 
 ## What was tested
 
-On chap-core `master` (chapkit 2.4.0), macOS arm64. Each model was served
+On chap-core `master` before v2.5.0 (chapkit 2.4.0), macOS arm64. Each model was served
 with `mlproject run` and evaluated with `chap-devops chap eval`:
 
 | Image | The models that pass |

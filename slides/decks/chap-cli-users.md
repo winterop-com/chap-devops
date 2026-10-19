@@ -76,7 +76,7 @@ chap-devops chap plot-backtest r.nc --output-file r.html
 | `chap validate data.csv` | `chap-devops chap validate data.csv` |
 | `chap --help` | `chap-devops chap` |
 | `chap eval --help` | `chap-devops chap eval --help` |
-| `uvx --from chap-core==2.4.0 chap ...` | `chap-devops chap --tag v2.4.0 ...` |
+| `uvx --from chap-core==2.5.0 chap ...` | `chap-devops chap --tag v2.5.0 ...` |
 
 ---
 

@@ -58,7 +58,7 @@ chap-devops up --wait
 ```
 
 ```text
-chap-core   up   http://localhost:8700   2.4.0   auth: off
+chap-core   up   http://localhost:8700   2.5.0   auth: off
 
 MODEL                           STATE       REACH          LAST PING
 chapkit-simple-multistep-model  registered  via chap-core  7s ago
@@ -209,7 +209,7 @@ chap-devops auth show --reveal                         # read the token
 
 - **Models**: an image tag, a `sha-<commit>` build for marketplace images.
 - **chap-core**: a release tag. `init` resolves `latest` to the release it
-  points at today, for example `v2.4.0`.
+  points at today, for example `v2.5.0`.
 - **DHIS2**: a minor line, `2.42`, so a patch release comes with a pull.
 - **OCS and S3**: moving tags (`main`, `latest`), because they publish no
   releases. Set `OCS_IMAGE_TAG` in `.env` to pin one.
@@ -241,7 +241,7 @@ Each run ends with one of these lines:
 ```text
 already up to date
 updated 1 model pin; restart needed: chap, worker (run `chap-devops restart`)
-updated chap-core v2.3.1 -> v2.4.0; Chap is not running, the new versions start with `chap-devops up`
+updated chap-core v2.4.0 -> v2.5.0; Chap is not running, the new versions start with `chap-devops up`
 updated 1 model pin; nothing needs a restart
 pulled a new image for ocs; restart needed: ocs (run `chap-devops restart`)
 ```
@@ -254,7 +254,7 @@ database. `chap-devops backup create` comes before it.
 ## `chap-devops status`
 
 ```text
-chap-core   up   http://localhost:8700   2.4.0   auth: on
+chap-core   up   http://localhost:8700   2.5.0   auth: on
 ocs         up   http://localhost:8790   3 datasets   212.0 MB data
 
 MODEL                             STATE                    REACH          LAST PING

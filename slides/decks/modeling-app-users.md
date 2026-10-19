@@ -440,6 +440,21 @@ The model list shows **configured models**, not model services:
 - One model service can give several entries: Simple Multistep gives two.
 - `chap-devops models configs` shows the same list in the terminal, with the
   option values and covariates of each entry.
+- From chap-core v2.5.0, the list also has the built-in baselines:
+  **Persistence**, **Global median** and **Seasonal median**.
+
+---
+
+## A forecast back into DHIS2: Import
+
+On a prediction run, **Import** writes the forecast into DHIS2 data elements.
+
+- Five boxes, one per quantile. Each suggests its `CHAP ... Quantile ...`
+  element of the demo database.
+- From Modeling App 7.3.0, **Use alert outputs** is on by default. Then
+  **Clear and import** works only with an **Outbreak indicator**.
+- Pick `CHAP Dengue Cases (Any) - Weekly Outbreak Alert`: type `Outbreak`,
+  because the box does not suggest it. Or turn **Use alert outputs** off.
 
 ---
 
