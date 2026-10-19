@@ -126,6 +126,30 @@ This file holds the rules that are not derivable from the code.
   docs-reference`; regenerate it whenever a help string changes and never edit
   it by hand.
 
+## Testing what chap-devops deploys, and BUGS.md
+
+The main purpose of chap-devops is to run Chap and the systems around it for
+real, so that their bugs show up. Test every shape a user deploys, not only
+the full one:
+
+- chap-core with marketplace models, and with the built-in baselines;
+- chap-core with chapkit: `chapkit mlproject run`, `migrate` and `export`, and
+  `chap eval` with `--run-config.as-chapkit`;
+- OCS on its own, with S3, read-only and behind `--base-url`;
+- DHIS2 on its own, at every supported version, and connected to Chap with
+  the Modeling App;
+- the combinations, and the development options in `docs/ai.md`.
+
+Test the newest images: OCS publishes `main` and no releases, so pull it
+first. Write down the versions and the image digests that you tested.
+
+Record each bug in a deployed system in `BUGS.md` as you find it, not at the
+end: the Modeling App, DHIS2 and its demo databases, chap-core, chapkit and
+servicekit, OCS, and the chap-models. Each entry says where it was seen (the
+versions), what happens (the exact message), and what would fix it. A bug
+that is fixed upstream leaves the file; do not keep "fixed" entries. A bug in
+chap-devops itself is not a `BUGS.md` entry: fix it, with a test.
+
 ## Docs
 
 mdbook, `book.toml` at the root, chapters in `docs/`, one chapter per
