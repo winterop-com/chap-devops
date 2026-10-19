@@ -930,7 +930,7 @@ chapkit in it, which `chapkit mlproject run` needs. `chapkit-py-data-cli`
 also has numpy, pandas, scipy, scikit-learn, statsmodels, joblib, pyyaml and
 xarray, so a Python MLproject runs with no install of its own. A chapkit service installs
 its own chapkit with `uv sync` in the build, from the range in its
-`pyproject.toml` (`chapkit>=2.4.0,<3`). The INLA images are amd64 only, so
+`pyproject.toml` (`chapkit>=2.4.1,<3`). The INLA images are amd64 only, so
 those Dockerfiles pin `linux/amd64`.
 
 `--with-validation` adds the `$validate` hooks (`on_validate_train` and
