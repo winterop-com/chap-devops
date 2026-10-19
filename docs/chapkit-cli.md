@@ -16,9 +16,11 @@ Each argument after `chapkit` goes to chapkit unchanged. To read chapkit's own
 help, run `chap-devops chapkit` with no arguments. `chap-devops chapkit --help` shows only
 the options of chap-devops itself.
 
-chapkit's help lists the `mlproject` commands (`run`, `migrate`, `export`) only
-in a directory with an `MLproject` file. Elsewhere, chap-devops adds a line
-after the help: `chap-devops chapkit mlproject --help` shows them.
+Up to chapkit 2.4.0, which is in chap-core v2.5.0 and older, chapkit's help
+lists the `mlproject` commands (`run`, `migrate`, `export`) only in a
+directory with an `MLproject` file. With such a tag, chap-devops adds a line
+after the help: `chap-devops chapkit mlproject --help` shows them. chapkit
+2.4.1 lists them everywhere.
 
 ## Which image
 

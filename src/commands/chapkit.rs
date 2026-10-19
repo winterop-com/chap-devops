@@ -128,7 +128,7 @@ pub fn run(ctx: &Ctx, args: &ChapkitArgs) -> Result<()> {
                 for dir in needs_lock(&written) {
                     lock(&spec, &dir, &cwd);
                 }
-            } else if mlproject_hidden(&chapkit_args, &cwd) {
+            } else if mlproject_hidden(&chapkit_args, &cwd, &tag) {
                 output::notice(
                     "chapkit lists `mlproject` (run, migrate, export) only in a directory with an \
                      MLproject file; `chap-devops chapkit mlproject --help` shows it",
@@ -216,14 +216,26 @@ fn command_name(args: &[String]) -> String {
     }
 }
 
-/// Whether chapkit's own help leaves out the `mlproject` group: chapkit
-/// hides it from its top-level help unless the current directory has an
-/// MLproject file, though `mlproject export` is for a directory without one.
-fn mlproject_hidden(args: &[String], cwd: &Path) -> bool {
+/// The newest chap-core release whose chapkit (2.4.0 and older) hides the
+/// `mlproject` group from its help. chapkit 2.4.1 lists it everywhere.
+///
+/// Follow-up: once the default chap-core tag is a release with chap-core#755
+/// (chapkit 2.4.1 or later), remove this, `mlproject_hidden`, its notice and
+/// its tests.
+const LAST_WITH_HIDDEN_MLPROJECT: (u64, u64, u64) = (2, 5, 0);
+
+/// Whether chapkit's own help leaves out the `mlproject` group: up to
+/// chapkit 2.4.0, it hides it from its top-level help unless the current
+/// directory has an MLproject file, though `mlproject export` is for a
+/// directory without one. A moving tag, such as `master`, has a newer chapkit.
+fn mlproject_hidden(args: &[String], cwd: &Path, tag: &str) -> bool {
     let top_level = args
         .iter()
         .all(|arg| matches!(arg.as_str(), "--help" | "-h"));
+    let old_chapkit = crate::chapcore::release_version(tag)
+        .is_some_and(|version| version <= LAST_WITH_HIDDEN_MLPROJECT);
     top_level
+        && old_chapkit
         && !serve::MLPROJECT_FILES
             .iter()
             .any(|name| cwd.join(name).is_file())
