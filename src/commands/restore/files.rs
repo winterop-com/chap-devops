@@ -1,5 +1,5 @@
 //! Step 2: the project files back, and the compose files re-rendered from
-//! the `.varde/` that arrived with them.
+//! the `.chap-devops/` that arrived with them.
 
 use super::RestoreReport;
 use crate::backup::{self, ENV_BACKUP_FILE, FILES_MEMBER, RestorePlan, Stage};
@@ -9,11 +9,13 @@ use crate::components::COMPONENTS_FILE;
 use crate::compose::sync;
 use crate::error::Result;
 use crate::output;
-use crate::project::{ENV_FILE, MANUAL_MODELS_FILE, MODELS_FILE, PROJECT_FILE, Project, VARDE_DIR};
+use crate::project::{
+    CHAP_DEVOPS_DIR, ENV_FILE, MANUAL_MODELS_FILE, MODELS_FILE, PROJECT_FILE, Project,
+};
 use std::path::Path;
 
 /// Unpack `files/` over the project directory, then re-render the compose
-/// files from the `.varde/` that just arrived.
+/// files from the `.chap-devops/` that just arrived.
 ///
 /// Returns the deployment as it now is, which is what every later step has to
 /// work from: the `-f` list, the enabled components and the database
@@ -47,7 +49,7 @@ pub(super) fn restore_files(
     // `project.yaml` before any file lands, so a restore that stops part-way
     // never leaves this directory pointed at the archive's containers and
     // volumes. See the longer note below.
-    let archived_name = std::fs::read_to_string(from.join(VARDE_DIR).join(PROJECT_FILE))
+    let archived_name = std::fs::read_to_string(from.join(CHAP_DEVOPS_DIR).join(PROJECT_FILE))
         .ok()
         .and_then(|body| backup::archived_compose_project(&body));
     stage_identity(&from, &project.state.compose_project, args.adopt_identity)?;
@@ -92,7 +94,7 @@ pub(super) fn restore_files(
     }
 
     // The compose files in the archive are artifacts; re-rendering them from
-    // the restored .varde/ is what makes the deployment consistent again.
+    // the restored .chap-devops/ is what makes the deployment consistent again.
     let mut restored = Project::load(&project.dir)?;
 
     // The `project.yaml` that just arrived carries the compose project name of
@@ -108,7 +110,7 @@ pub(super) fn restore_files(
         &archived,
         args.adopt_identity,
     );
-    // A takeover of another name is recorded, so `varde doctor` knows why
+    // A takeover of another name is recorded, so `chap-devops doctor` knows why
     // the volumes are older than this directory.
     let takes_over =
         !archived.trim().is_empty() && archived.trim() != project.state.compose_project.trim();
@@ -133,7 +135,7 @@ pub(super) fn restore_files(
     Ok(restored)
 }
 
-/// The `.varde/` state files a deployment may or may not have: each one read
+/// The `.chap-devops/` state files a deployment may or may not have: each one read
 /// as empty when it is missing. `project.yaml` is not among them; every
 /// deployment has one, and so does every archive.
 pub(super) const OPTIONAL_STATE: &[&str] = &[MODELS_FILE, MANUAL_MODELS_FILE, COMPONENTS_FILE];
@@ -148,8 +150,8 @@ pub(super) const OPTIONAL_STATE: &[&str] = &[MODELS_FILE, MANUAL_MODELS_FILE, CO
 fn remove_state_not_in(dir: &Path, restored: &[String]) -> Result<Vec<String>> {
     let mut removed = Vec::new();
     for name in OPTIONAL_STATE {
-        let rel = format!("{VARDE_DIR}/{name}");
-        let path = dir.join(VARDE_DIR).join(name);
+        let rel = format!("{CHAP_DEVOPS_DIR}/{name}");
+        let path = dir.join(CHAP_DEVOPS_DIR).join(name);
         if restored.contains(&rel) || !path.is_file() {
             continue;
         }
@@ -180,11 +182,11 @@ fn identity(destination: &str, archived: &str, adopt: bool) -> String {
     }
 }
 
-/// Write [`identity`] into the staged `.varde/project.yaml` under `from`,
+/// Write [`identity`] into the staged `.chap-devops/project.yaml` under `from`,
 /// leaving every other key as the archive has it. Plain YAML, because the
-/// file may come from a varde that writes fields this one does not know.
+/// file may come from a chap-devops that writes fields this one does not know.
 fn stage_identity(from: &Path, destination: &str, adopt: bool) -> Result<()> {
-    let path = from.join(VARDE_DIR).join(PROJECT_FILE);
+    let path = from.join(CHAP_DEVOPS_DIR).join(PROJECT_FILE);
     let Ok(body) = std::fs::read_to_string(&path) else {
         return Ok(());
     };

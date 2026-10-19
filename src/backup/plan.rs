@@ -1,5 +1,5 @@
 //! The compose project name a restore leaves behind, and the plan
-//! `varde backup restore` prints before it asks.
+//! `chap-devops backup restore` prints before it asks.
 
 use super::Manifest;
 use serde::Serialize;
@@ -25,7 +25,7 @@ pub fn restored_compose_project(destination: &str, archived: &str, adopt: bool) 
     }
 }
 
-/// The `compose_project` an archived `.varde/project.yaml` records, if any.
+/// The `compose_project` an archived `.chap-devops/project.yaml` records, if any.
 ///
 /// Read as plain YAML rather than through `ProjectState`, because this has to
 /// work on a `project.yaml` this binary would refuse to deserialise.
@@ -55,7 +55,7 @@ pub struct PlannedComponent {
     pub dump: bool,
 }
 
-/// What `varde backup restore` is about to do, printed before it asks.
+/// What `chap-devops backup restore` is about to do, printed before it asks.
 #[derive(Debug, Clone, Serialize)]
 pub struct RestorePlan {
     pub archive: PathBuf,
@@ -235,7 +235,9 @@ fn services_text(plan: &RestorePlan) -> String {
         text.push_str(&format!("stops first  {}\n", plan.stop.join(", ")));
     }
     if plan.start {
-        text.push_str("then runs    the port check of `varde up`, then docker compose up -d\n");
+        text.push_str(
+            "then runs    the port check of `chap-devops up`, then docker compose up -d\n",
+        );
     } else {
         text.push_str("then leaves  the services as they are (--no-start)\n");
     }

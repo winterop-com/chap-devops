@@ -141,7 +141,7 @@ pub fn is_root(user: &str) -> bool {
 /// bare `chown 0` would leave it there.
 ///
 /// An account name nothing could turn into numbers falls back to the chapkit
-/// ids, which is what `varde sync` warns about.
+/// ids, which is what `chap-devops sync` warns about.
 pub fn chown_pair(user: &str) -> String {
     if is_root(user) {
         return "0:0".to_string();
@@ -155,7 +155,7 @@ pub fn chown_pair(user: &str) -> String {
 /// Every marketplace entry is listed, including the ones that match the
 /// defaults, so that the table doubles as the record of what was checked.
 /// CHAP-EWARS stays: the marketplace dropped it on 2026-10-08, but its image
-/// is still published, and `varde models add` takes it by URL. The
+/// is still published, and `chap-devops models add` takes it by URL. The
 /// values are `config.User` and `config.WorkingDir`+`/data` of the image the
 /// `stable` channel pins, read anonymously off ghcr - the same two fields
 /// [`crate::compose::resolve`] reads at enable time, so a run that falls back

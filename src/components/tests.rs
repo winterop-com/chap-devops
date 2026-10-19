@@ -251,7 +251,7 @@ fn the_seed_dump_comes_from_the_table_and_an_unlisted_minor_has_none() {
     assert_eq!(
         dhis2_seed_dump(DHIS2_DEFAULT_TAG),
         Some(crate::compose::render::DHIS2_DEFAULT_SEED_URL),
-        "the minor varde pins by default has a dump"
+        "the minor chap-devops pins by default has a dump"
     );
     assert_eq!(dhis2_seed_dump("2.42.3"), dhis2_seed_dump("2.42"));
     // The 2.41 dump is no longer published, so 2.41 starts empty.
@@ -272,7 +272,7 @@ fn the_seed_dump_comes_from_the_table_and_an_unlisted_minor_has_none() {
     }
 }
 
-/// What the first `varde up` will restore, which is the seed setting and the
+/// What the first `chap-devops up` will restore, which is the seed setting and the
 /// pinned minor together.
 #[test]
 fn the_resolved_seed_follows_the_setting_and_then_the_pin() {
@@ -305,7 +305,7 @@ fn the_resolved_seed_follows_the_setting_and_then_the_pin() {
     assert_eq!(components.dhis2_seed_source(), None);
     assert!(
         !components.dhis2_seed_is_unknown(),
-        "an empty database that was asked for is not one varde has no dump for"
+        "an empty database that was asked for is not one chap-devops has no dump for"
     );
 }
 
@@ -483,13 +483,13 @@ fn a_component_owns_its_own_service_and_the_siblings_beside_it() {
 /// contract OCS does not have yet.
 #[test]
 fn the_component_notes_name_the_command_that_answers_them() {
-    assert!(S3_WITHOUT_OCS_NOTE.contains("`varde components enable ocs`"));
-    assert!(S3_LEAVES_OCS_NOTE.contains("`varde components enable s3`"));
+    assert!(S3_WITHOUT_OCS_NOTE.contains("`chap-devops components enable ocs`"));
+    assert!(S3_LEAVES_OCS_NOTE.contains("`chap-devops components enable s3`"));
     assert!(
         S3_LEAVES_OCS_NOTE.contains("does not read them yet"),
         "the S3_* block is forward-looking, and the note says so"
     );
-    assert!(OCS_DATA_SOURCE_NOTE.contains("`varde auth show`"));
+    assert!(OCS_DATA_SOURCE_NOTE.contains("`chap-devops auth show`"));
     // The two ERA5-Land accounts are not alternatives, and the note must not
     // read as though picking one were enough.
     assert!(
@@ -524,16 +524,16 @@ fn the_dhis2_notes_say_what_the_first_start_does_and_where_to_change_it() {
     // the half that decides whether changing the seed later does anything.
     assert!(seeded.contains("once"), "{seeded}");
     assert!(
-        seeded.contains("`varde components disable dhis2 --purge`"),
+        seeded.contains("`chap-devops components disable dhis2 --purge`"),
         "{seeded}"
     );
 
     let empty = dhis2_seed_note(None);
     assert!(empty.contains("starts empty"), "{empty}");
-    // The way out is a command: the header of `.varde/components.yaml` says
+    // The way out is a command: the header of `.chap-devops/components.yaml` says
     // not to edit it by hand.
     assert!(
-        empty.contains("`varde components enable dhis2 --seed URL`"),
+        empty.contains("`chap-devops components enable dhis2 --seed URL`"),
         "{empty}"
     );
     assert!(!empty.contains("components.yaml"), "{empty}");
@@ -545,7 +545,7 @@ fn the_dhis2_notes_say_what_the_first_start_does_and_where_to_change_it() {
     );
     assert!(!unknown.contains("2.40.1"), "{unknown}");
     assert!(
-        unknown.contains("`varde components enable dhis2 --seed URL`"),
+        unknown.contains("`chap-devops components enable dhis2 --seed URL`"),
         "{unknown}"
     );
     assert!(!unknown.contains("components.yaml"), "{unknown}");
@@ -566,14 +566,14 @@ fn the_dhis2_notes_say_what_the_first_start_does_and_where_to_change_it() {
         "{DHIS2_FIRST_START_NOTE}"
     );
     assert!(
-        DHIS2_FIRST_START_NOTE.contains("`varde logs dhis2`"),
+        DHIS2_FIRST_START_NOTE.contains("`chap-devops logs dhis2`"),
         "{DHIS2_FIRST_START_NOTE}"
     );
 
     // A DHIS2 beside a Chap cannot talk to it until the route exists, so
     // the note that says so names the command that makes it.
     assert!(
-        DHIS2_CONNECT_NOTE.contains("`varde dhis2 connect`"),
+        DHIS2_CONNECT_NOTE.contains("`chap-devops dhis2 connect`"),
         "{DHIS2_CONNECT_NOTE}"
     );
     assert!(DHIS2_CONNECT_NOTE.contains("route"), "{DHIS2_CONNECT_NOTE}");
@@ -583,7 +583,7 @@ fn the_dhis2_notes_say_what_the_first_start_does_and_where_to_change_it() {
         "{DHIS2_CONNECT_NOTE}"
     );
 
-    // A downgrade is the one case that has to be stopped before `varde up`,
+    // A downgrade is the one case that has to be stopped before `chap-devops up`,
     // so the line leads with the command that makes it recoverable.
     // A move forward warns that the migration cannot be undone, and does not
     // talk about an older image.
@@ -594,7 +594,7 @@ fn the_dhis2_notes_say_what_the_first_start_does_and_where_to_change_it() {
         "{forward}"
     );
     assert!(forward.contains("cannot be undone"), "{forward}");
-    assert!(forward.contains("`varde backup create`"), "{forward}");
+    assert!(forward.contains("`chap-devops backup create`"), "{forward}");
     assert!(!forward.contains("older image"), "{forward}");
     assert!(!forward.contains('\n'), "{forward}");
     // A tag that is not a version is not judged a move forward.
@@ -602,7 +602,7 @@ fn the_dhis2_notes_say_what_the_first_start_does_and_where_to_change_it() {
 
     let moved = dhis2_tag_change_note("2.42", "2.41");
     assert!(moved.contains("from 2.42 to 2.41"), "{moved}");
-    assert!(moved.contains("`varde backup create`"), "{moved}");
+    assert!(moved.contains("`chap-devops backup create`"), "{moved}");
     assert!(moved.contains("404"), "{moved}");
 
     for note in [
@@ -662,7 +662,7 @@ fn disabling_dhis2_forgets_the_recorded_connect() {
 }
 
 /// A deployment with no chap-core is never asked to connect: the route
-/// would point at a service that is not there, and `varde dhis2 connect`
+/// would point at a service that is not there, and `chap-devops dhis2 connect`
 /// refuses on exactly those grounds.
 #[test]
 fn a_deployment_without_chap_core_is_not_asked_to_connect() {
@@ -672,7 +672,7 @@ fn a_deployment_without_chap_core_is_not_asked_to_connect() {
     assert!(!components.dhis2_needs_connecting());
 }
 
-/// The hint says what varde knows rather than what DHIS2 is, names the
+/// The hint says what chap-devops knows rather than what DHIS2 is, names the
 /// command, and says when to run it on the one caller that has not seen
 /// DHIS2 answer.
 #[test]
@@ -680,8 +680,8 @@ fn the_connect_hint_claims_only_what_it_read() {
     let answering = dhis2_connect_hint(true);
     let waiting = dhis2_connect_hint(false);
     for line in [&answering, &waiting] {
-        assert!(line.contains("`varde dhis2 connect`"), "{line}");
-        assert!(line.starts_with("varde has not connected"), "{line}");
+        assert!(line.contains("`chap-devops dhis2 connect`"), "{line}");
+        assert!(line.starts_with("chap-devops has not connected"), "{line}");
         assert!(!line.contains("stack"), "{line}");
         assert!(!line.contains('\n'), "one line each: {line}");
     }
@@ -689,7 +689,7 @@ fn the_connect_hint_claims_only_what_it_read() {
     assert!(waiting.contains("once DHIS2 answers"), "{waiting}");
 
     for note in [DHIS2_CONNECT_FORGOTTEN, DHIS2_CONNECT_FORGOTTEN_WITH_VOLUME] {
-        assert!(note.contains("`varde dhis2 connect`"), "{note}");
+        assert!(note.contains("`chap-devops dhis2 connect`"), "{note}");
         assert!(!note.contains('\n'), "one line each: {note}");
     }
     assert!(
@@ -722,7 +722,7 @@ fn a_chap_core_in_a_container_calls_the_models_back_at_the_gateway() {
     assert!(note.contains("the container `chapdev-chap-1`"), "{note}");
     assert!(
         note.contains(
-            "`varde components enable chap-core --url http://localhost:8000 --models-host \
+            "`chap-devops components enable chap-core --url http://localhost:8000 --models-host \
              localhost`"
         ),
         "{note}"
@@ -788,7 +788,7 @@ fn the_tag_follows_the_dump_and_never_goes_below_it() {
     );
 }
 
-/// varde supports DHIS2 2.41 and newer, so an older tag is refused on the
+/// chap-devops supports DHIS2 2.41 and newer, so an older tag is refused on the
 /// command line. A tag that is not a version passes.
 #[test]
 fn a_dhis2_tag_older_than_the_oldest_supported_is_refused() {

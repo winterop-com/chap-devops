@@ -172,7 +172,7 @@ impl App<'_> {
         commands.extend([
             entry(
                 CommandId::Save,
-                "Save the changes; `varde up` applies them".to_string(),
+                "Save the changes; `chap-devops up` applies them".to_string(),
                 "s",
                 "Save changes",
             ),
@@ -210,7 +210,7 @@ impl App<'_> {
             ),
             entry(
                 CommandId::Docs,
-                "Open the varde documentation".to_string(),
+                "Open the chap-devops documentation".to_string(),
                 "",
                 "Open docs",
             ),

@@ -77,10 +77,16 @@ fn values_are_read_the_way_compose_reads_them() {
 #[test]
 fn a_value_is_written_so_it_reads_back_as_itself() {
     assert_eq!(encode("abcDEF-_.:/+=@,~%123"), "abcDEF-_.:/+=@,~%123");
-    assert_eq!(encode("$VARDE_UNSET"), "'$VARDE_UNSET'");
+    assert_eq!(encode("$CHAP_DEVOPS_UNSET"), "'$CHAP_DEVOPS_UNSET'");
     assert_eq!(encode("a b#c"), "'a b#c'");
     assert_eq!(encode(""), "");
-    for token in ["$VARDE_UNSET", "a b # c", "${X:-y}", "semi;colon&", "plain"] {
+    for token in [
+        "$CHAP_DEVOPS_UNSET",
+        "a b # c",
+        "${X:-y}",
+        "semi;colon&",
+        "plain",
+    ] {
         assert_eq!(literal_problem(token), None, "{token}");
         let mut body = lines("K=old\n");
         set(&mut body, "K", token);

@@ -1,4 +1,4 @@
-//! `varde components enable`: turn a component on, change the settings of
+//! `chap-devops components enable`: turn a component on, change the settings of
 //! one that already is, or point the deployment at a chap-core elsewhere.
 
 use super::{ChangeReport, Note, NoteLevel, ReadMode, change_summary, label, notes_of};
@@ -32,7 +32,7 @@ pub fn enable(ctx: &Ctx, args: &ComponentsEnableArgs) -> Result<()> {
 
     // The port preflight runs on the state as recorded, before anything moves:
     // a component already listening on one port must not be mistaken for the
-    // holder of the port it is being moved to. `varde init` warns in exactly
+    // holder of the port it is being moved to. `chap-devops init` warns in exactly
     // this situation and this is the other place the decision is made, so it
     // warns here too - and warns rather than refuses, because the deployment is
     // not up yet and the port is still easy to change.
@@ -87,7 +87,7 @@ pub fn enable(ctx: &Ctx, args: &ComponentsEnableArgs) -> Result<()> {
         let asked_for = !wanted.is_empty();
         match write_ocs_config(&project.dir, &wanted.into_spec())? {
             Some(path) => notes.push(Note::hint(format!(
-                "wrote {}; it is yours to edit, and varde changes only its `read_only` and \
+                "wrote {}; it is yours to edit, and chap-devops changes only its `read_only` and \
                  `plugins_dir` keys",
                 label(&project, &path)
             ))),
@@ -117,7 +117,7 @@ pub fn enable(ctx: &Ctx, args: &ComponentsEnableArgs) -> Result<()> {
         && let Some(path) = write_dhis2_config(&project.dir, &Dhis2ConfigSpec::default())?
     {
         notes.push(Note::hint(format!(
-            "wrote {}; it is yours to edit, and varde never rewrites it",
+            "wrote {}; it is yours to edit, and chap-devops never rewrites it",
             label(&project, &path)
         )));
     }
@@ -132,7 +132,7 @@ pub fn enable(ctx: &Ctx, args: &ComponentsEnableArgs) -> Result<()> {
     }
     if component == Component::Dhis2 {
         // The pin first: it is the one line that asks the reader to stop and run
-        // something else before `varde up`.
+        // something else before `chap-devops up`.
         notes.extend(dhis2_tag_moved(&project, &after).map(Note::warning));
         // The sync below says it with the reason when the pinned minor has no
         // dump, so this line would be the same sentence twice.
@@ -166,8 +166,8 @@ pub fn enable(ctx: &Ctx, args: &ComponentsEnableArgs) -> Result<()> {
         && project.state.chap_compose_source == crate::project::ComposeSource::Embedded
     {
         notes.push(Note::hint(format!(
-            "compose.yml is rendered from the chap-core compose file built into varde, at tag \
-             `{}`; `varde update --pin-chap-core` moves it to the newest release",
+            "compose.yml is rendered from the chap-core compose file built into chap-devops, at tag \
+             `{}`; `chap-devops update --pin-chap-core` moves it to the newest release",
             project.state.chap_image_tag
         )));
     }
@@ -221,7 +221,7 @@ pub fn enable(ctx: &Ctx, args: &ComponentsEnableArgs) -> Result<()> {
         .report(&report, |lines| change_summary(&report, &project, lines))
 }
 
-/// `varde components enable chap-core --url URL`: record a chap-core that runs
+/// `chap-devops components enable chap-core --url URL`: record a chap-core that runs
 /// elsewhere, and re-render the model overlays so they register with it.
 ///
 /// Refused while this deployment runs its own chap-core: switching would leave
@@ -237,13 +237,13 @@ fn use_external_chap_core(
     if component != Component::ChapCore {
         return Err(anyhow::anyhow!(
             "--url is a chap-core setting: it names a chap-core elsewhere for the models \
-             to register with; run `varde components enable chap-core --url URL`"
+             to register with; run `chap-devops components enable chap-core --url URL`"
         ));
     }
     if project.state.components.chap_core.enabled {
         return Err(anyhow::anyhow!(
             "this deployment runs its own chap-core; turn it off first with \
-             `varde components disable chap-core`, then run this again"
+             `chap-devops components disable chap-core`, then run this again"
         ));
     }
     let before = project.state.components.clone();
@@ -264,12 +264,12 @@ fn use_external_chap_core(
     let registry = crate::commands::registry_for(ctx, Some(&project))?;
     let synced = sync(&mut project, &registry, false)?;
     let mut notes = notes_of(NoteLevel::Warning, synced.warnings);
-    // A warning, as in `varde init`: it changes where chap-core calls the
+    // A warning, as in `chap-devops init`: it changes where chap-core calls the
     // models back, which the reader did not ask for.
     notes.extend(detected.map(Note::warning));
     notes.push(Note::hint(format!(
-        "model services register with the chap-core at {} on the next `varde up`, calling \
-         back to them at {}; `varde status` asks it",
+        "model services register with the chap-core at {} on the next `chap-devops up`, calling \
+         back to them at {}; `chap-devops status` asks it",
         external.url, external.models_host
     )));
     let report = ChangeReport {
@@ -381,7 +381,7 @@ fn ocs_only<T>(component: Component, value: Option<T>) -> Option<T> {
 }
 
 /// The seed `--seed` names, with the same words and the same `--offline`
-/// refusal as `varde init --dhis2-seed`.
+/// refusal as `chap-devops init --dhis2-seed`.
 ///
 /// The seed applies only when `dhis2_db` is created, which the seed note of
 /// the report says, so a seed set on a database that is already there is
@@ -394,13 +394,13 @@ pub(super) fn seed_arg(
     if component != Component::Dhis2 {
         return Err(anyhow::anyhow!(
             "--seed is a DHIS2 setting: it names the dump a new DHIS2 database is restored \
-             from; run `varde components enable dhis2 --seed SPEC`"
+             from; run `chap-devops components enable dhis2 --seed SPEC`"
         ));
     }
     let seed = crate::components::Dhis2Seed::parse(given);
     if offline && seed.is_url() {
         return Err(anyhow::anyhow!(
-            "--offline and `--seed {}` ask for opposite things: the first `varde up` would \
+            "--offline and `--seed {}` ask for opposite things: the first `chap-devops up` would \
              download that dump; pass a path to a dump you already have, or `--seed none`",
             seed.as_str()
         ));
@@ -479,7 +479,7 @@ pub(super) fn kept_ports_line(project: &Project) -> Option<String> {
         return None;
     }
     Some(format!(
-        "the models keep their host ports ({}); `varde models unexpose ID` removes one",
+        "the models keep their host ports ({}); `chap-devops models unexpose ID` removes one",
         kept.join(", ")
     ))
 }
@@ -516,7 +516,7 @@ fn set_read_only(
     );
     let Some(edit) = crate::compose::sync::set_read_only(&project.dir, wanted)? else {
         return Err(anyhow::anyhow!(
-            "there is no {config} to set {} in; run `varde sync` to scaffold it first",
+            "there is no {config} to set {} in; run `chap-devops sync` to scaffold it first",
             crate::components::OCS_READ_ONLY_KEY
         ));
     };
@@ -549,8 +549,8 @@ pub(super) fn read_mode(edit: KeyEdit, read_only: bool) -> ReadMode {
 /// How a change to `ocs/climate-service.yaml` reaches the running instance.
 ///
 /// The instance config is a bind mount, which compose does not compare, so
-/// `varde restart` recreates a service whose mounted config is newer than its
+/// `chap-devops restart` recreates a service whose mounted config is newer than its
 /// container (see [`crate::commands::docker::edited_configs`]). Naming `ocs`
 /// leaves chap-core and the models alone.
 const READ_ONLY_APPLY: &str =
-    "`varde restart ocs` applies it, recreating the instance so it reads the file again";
+    "`chap-devops restart ocs` applies it, recreating the instance so it reads the file again";

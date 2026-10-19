@@ -17,7 +17,7 @@ fn api_of(project: &Project) -> Api {
 fn failed(api: &Api, err: &anyhow::Error) -> String {
     match err.downcast_ref::<ChapError>() {
         Some(ChapError::Unreachable { .. }) => format!(
-            "chap-core at {} is not running; start it with `varde up`, then press r",
+            "chap-core at {} is not running; start it with `chap-devops up`, then press r",
             api.base()
         ),
         _ => err.to_string(),

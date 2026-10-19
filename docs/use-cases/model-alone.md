@@ -8,15 +8,15 @@ behind something other than chap-core.
 The quickest way needs no folder at all:
 
 ```sh
-varde run chapkit_simple_multistep_model                    # a marketplace model
-varde run https://github.com/chap-models/chapkit_ghr_model  # by repository
-varde run ghcr.io/my-org/chapkit_dengue_model:sha-1eb8cf1   # by image: use your own
-varde ps
-varde stop chapkit_simple_multistep_model
-varde stop --all
+chap-devops run chapkit_simple_multistep_model                    # a marketplace model
+chap-devops run https://github.com/chap-models/chapkit_ghr_model  # by repository
+chap-devops run ghcr.io/my-org/chapkit_dengue_model:sha-1eb8cf1   # by image: use your own
+chap-devops ps
+chap-devops stop chapkit_simple_multistep_model
+chap-devops stop --all
 ```
 
-The image line is an example: `my-org` does not publish it, so that `varde run`
+The image line is an example: `my-org` does not publish it, so that `chap-devops run`
 stops with `` chapkit-dengue-model did not start: the registry answered `denied` ``.
 Put an image of your own there. See
 [`did not start: the registry answered denied`](../troubleshooting.md#did-not-start-the-registry-answered-denied-for-image-so-the-image-does-not-exist-or-is-private).
@@ -25,36 +25,36 @@ Each of the other two commands prints a `starting` line, and one more line
 when the model answers:
 
 ```text
-starting chapkit-simple-multistep-model (chapkit_simple_multistep_model in ~/.local/share/varde/run/default)
+starting chapkit-simple-multistep-model (chapkit_simple_multistep_model in ~/.local/share/chap-devops/run/default)
 running chapkit_simple_multistep_model on http://localhost:5001 (answered in 4s)
 ```
 
-varde prints the full path of the group. The docker compose progress goes to
+chap-devops prints the full path of the group. The docker compose progress goes to
 stderr between the two lines. The repository line also says on stderr that the
 URL is the marketplace model `chapkit_ghr_model`, and it answers on
 `http://localhost:5002`.
 
-`varde run` keeps the model in a group under varde's data directory, publishes
+`chap-devops run` keeps the model in a group under chap-devops's data directory, publishes
 it on `127.0.0.1` only, and returns once it answers. A first run pulls the
 model image, and the pull can take some minutes. On disk, the image of Simple
 Multistep is about 1 GB, and the image of GHRmodel about 7 GB. `-a` keeps it in the foreground with its log, until Ctrl-C stops it.
-`varde stop ID` stops one model, and `varde stop --all` stops every model that
-`varde run` started. Both keep the data volume of each model. To remove the
+`chap-devops stop ID` stops one model, and `chap-devops stop --all` stops every model that
+`chap-devops run` started. Both keep the data volume of each model. To remove the
 volumes and the groups too, add `--purge`. See [Running one model](../run.md).
 
-For a deployment directory of your own, with `varde status`, `varde doctor` and
+For a deployment directory of your own, with `chap-devops status`, `chap-devops doctor` and
 everything else:
 
 ```sh
-varde init multistep --only none --models chapkit_simple_multistep_model
+chap-devops init multistep --only none --models chapkit_simple_multistep_model
 cd multistep
-varde up --wait
-varde status
+chap-devops up --wait
+chap-devops status
 curl http://localhost:5001/health
-varde open chapkit_simple_multistep_model
+chap-devops open chapkit_simple_multistep_model
 ```
 
-`varde up --wait` returns once the model answers its own `/health`:
+`chap-devops up --wait` returns once the model answers its own `/health`:
 
 ```text
 waiting up to 300s for the model to answer
@@ -63,8 +63,8 @@ ready in 4s
   chapkit-simple-multistep-model  up  http://localhost:5001
 ```
 
-Without `--wait`, `varde up` returns when the container starts, and for some
-seconds `varde status` says `running, not answering`. Then `varde status`
+Without `--wait`, `chap-devops up` returns when the container starts, and for some
+seconds `chap-devops status` says `running, not answering`. Then `chap-devops status`
 shows:
 
 ```text
@@ -74,13 +74,13 @@ chapkit-simple-multistep-model  up     port 5001  -
 1 model up, answering on its own host port
 ```
 
-The `curl` command gets the same `/health` that `varde status` asks:
+The `curl` command gets the same `/health` that `chap-devops status` asks:
 
 ```text
 {"status":"healthy","checks":{"database":{"state":"healthy"},"registration":{"state":"healthy"}}}
 ```
 
-`varde open chapkit_simple_multistep_model` opens the model's API documentation, at
+`chap-devops open chapkit_simple_multistep_model` opens the model's API documentation, at
 `http://localhost:5001/docs`, in a browser. With `--no-browser`, it prints the
 address instead:
 
@@ -88,37 +88,37 @@ address instead:
 the model's API documentation is at http://localhost:5001/docs
 ```
 
-`varde open` with no name opens nothing. It lists the components and each
+`chap-devops open` with no name opens nothing. It lists the components and each
 model with a host port, with the address of its `/docs`.
 
 Your own model works the same way, from its repository or a published image:
 
 ```sh
-varde init mymodel --only none
+chap-devops init mymodel --only none
 cd mymodel
-varde models add https://github.com/my-org/chapkit_dengue_model   # adds and enables it
-varde up --wait
+chap-devops models add https://github.com/my-org/chapkit_dengue_model   # adds and enables it
+chap-devops up --wait
 ```
 
 Replace the URL with your model's repository. The repository must publish a
 `sha-<commit>` image on ghcr, as the model repositories' publish workflow does.
-If the URL names a repository that does not exist, `varde models add` stops
+If the URL names a repository that does not exist, `chap-devops models add` stops
 with `GitHub has no repository my-org/chapkit_dengue_model, or it is private`.
-The `varde up --wait` after it then says `nothing to start`. A repository that
+The `chap-devops up --wait` after it then says `nothing to start`. A repository that
 the marketplace lists is enabled as that marketplace model; add `--id NAME` to
 keep an entry of your own beside it. See
 [Models outside the marketplace](../models.md#models-outside-the-marketplace).
 
 Without chap-core each model gets a host port when it is enabled (the first
 free one from 5001; `--port N` picks one), does not try to register anywhere,
-and is judged by `varde status` and `varde doctor` through its own `/health`.
+and is judged by `chap-devops status` and `chap-devops doctor` through its own `/health`.
 Near the start of its log, after `Application startup complete`, expect one
 `registration.missing_orchestrator_url` line at error level and a
 `registration.skipped` line. servicekit has nothing to register with, and the
 model continues to serve. See
 [`registration.missing_orchestrator_url` in a model's log](../troubleshooting.md#registrationmissing_orchestrator_url-in-a-models-log).
 
-`varde models test chapkit_simple_multistep_model` (or `--all`) works here: it runs
+`chap-devops models test chapkit_simple_multistep_model` (or `--all`) works here: it runs
 `chapkit test` inside the model's own container:
 
 ```text
@@ -128,8 +128,8 @@ chapkit-simple-multistep-model    pass    5s   1 training, 1 prediction
 1 of 1 model passes
 ```
 
-`varde models test --backtest` and `varde jobs` go through chap-core, so they
-refuse and name `varde components enable chap-core`.
+`chap-devops models test --backtest` and `chap-devops jobs` go through chap-core, so they
+refuse and name `chap-devops components enable chap-core`.
 
 Next: [Model services without chap-core](../components.md#model-services-without-chap-core),
 [Models outside the marketplace](../models.md#models-outside-the-marketplace).

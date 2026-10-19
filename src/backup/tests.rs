@@ -78,11 +78,11 @@ fn a_restore_keeps_the_credentials_of_the_volume_it_keeps() {
 fn manifest() -> Manifest {
     Manifest {
         schema_version: SCHEMA_VERSION,
-        created_by: "varde 0.1.0".into(),
+        created_by: "chap-devops 0.1.0".into(),
         created_at: "2026-09-23T07:10:00Z".into(),
         project: "e2e".into(),
         chap_image_tag: Some("latest".into()),
-        files: vec![".env".into(), ".varde/models.yaml".into()],
+        files: vec![".env".into(), ".chap-devops/models.yaml".into()],
         database: Some(ManifestDatabase {
             path: DB_MEMBER.into(),
             user: "chap".into(),
@@ -122,7 +122,7 @@ fn manifest() -> Manifest {
 #[test]
 fn a_manifest_round_trips_through_yaml() {
     let body = render_manifest(&manifest()).unwrap();
-    assert!(body.starts_with("# varde backup manifest"));
+    assert!(body.starts_with("# chap-devops backup manifest"));
     assert!(body.contains("schema_version: 1"));
     assert!(body.contains("service_id: chapkit-ewars-model"));
     assert!(body.contains("quiesce: paused for 1.4 s"));
@@ -137,7 +137,7 @@ fn a_manifest_round_trips_through_yaml() {
 #[test]
 fn a_manifest_without_the_optional_parts_still_parses() {
     let body = "schema_version: 1\n\
-                    created_by: varde 0.1.0\n\
+                    created_by: chap-devops 0.1.0\n\
                     created_at: 2026-09-23T07:10:00Z\n\
                     project: e2e\n\
                     chap_image_tag: latest\n";
@@ -152,37 +152,40 @@ fn a_manifest_without_the_optional_parts_still_parses() {
 #[test]
 fn a_newer_schema_is_refused_rather_than_half_understood() {
     let body = "schema_version: 99\n\
-                    created_by: varde 9.9.9\n\
+                    created_by: chap-devops 9.9.9\n\
                     created_at: 2026-09-23T07:10:00Z\n\
                     project: e2e\n\
                     chap_image_tag: latest\n";
     let err = parse_manifest(body, Path::new("/tmp/a.tar.gz")).unwrap_err();
-    assert!(err.to_string().contains("newer than this varde"));
+    assert!(err.to_string().contains("newer than this chap-devops"));
 
     let err = parse_manifest("not: [a manifest", Path::new("/tmp/a.tar.gz")).unwrap_err();
-    assert!(err.to_string().contains("not a varde backup manifest"));
+    assert!(
+        err.to_string()
+            .contains("not a chap-devops backup manifest")
+    );
 }
 
 #[test]
 fn archive_names_carry_the_project_and_the_stamp() {
     assert_eq!(
         archive_name("e2e", "20260923-071000"),
-        "varde-backup-e2e-20260923-071000.tar.gz"
+        "chap-devops-backup-e2e-20260923-071000.tar.gz"
     );
     assert_eq!(
         archive_name("Chap prod (eu)", "20260923-071000"),
-        "varde-backup-Chap-prod-eu-20260923-071000.tar.gz"
+        "chap-devops-backup-Chap-prod-eu-20260923-071000.tar.gz"
     );
     assert_eq!(
         archive_name("", "20260923-071000"),
-        "varde-backup-20260923-071000.tar.gz"
+        "chap-devops-backup-20260923-071000.tar.gz"
     );
 }
 
 #[test]
 fn out_is_a_file_a_directory_or_the_working_directory() {
     let cwd = Path::new("/home/me");
-    let name = "varde-backup-e2e-20260923-071000.tar.gz";
+    let name = "chap-devops-backup-e2e-20260923-071000.tar.gz";
 
     assert_eq!(
         resolve_out_path(None, false, cwd, name),
@@ -205,16 +208,16 @@ fn out_is_a_file_a_directory_or_the_working_directory() {
 
 #[test]
 fn a_second_backup_in_the_same_second_gets_a_name_of_its_own() {
-    let first = PathBuf::from("/backups/varde-backup-e2e-20260923-071000.tar.gz");
+    let first = PathBuf::from("/backups/chap-devops-backup-e2e-20260923-071000.tar.gz");
     assert_eq!(unused_path(first.clone(), |_| false), first);
 
     let taken = [
         first.clone(),
-        PathBuf::from("/backups/varde-backup-e2e-20260923-071000-2.tar.gz"),
+        PathBuf::from("/backups/chap-devops-backup-e2e-20260923-071000-2.tar.gz"),
     ];
     assert_eq!(
         unused_path(first, |p| taken.iter().any(|t| t == p)),
-        PathBuf::from("/backups/varde-backup-e2e-20260923-071000-3.tar.gz")
+        PathBuf::from("/backups/chap-devops-backup-e2e-20260923-071000-3.tar.gz")
     );
 }
 
@@ -295,7 +298,7 @@ fn the_old_env_is_kept_only_when_it_differs() {
 }
 
 #[test]
-fn the_file_list_takes_env_varde_and_the_root_compose_files() {
+fn the_file_list_takes_env_chap_devops_and_the_root_compose_files() {
     let dir = tempfile::tempdir().unwrap();
     let root = dir.path();
     let write = |rel: &str, body: &str| {
@@ -304,14 +307,17 @@ fn the_file_list_takes_env_varde_and_the_root_compose_files() {
         std::fs::write(path, body).unwrap();
     };
     write(".env", "POSTGRES_USER=chap\n");
-    write(".varde/project.yaml", "schema_version: 1\n");
-    write(".varde/models.yaml", "{}\n");
-    write(".varde/compose.chap-core.v2.3.1.yml", "services: {}\n");
-    write(".varde/.models.yaml.tmp", "half written");
-    // The locks of running commands: the state lock and `varde run`'s.
-    write(".varde/lock", "");
-    write(".varde/up-chapkit-ewars-model.lock", "");
-    write(".varde/tmp/backup-1/manifest.yaml", "staged");
+    write(".chap-devops/project.yaml", "schema_version: 1\n");
+    write(".chap-devops/models.yaml", "{}\n");
+    write(
+        ".chap-devops/compose.chap-core.v2.3.1.yml",
+        "services: {}\n",
+    );
+    write(".chap-devops/.models.yaml.tmp", "half written");
+    // The locks of running commands: the state lock and `chap-devops run`'s.
+    write(".chap-devops/lock", "");
+    write(".chap-devops/up-chapkit-ewars-model.lock", "");
+    write(".chap-devops/tmp/backup-1/manifest.yaml", "staged");
     write("ocs/climate-service.yaml", "sources: []\n");
     write("ocs/extra/regions.csv", "id,name\n");
     write("dhis2/dhis.conf", "connection.dialect = ...\n");
@@ -327,11 +333,11 @@ fn the_file_list_takes_env_varde_and_the_root_compose_files() {
         project_files(root),
         vec![
             ".env",
-            ".varde/compose.chap-core.v2.3.1.yml",
-            ".varde/models.yaml",
-            ".varde/project.yaml",
+            ".chap-devops/compose.chap-core.v2.3.1.yml",
+            ".chap-devops/models.yaml",
+            ".chap-devops/project.yaml",
             // The component directories are the operator's own files, so
-            // they are in the archive like .varde/ is, in Component::ALL
+            // they are in the archive like .chap-devops/ is, in Component::ALL
             // order: ocs/ before dhis2/.
             "ocs/climate-service.yaml",
             "ocs/extra/regions.csv",
@@ -363,7 +369,7 @@ fn the_file_list_takes_the_directory_of_every_component_that_owns_one() {
         std::fs::create_dir_all(path.parent().unwrap()).unwrap();
         std::fs::write(path, "the operator's own\n").unwrap();
     };
-    write(".varde/project.yaml");
+    write(".chap-devops/project.yaml");
     write("compose.yml");
 
     let owned: Vec<&str> = crate::components::Component::ALL
@@ -384,10 +390,10 @@ fn the_file_list_takes_the_directory_of_every_component_that_owns_one() {
         for rel in [config.clone(), format!("{owned_dir}/plugins/nested.marker")] {
             assert!(files.contains(&rel), "{rel} is in the archive: {files:?}");
         }
-        // And in the group between `.varde/**` and the compose files, which
+        // And in the group between `.chap-devops/**` and the compose files, which
         // is the order a restore's own tests read the list in.
         let at = |name: &str| files.iter().position(|f| f == name);
-        assert!(at(".varde/project.yaml") < at(&config));
+        assert!(at(".chap-devops/project.yaml") < at(&config));
         assert!(at(&config) < at("compose.yml"));
     }
 }
@@ -552,10 +558,10 @@ fn a_restore_keeps_the_destinations_identity_unless_it_is_told_not_to() {
 
 fn plan(start: bool, stop: Vec<&str>) -> RestorePlan {
     RestorePlan {
-        archive: PathBuf::from("/backups/varde-backup-e2e-20260923-071000.tar.gz"),
+        archive: PathBuf::from("/backups/chap-devops-backup-e2e-20260923-071000.tar.gz"),
         project_dir: PathBuf::from("/srv/e2e"),
         manifest: manifest(),
-        files: vec![".env".into(), ".varde/models.yaml".into()],
+        files: vec![".env".into(), ".chap-devops/models.yaml".into()],
         database: true,
         models: vec![PlannedModel {
             service_id: "chapkit-ewars-model".into(),
@@ -582,19 +588,19 @@ fn plan(start: bool, stop: Vec<&str>) -> RestorePlan {
 #[test]
 fn the_plan_says_what_it_overwrites_and_what_it_stops() {
     let text = plan_text(&plan(true, vec!["chap", "worker"]));
-    assert!(text.starts_with("restore /backups/varde-backup-e2e-20260923-071000.tar.gz\n"));
-    assert!(text.contains("taken  2026-09-23T07:10:00Z by varde 0.1.0"));
+    assert!(text.starts_with("restore /backups/chap-devops-backup-e2e-20260923-071000.tar.gz\n"));
+    assert!(text.contains("taken  2026-09-23T07:10:00Z by chap-devops 0.1.0"));
     assert!(text.contains("into   /srv/e2e"));
-    assert!(
-        text.contains(
-            "files       2 file(s) in the deployment directory: .env, .varde/models.yaml"
-        )
-    );
+    assert!(text.contains(
+        "files       2 file(s) in the deployment directory: .env, .chap-devops/models.yaml"
+    ));
     assert!(text.contains("database    chap_core on postgres, dropped and reloaded"));
     assert!(text.contains("chapkit-ewars-model /app/data emptied and refilled"));
     assert!(text.contains("components  ocs /app/data emptied and refilled (volume ocs_data)"));
     assert!(text.contains("stops first  chap, worker"));
-    assert!(text.contains("then runs    the port check of `varde up`, then docker compose up -d"));
+    assert!(
+        text.contains("then runs    the port check of `chap-devops up`, then docker compose up -d")
+    );
     // The archive was taken from this same deployment, so there is nothing
     // to say about its identity.
     assert!(!text.contains("identity"), "{text}");
@@ -698,20 +704,20 @@ fn a_plan_that_restores_nothing_says_so() {
 }
 
 #[test]
-fn the_stage_is_inside_varde_and_cleans_up_after_itself() {
+fn the_stage_is_inside_chap_devops_and_cleans_up_after_itself() {
     let dir = tempfile::tempdir().unwrap();
-    let varde = dir.path().join(".varde");
+    let chap_devops = dir.path().join(".chap-devops");
     let path = {
-        let stage = Stage::new(&varde, "backup").unwrap();
-        assert!(stage.dir.starts_with(varde.join(TMP_DIR)));
-        let nested = stage.path("files/.varde/models.yaml").unwrap();
+        let stage = Stage::new(&chap_devops, "backup").unwrap();
+        assert!(stage.dir.starts_with(chap_devops.join(TMP_DIR)));
+        let nested = stage.path("files/.chap-devops/models.yaml").unwrap();
         std::fs::write(&nested, "x").unwrap();
         assert!(nested.is_file());
         stage.dir.clone()
     };
     assert!(!path.exists(), "the stage is removed when it is dropped");
     assert!(
-        !varde.join(TMP_DIR).exists(),
+        !chap_devops.join(TMP_DIR).exists(),
         "and so is the tmp directory it lived in"
     );
 }
@@ -719,8 +725,8 @@ fn the_stage_is_inside_varde_and_cleans_up_after_itself() {
 #[test]
 fn a_new_stage_removes_the_stages_that_no_run_holds() {
     let dir = tempfile::tempdir().unwrap();
-    let varde = dir.path().join(".varde");
-    let tmp = varde.join(TMP_DIR);
+    let chap_devops = dir.path().join(".chap-devops");
+    let tmp = chap_devops.join(TMP_DIR);
     // Left by a run that was killed: no lock file, or one nobody holds.
     for stale in ["backup-1", "backup-2"] {
         std::fs::create_dir_all(tmp.join(stale)).unwrap();
@@ -730,7 +736,7 @@ fn a_new_stage_removes_the_stages_that_no_run_holds() {
     // A restore stage is of another kind and stays.
     std::fs::create_dir_all(tmp.join("restore-3")).unwrap();
 
-    let held = Stage::new(&varde, "backup").unwrap();
+    let held = Stage::new(&chap_devops, "backup").unwrap();
     assert!(!tmp.join("backup-1").exists());
     assert!(!tmp.join("backup-2").exists());
     assert!(!tmp.join("backup-2.lock").exists());
@@ -747,7 +753,7 @@ fn a_new_stage_removes_the_stages_that_no_run_holds() {
         .unwrap();
     lock.try_lock().unwrap();
     drop(held);
-    let _again = Stage::new(&varde, "backup").unwrap();
+    let _again = Stage::new(&chap_devops, "backup").unwrap();
     assert!(other.exists(), "a held stage stays");
 }
 
@@ -755,10 +761,10 @@ fn a_new_stage_removes_the_stages_that_no_run_holds() {
 fn archives_are_written_listed_and_read_back() {
     let dir = tempfile::tempdir().unwrap();
     let stage = dir.path().join("stage");
-    std::fs::create_dir_all(stage.join("files/.varde")).unwrap();
+    std::fs::create_dir_all(stage.join("files/.chap-devops")).unwrap();
     std::fs::write(stage.join("manifest.yaml"), "schema_version: 1\n").unwrap();
     std::fs::write(stage.join("files/.env"), "POSTGRES_USER=chap\n").unwrap();
-    std::fs::write(stage.join("files/.varde/models.yaml"), "{}\n").unwrap();
+    std::fs::write(stage.join("files/.chap-devops/models.yaml"), "{}\n").unwrap();
 
     let archive = dir.path().join("out.tar.gz");
     tar_create(
@@ -787,7 +793,7 @@ fn archives_are_written_listed_and_read_back() {
 
     let out = dir.path().join("unpacked");
     tar_extract_into(&archive, &out, &[FILES_MEMBER.to_string()]).unwrap();
-    assert!(out.join("files/.varde/models.yaml").is_file());
+    assert!(out.join("files/.chap-devops/models.yaml").is_file());
 
     let err = tar_read_member(&archive, "db/chap_core.dump").unwrap_err();
     assert!(err.to_string().contains("reading db/chap_core.dump"));
@@ -975,12 +981,12 @@ fn every_component_volume_has_an_archive_member_of_its_own() {
 #[test]
 fn a_component_volume_is_read_and_written_through_one_busybox_mount() {
     assert_eq!(
-        volume_read_args("chapx-ab12cd_ocs_data", "varde-volume-1-0"),
+        volume_read_args("chapx-ab12cd_ocs_data", "chap-devops-volume-1-0"),
         vec![
             "run",
             "--rm",
             "--name",
-            "varde-volume-1-0",
+            "chap-devops-volume-1-0",
             "-v",
             "chapx-ab12cd_ocs_data:/v",
             BUSYBOX_IMAGE,
@@ -992,12 +998,12 @@ fn a_component_volume_is_read_and_written_through_one_busybox_mount() {
             "."
         ]
     );
-    let write = volume_write_args("chapx-ab12cd_s3_data", "varde-volume-1-1");
+    let write = volume_write_args("chapx-ab12cd_s3_data", "chap-devops-volume-1-1");
     // Only the writing side keeps stdin open; the reading side would
     // otherwise wait on a terminal that is not there.
     assert_eq!(
         write[..5],
-        ["run", "--rm", "--name", "varde-volume-1-1", "-i"]
+        ["run", "--rm", "--name", "chap-devops-volume-1-1", "-i"]
     );
     assert_eq!(write[5..7], ["-v", "chapx-ab12cd_s3_data:/v"]);
     assert_eq!(write[7], BUSYBOX_IMAGE);
@@ -1014,11 +1020,11 @@ fn copy_file_creates_the_directories_it_needs() {
     let dir = tempfile::tempdir().unwrap();
     let from = dir.path().join("from");
     let to = dir.path().join("to");
-    std::fs::create_dir_all(from.join(".varde")).unwrap();
-    std::fs::write(from.join(".varde/models.yaml"), "{}\n").unwrap();
-    copy_file(&from, &to, ".varde/models.yaml").unwrap();
+    std::fs::create_dir_all(from.join(".chap-devops")).unwrap();
+    std::fs::write(from.join(".chap-devops/models.yaml"), "{}\n").unwrap();
+    copy_file(&from, &to, ".chap-devops/models.yaml").unwrap();
     assert_eq!(
-        std::fs::read_to_string(to.join(".varde/models.yaml")).unwrap(),
+        std::fs::read_to_string(to.join(".chap-devops/models.yaml")).unwrap(),
         "{}\n"
     );
 }
@@ -1028,12 +1034,12 @@ fn copy_file_creates_the_directories_it_needs() {
 /// is refused before anything is restored, and `copy_file` refuses it too.
 #[test]
 fn a_manifest_path_outside_the_project_is_refused() {
-    assert!(is_contained_relative(".varde/models.yaml"));
+    assert!(is_contained_relative(".chap-devops/models.yaml"));
     assert!(is_contained_relative("compose.yml"));
     for rel in [
         "",
         "../.bashrc",
-        ".varde/../../x",
+        ".chap-devops/../../x",
         "/etc/passwd",
         "a//b",
         "./compose.yml",
@@ -1044,7 +1050,7 @@ fn a_manifest_path_outside_the_project_is_refused() {
     }
 
     let manifest: Manifest = serde_yaml_ng::from_str(
-        "schema_version: 1\ncreated_by: varde 0.12.2\ncreated_at: 2026-10-01T00:00:00Z\n\
+        "schema_version: 1\ncreated_by: chap-devops 0.12.2\ncreated_at: 2026-10-01T00:00:00Z\n\
          project: p\nchap_image_tag: v2.3.1\nfiles: [compose.yml, ../../.bashrc]\n",
     )
     .unwrap();

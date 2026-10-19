@@ -1,9 +1,9 @@
 ---
 marp: true
-theme: varde
+theme: chap-devops
 paginate: true
-footer: varde - for model developers
-title: Developing a model with varde
+footer: chap-devops - for model developers
+title: Developing a model with chap-devops
 description: For people who write forecasting models: build, run, test and evaluate your model with Chap
 ---
 
@@ -11,7 +11,7 @@ description: For people who write forecasting models: build, run, test and evalu
 <!-- _paginate: false -->
 <!-- _footer: '' -->
 
-# Developing a model with varde
+# Developing a model with chap-devops
 
 ## Build it, run it, test it, evaluate it, with Chap around it
 
@@ -28,7 +28,7 @@ For people who write forecasting models
 5. **Compare** it with the models that exist.
 6. **Publish** it, and add it to the marketplace.
 
-varde does each step with one command, and puts chap-core around the model
+chap-devops does each step with one command, and puts chap-core around the model
 only when the step needs it.
 
 ---
@@ -40,8 +40,8 @@ only when the step needs it.
 | What it is | a service: a container with an HTTP API | a directory with an `MLproject` file |
 | How chap uses it | over HTTP | it runs the `train` and `predict` commands |
 | Environment | the image | `uv_env`, `renv_env` or `docker_env` |
-| In a deployment | yes, as a service | yes, with `varde chapkit mlproject run` |
-| With `varde chap eval` | by id or URL | by GitHub URL or directory, or with `--run-config.as-chapkit` |
+| In a deployment | yes, as a service | yes, with `chap-devops chapkit mlproject run` |
+| With `chap-devops chap eval` | by id or URL | by GitHub URL or directory, or with `--run-config.as-chapkit` |
 
 The marketplace and the Modeling App use **chapkit models**. This deck is
 about them. The **MLproject models** deck is about the other kind.
@@ -51,15 +51,15 @@ about them. The **MLproject models** deck is about the other kind.
 ## A model in the MLproject format
 
 ```sh
-varde chapkit mlproject run my-model       # serve it, with no build
-varde chapkit mlproject migrate my-model   # make it a chapkit service
+chap-devops chapkit mlproject run my-model       # serve it, with no build
+chap-devops chapkit mlproject migrate my-model   # make it a chapkit service
 ```
 
 - `mlproject run` serves the directory as a chapkit service. In a
   deployment, it registers with chap-core.
 - `mlproject migrate` writes the `Dockerfile` and `main.py` of a chapkit
   service.
-- See the deck **MLproject models with varde**.
+- See the deck **MLproject models with chap-devops**.
 
 ---
 
@@ -83,8 +83,8 @@ One container that listens on port 8000:
 ## Start a new model
 
 ```sh
-varde models new my-model
-varde models new my-r-model --template shell-r
+chap-devops models new my-model
+chap-devops models new my-r-model --template shell-r
 ```
 
 | Template | What it gives you |
@@ -110,8 +110,8 @@ A model service registers **itself** with chap-core when it starts:
 | `SERVICEKIT_PORT` | the port chap-core calls the model back at |
 | `SERVICEKIT_REGISTRATION_KEY` | the shared secret, when chap-core asks for one |
 
-- In a deployment, varde sets these for you.
-- Registration is a heartbeat: `varde status` shows `LAST PING`.
+- In a deployment, chap-devops sets these for you.
+- Registration is a heartbeat: `chap-devops status` shows `LAST PING`.
 - The service id must be the id the service registers with
   (`MLServiceInfo.id`).
 
@@ -120,19 +120,19 @@ A model service registers **itself** with chap-core when it starts:
 ## Run a model: four sources
 
 ```sh
-varde run chapkit_simple_multistep_model                   # a marketplace id
-varde run https://github.com/chap-models/chapkit_ghr_model # a GitHub repository
-varde run ghcr.io/my-org/my_model:sha-1eb8cf1              # a published image
-varde run my-model:dev                                     # an image built here
+chap-devops run chapkit_simple_multistep_model                   # a marketplace id
+chap-devops run https://github.com/chap-models/chapkit_ghr_model # a GitHub repository
+chap-devops run ghcr.io/my-org/my_model:sha-1eb8cf1              # a published image
+chap-devops run my-model:dev                                     # an image built here
 ```
 
 ```text
 running chapkit_simple_multistep_model on http://localhost:5001 (answered in 4s)
 ```
 
-- No deployment directory: the model runs in a `varde run` group.
-- `varde run -a` shows the model's log. Ctrl-C stops the model.
-- `varde ps` lists the models, `varde stop ID` stops one.
+- No deployment directory: the model runs in a `chap-devops run` group.
+- `chap-devops run -a` shows the model's log. Ctrl-C stops the model.
+- `chap-devops ps` lists the models, `chap-devops stop ID` stops one.
 - The first run of a model downloads its image: 1 GB for a Python model, 6 to
   7 GB for an R model.
 
@@ -140,11 +140,11 @@ running chapkit_simple_multistep_model on http://localhost:5001 (answered in 4s)
 
 ## Your model from its checkout
 
-varde runs chap-core. You run the model with `uv run`, a debugger or hot
+chap-devops runs chap-core. You run the model with `uv run`, a debugger or hot
 reload:
 
 ```sh
-varde init mychap --models none && cd mychap && varde up
+chap-devops init mychap --models none && cd mychap && chap-devops up
 ```
 
 ```sh
@@ -154,7 +154,7 @@ export SERVICEKIT_PORT=8001
 uv run uvicorn main:app --host 0.0.0.0 --port 8001
 ```
 
-**It worked when** `varde status` lists the model with a recent LAST PING. Its
+**It worked when** `chap-devops status` lists the model with a recent LAST PING. Its
 state is `unmanaged`, because the deployment did not start it.
 
 ---
@@ -164,12 +164,12 @@ state is `unmanaged`, because the deployment did not start it.
 - **`localhost:8700`**: the model runs on your machine, so `localhost` and
   chap-core's API port reach chap-core.
 - **`host.docker.internal`**: chap-core runs in a container, where `localhost`
-  is the container. This name is your machine. varde maps it on Linux too.
+  is the container. This name is your machine. chap-devops maps it on Linux too.
 - **`--host 0.0.0.0`**: a call from a container does not arrive on the
   loopback.
 - **Single quotes** keep the shell from reading `$register` as a variable.
 - With a registration key: export `SERVICEKIT_REGISTRATION_KEY` with the value
-  that `varde auth show --reveal` prints.
+  that `chap-devops auth show --reveal` prints.
 
 ---
 
@@ -177,30 +177,30 @@ state is `unmanaged`, because the deployment did not start it.
 
 ```sh
 docker build --platform linux/amd64 -t my-model:dev .
-varde run my-model:dev
+chap-devops run my-model:dev
 ```
 
 In a deployment, with chap-core:
 
 ```sh
-varde models add my-model:dev
-varde up
-varde models test my_model
+chap-devops models add my-model:dev
+chap-devops up
+chap-devops models test my_model
 ```
 
 - A local image is never pulled: the overlay says `pull_policy: never`.
-- Build again with the same tag, then `varde restart`, to use the new build.
+- Build again with the same tag, then `chap-devops restart`, to use the new build.
 
 ---
 
-## `varde models add`: from GitHub or ghcr
+## `chap-devops models add`: from GitHub or ghcr
 
 ```sh
-varde models add https://github.com/my-org/chapkit_dengue_model
-varde models add ghcr.io/my-org/chapkit_dengue_model:sha-1eb8cf1
+chap-devops models add https://github.com/my-org/chapkit_dengue_model
+chap-devops models add ghcr.io/my-org/chapkit_dengue_model:sha-1eb8cf1
 ```
 
-| Source | Pin | `varde update` |
+| Source | Pin | `chap-devops update` |
 | --- | --- | --- |
 | a repository URL | the newest published `sha-` build of the default branch | moves the pin |
 | an image reference | exactly the tag or digest you named | leaves it alone |
@@ -218,7 +218,7 @@ added chapkit_dengue_model (chapkit-dengue-model)
   source    https://github.com/my-org/chapkit_dengue_model
   image     ghcr.io/my-org/chapkit_dengue_model:sha-b1d6c31
   pin       sha-b1d6c31  (commit b1d6c31)
-  follows   main  (`varde update` moves the pin)
+  follows   main  (`chap-devops update` moves the pin)
   data dir  /work/data  (from the image config)
   user      10001:10001  (from a docker probe)
 ```
@@ -276,14 +276,14 @@ versions:
 ```
 
 ```sh
-varde models enable chapkit_simple_multistep_model                   # stable
-varde models enable chapkit_simple_multistep_model --channel latest
-varde models enable chapkit_simple_multistep_model --version 0.1.1   # a pin
+chap-devops models enable chapkit_simple_multistep_model                   # stable
+chap-devops models enable chapkit_simple_multistep_model --channel latest
+chap-devops models enable chapkit_simple_multistep_model --version 0.1.1   # a pin
 ```
 
 ---
 
-## The overlay varde writes for a model
+## The overlay chap-devops writes for a model
 
 ```yaml
 chapkit-simple-multistep-model:
@@ -306,7 +306,7 @@ image tag. This is a short form.
 
 - **Platform:** marketplace images are amd64 only, so the overlay pins
   `linux/amd64`. On Apple silicon they run under emulation.
-- **The user:** varde reads it from the image config, not from a guess. A root
+- **The user:** chap-devops reads it from the image config, not from a guess. A root
   image gets no `user:` line.
 - **Read-only:** a read-only file system, `no-new-privileges`, no
   capabilities, a 2 GB tmpfs on `/tmp`.
@@ -339,22 +339,22 @@ chapkit-simple-multistep-model-init:
 ## Test: does it work at all?
 
 ```sh
-varde models test my_model             # chapkit test, in the model's own container
-varde models test my_model --backtest  # the whole way, through chap-core
-varde models test --all                # every model of the deployment
+chap-devops models test my_model             # chapkit test, in the model's own container
+chap-devops models test my_model --backtest  # the whole way, through chap-core
+chap-devops models test --all                # every model of the deployment
 ```
 
-- `varde status` can be all green while a model cannot predict at all:
+- `chap-devops status` can be all green while a model cannot predict at all:
   registration is a heartbeat.
-- `varde models test` makes the model do the work.
-- Exit code: not zero only when a model **failed**. A model that varde could
+- `chap-devops models test` makes the model do the work.
+- Exit code: not zero only when a model **failed**. A model that chap-devops could
   not test is a skip.
 
 ---
 
 ## The model level
 
-varde runs chapkit's own test in the model's container:
+chap-devops runs chapkit's own test in the model's container:
 
 ```text
 docker compose exec -T <service> chapkit test --url http://127.0.0.1:8000 --timeout 300
@@ -389,11 +389,11 @@ good.
 
 ---
 
-## Flags of `varde models test`
+## Flags of `chap-devops models test`
 
 | Flag | What it does |
 | --- | --- |
-| `--all` | every model in `.varde/models.yaml` |
+| `--all` | every model in `.chap-devops/models.yaml` |
 | `--backtest` | the backtest level, through chap-core |
 | `--config NAME` | the configured model to backtest, by its variant name |
 | `--seed N` | the same generated data on each run, so two runs compare |
@@ -402,7 +402,7 @@ good.
 | `-vv` | the whole output of `chapkit test`, and each request |
 | `--json` | one object for each model, with all the metrics |
 
-Without `--keep`, varde deletes the configs, artifacts, dataset and backtest
+Without `--keep`, chap-devops deletes the configs, artifacts, dataset and backtest
 that the test made, and nothing else.
 
 ---
@@ -420,8 +420,8 @@ These flags are for the model level only. `--backtest` refuses them.
 | `--predict-rows N` | the rows of the data of each prediction (150) |
 
 ```sh
-varde models test my_model --rows 600 --predict-rows 300
-varde models test my_model --configs 2 --trainings 2
+chap-devops models test my_model --rows 600 --predict-rows 300
+chap-devops models test my_model --configs 2 --trainings 2
 ```
 
 ---
@@ -431,18 +431,18 @@ varde models test my_model --configs 2 --trainings 2
 In a subdirectory of the deployment (`mkdir eval && cd eval`):
 
 ```sh
-varde chap eval --model-name my_model \
+chap-devops chap eval --model-name my_model \
   --dataset-csv laos_subset.csv --output-file mine.nc
 ```
 
 Or straight from the checkout, with no deployment:
 
 ```sh
-varde chap eval --model-name ./my_model_checkout \
+chap-devops chap eval --model-name ./my_model_checkout \
   --dataset-csv laos_subset.csv --output-file mine_local.nc
 ```
 
-- A model id of the deployment: varde starts that model, without chap-core.
+- A model id of the deployment: chap-devops starts that model, without chap-core.
 - A directory with an `MLproject`: chap runs it in the worker image (uv, R,
   INLA). Add `--docker` when the `MLproject` uses `docker_env`.
 
@@ -451,10 +451,10 @@ varde chap eval --model-name ./my_model_checkout \
 ## Compare with the models that exist
 
 ```sh
-varde chap eval --model-name auto_arima_chapkit \
+chap-devops chap eval --model-name auto_arima_chapkit \
   --dataset-csv laos_subset.csv --output-file arima.nc
-varde chap export-metrics mine.nc arima.nc --output-file comparison.csv
-varde chap plot-backtest mine.nc --output-file mine.html
+chap-devops chap export-metrics mine.nc arima.nc --output-file comparison.csv
+chap-devops chap plot-backtest mine.nc --output-file mine.html
 ```
 
 - One row for each model: `crps`, `mae`, `rmse`, the interval coverage and
@@ -467,8 +467,8 @@ varde chap plot-backtest mine.nc --output-file mine.html
 ## Configurations for the marketplace entry
 
 ```sh
-varde models configs add my_model --name short_lags --set n_lags=2,2
-varde models configs export my_model --out configurations.yaml
+chap-devops models configs add my_model --name short_lags --set n_lags=2,2
+chap-devops models configs export my_model --out configurations.yaml
 ```
 
 - The file is the `configurations:` block of a marketplace entry. Put it in
@@ -477,7 +477,7 @@ varde models configs export my_model --out configurations.yaml
 - In another deployment, this adds all of them:
 
 ```sh
-varde models configs add my_model --from configurations.yaml
+chap-devops models configs add my_model --from configurations.yaml
 ```
 
 ---
@@ -486,13 +486,13 @@ varde models configs add my_model --from configurations.yaml
 
 ```sh
 docker build --platform linux/amd64 -t my-model:dev .   # 1. build again
-varde restart                                           # 2. use the new build
-varde models test my_model                              # 3. it still predicts
-varde models test my_model --backtest --seed 1          # 4. through chap-core
+chap-devops restart                                           # 2. use the new build
+chap-devops models test my_model                              # 3. it still predicts
+chap-devops models test my_model --backtest --seed 1          # 4. through chap-core
 cd eval
-varde chap eval --model-name my_model \
+chap-devops chap eval --model-name my_model \
   --dataset-csv laos_subset.csv --output-file mine.nc   # 5. on real data
-varde chap export-metrics mine.nc arima.nc --output-file comparison.csv
+chap-devops chap export-metrics mine.nc arima.nc --output-file comparison.csv
 ```
 
 `--seed 1` gives the same sample data each time, so the scores of two builds
@@ -503,15 +503,15 @@ compare.
 ## When something fails
 
 ```sh
-varde logs -f my-model          # the model's own log
-varde jobs                      # what chap-core ran, newest first
-varde jobs logs JOB_ID          # why a backtest failed: the model's stderr
-varde api GET /v2/services      # what chap-core registered, as JSON
-varde doctor                    # the machine and the deployment
+chap-devops logs -f my-model          # the model's own log
+chap-devops jobs                      # what chap-core ran, newest first
+chap-devops jobs logs JOB_ID          # why a backtest failed: the model's stderr
+chap-devops api GET /v2/services      # what chap-core registered, as JSON
+chap-devops doctor                    # the machine and the deployment
 ```
 
-- A failed backtest says why in `varde jobs logs` and nowhere else.
-- From chap-core v2.5.0, `varde jobs` also shows a `baseline/<model>` job for
+- A failed backtest says why in `chap-devops jobs logs` and nowhere else.
+- From chap-core v2.5.0, `chap-devops jobs` also shows a `baseline/<model>` job for
   each built-in model of a backtest.
 - A model test failure names the phase (`train`, `predict`) and the first line
   of the model's error. Add `-vv` for the whole output.
@@ -521,10 +521,10 @@ varde doctor                    # the machine and the deployment
 ## Start now
 
 ```sh
-varde models new my-model && cd my-model
+chap-devops models new my-model && cd my-model
 git init && git add . && git commit -m "feat: first version"
 docker build --platform linux/amd64 --build-arg GIT_REVISION=$(git rev-parse HEAD) -t my-model:dev .
-varde run my-model:dev
+chap-devops run my-model:dev
 ```
 
-Models and the marketplace: **https://winterop-com.github.io/varde/models.html**
+Models and the marketplace: **https://winterop-com.github.io/chap-devops/models.html**

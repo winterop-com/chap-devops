@@ -103,13 +103,16 @@ fn chap_core_down_is_said_with_the_way_out() {
     let registry = registry();
     let mut app = App::new(&registry, &ProjectState::default());
     app.configs = Some(view(Load::Failed(
-        "chap-core at http://localhost:8000 is not running; start it with `varde up`, then \
+        "chap-core at http://localhost:8000 is not running; start it with `chap-devops up`, then \
          press r"
             .to_string(),
     )));
     app.mode = Mode::Configs;
     let screen = render(&app, 120, 30);
-    assert!(screen.contains("start it with `varde up`"), "{screen}");
+    assert!(
+        screen.contains("start it with `chap-devops up`"),
+        "{screen}"
+    );
 }
 
 #[test]

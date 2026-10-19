@@ -1,4 +1,4 @@
-//! varde dhis2 against answers of DHIS2 that are easy to read wrong: the
+//! chap-devops dhis2 against answers of DHIS2 that are easy to read wrong: the
 //! epoch as a timestamp, a malformed token, a job that is not listed yet.
 
 use super::*;
@@ -63,7 +63,7 @@ fn dhis2_route_asks_twice_through_a_route_it_has_just_repointed() {
 
 /// A seeded DHIS2 without chap-core has a `chap` route aimed at a stranger.
 /// `show` does not name a target for it or send the reader to
-/// `varde dhis2 connect`, which refuses there.
+/// `chap-devops dhis2 connect`, which refuses there.
 #[cfg(unix)]
 #[test]
 fn dhis2_show_without_chap_core_names_the_steps_that_work() {
@@ -85,11 +85,13 @@ fn dhis2_show_without_chap_core_names_the_steps_that_work() {
         ))
         .stdout(predicates::str::contains("http://chap:8000").not())
         .stdout(predicates::str::contains("not at this deployment").not())
-        .stdout(predicates::str::contains("varde dhis2 connect").not())
+        .stdout(predicates::str::contains("chap-devops dhis2 connect").not())
         .stdout(predicates::str::contains(
-            "`varde components enable chap-core` adds it",
+            "`chap-devops components enable chap-core` adds it",
         ))
-        .stdout(predicates::str::contains("`varde dhis2 apps` for the apps"));
+        .stdout(predicates::str::contains(
+            "`chap-devops dhis2 apps` for the apps",
+        ));
     assert!(
         !stand_in.was_asked("GET /api/routes/chap/run/health"),
         "{:?}",

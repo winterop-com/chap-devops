@@ -83,7 +83,7 @@ fn the_notice_is_only_for_a_plain_terminal_run() {
     assert!(!should_notify(&ctx(tmp.path(), json, false), false));
     // --offline means no network, and that includes this.
     assert!(!should_notify(&ctx(tmp.path(), tty(), true), false));
-    // VARDE_NO_UPDATE_CHECK=1. Passed in rather than read from the
+    // CHAP_DEVOPS_NO_UPDATE_CHECK=1. Passed in rather than read from the
     // environment, which is process-wide and shared with every other test
     // in this binary.
     assert!(!should_notify(&ctx(tmp.path(), tty(), false), true));
@@ -226,7 +226,7 @@ fn a_failed_check_records_the_attempt_and_stays_quiet() {
 }
 
 /// The hint of `--check` names the command that installs what was checked:
-/// a plain `varde self update` on a stable build follows releases/latest and
+/// a plain `chap-devops self update` on a stable build follows releases/latest and
 /// does not install `--version dev`.
 #[test]
 fn the_check_hint_keeps_the_version_it_checked() {
@@ -235,13 +235,13 @@ fn the_check_hint_keeps_the_version_it_checked() {
         version: version.map(str::to_string),
         yes: false,
     };
-    assert_eq!(install_command(&args(None)), "varde self update");
+    assert_eq!(install_command(&args(None)), "chap-devops self update");
     assert_eq!(
         install_command(&args(Some("dev"))),
-        "varde self update --version dev"
+        "chap-devops self update --version dev"
     );
     assert_eq!(
         install_command(&args(Some("v0.100.0"))),
-        "varde self update --version v0.100.0"
+        "chap-devops self update --version v0.100.0"
     );
 }

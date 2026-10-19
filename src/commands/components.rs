@@ -1,6 +1,6 @@
-//! `varde components list|enable|disable` — what a deployment is made of.
+//! `chap-devops components list|enable|disable` — what a deployment is made of.
 //!
-//! The three commands do the same small thing: edit `.varde/components.yaml`
+//! The three commands do the same small thing: edit `.chap-devops/components.yaml`
 //! and hand over to [`crate::compose::sync()`], which renders one compose file
 //! per enabled component and removes the ones that are no longer wanted. That
 //! is the same path `init --with` takes, so a component enabled at init and one
@@ -21,7 +21,7 @@ use crate::project::Project;
 use serde::Serialize;
 use std::path::PathBuf;
 
-/// One row of `varde components list`, and of its `--json`.
+/// One row of `chap-devops components list`, and of its `--json`.
 #[derive(Debug, Serialize)]
 pub struct ComponentRow {
     pub name: String,
@@ -38,7 +38,7 @@ pub struct ComponentRow {
     pub external_url: Option<String>,
 }
 
-/// What `varde components list` prints.
+/// What `chap-devops components list` prints.
 #[derive(Debug, Serialize)]
 pub struct ComponentsReport {
     pub components: Vec<ComponentRow>,
@@ -70,7 +70,7 @@ pub struct ChangeReport {
     /// `--purge`.
     pub kept_volumes: Vec<String>,
     /// Set when the run changed nothing but the read mode of an OCS that was
-    /// already on: then `varde restart ocs` applies it, and `varde up` does not.
+    /// already on: then `chap-devops restart ocs` applies it, and `chap-devops up` does not.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub read_mode: Option<ReadMode>,
 }
@@ -158,8 +158,8 @@ fn human_list(report: &ComponentsReport, out: &Out) -> String {
 /// The lines after the `components list` table.
 fn list_summary(lines: &mut Report) {
     lines.hint(
-        "`varde components enable NAME` adds a component, `disable NAME` removes it; \
-         the set is in `.varde/components.yaml`",
+        "`chap-devops components enable NAME` adds a component, `disable NAME` removes it; \
+         the set is in `.chap-devops/components.yaml`",
     );
 }
 
@@ -223,7 +223,7 @@ fn change_summary(report: &ChangeReport, project: &Project, lines: &mut Report) 
     }
     let name = &report.name;
     // An enable that changed no setting and wrote no file leaves nothing for
-    // `varde up` to apply.
+    // `chap-devops up` to apply.
     let nothing = report.enabled
         && report.unchanged
         && report.written.is_empty()
@@ -278,9 +278,9 @@ fn change_summary(report: &ChangeReport, project: &Project, lines: &mut Report) 
     // A disable has already stopped the containers; `up` has work only when
     // the sync changed a file that a running service reads.
     match (nothing, report.enabled || !report.written.is_empty()) {
-        (true, _) => lines.hint("if it is not running, `varde up` starts it"),
-        (false, true) => lines.info("run `varde up` to apply"),
-        (false, false) => lines.hint("`varde status` shows what runs now"),
+        (true, _) => lines.hint("if it is not running, `chap-devops up` starts it"),
+        (false, true) => lines.info("run `chap-devops up` to apply"),
+        (false, false) => lines.hint("`chap-devops status` shows what runs now"),
     };
 }
 
@@ -298,7 +298,7 @@ fn note_lines(notes: &[Note], lines: &mut Report) {
 /// The lines of a run that changed only the read mode of an OCS that was on.
 ///
 /// The instance config is a bind mount, which compose does not compare, so
-/// `varde up` leaves the container as it is; `varde restart ocs` recreates it
+/// `chap-devops up` leaves the container as it is; `chap-devops restart ocs` recreates it
 /// (see [`crate::commands::docker::edited_configs`]).
 fn read_mode_summary(report: &ChangeReport, mode: ReadMode, lines: &mut Report) {
     let name = &report.name;
@@ -312,8 +312,10 @@ fn read_mode_summary(report: &ChangeReport, mode: ReadMode, lines: &mut Report) 
     };
     note_lines(&report.notes, lines);
     match mode {
-        ReadMode::Changed { .. } => lines.info(format!("run `varde restart {name}` to apply")),
-        ReadMode::Unchanged { .. } => lines.hint("`varde status` shows what runs now"),
+        ReadMode::Changed { .. } => {
+            lines.info(format!("run `chap-devops restart {name}` to apply"))
+        }
+        ReadMode::Unchanged { .. } => lines.hint("`chap-devops status` shows what runs now"),
     };
 }
 

@@ -4,15 +4,15 @@ Open Climate Service and no Chap at all: a climate data server for anything
 that speaks STAC or openEO.
 
 ```sh
-varde init climate --only ocs,s3
+chap-devops init climate --only ocs,s3
 cd climate
-varde up
-varde status
-varde open ocs
+chap-devops up
+chap-devops status
+chap-devops open ocs
 ```
 
-The first `varde up` pulls the OCS image, about 3 GB. After that, a start takes
-some seconds. `varde status` then shows:
+The first `chap-devops up` pulls the OCS image, about 3 GB. After that, a start takes
+some seconds. `chap-devops status` then shows:
 
 ```text
 ocs   up   http://localhost:8790   0 datasets   32.0 KB data
@@ -25,14 +25,14 @@ You get OCS on `http://localhost:8790`, with the S3-compatible store beside it.
 OCS does not read the store yet: it keeps its data on its own `ocs_data` volume
 ([The object store](../components.md#the-object-store) says why the store is
 there). Nothing Chap-specific is created: no `compose.yml`, and no chap-core
-release is looked up. It worked when `varde status` shows `ocs` as `up` and
-`varde open ocs` opens its web interface.
+release is looked up. It worked when `chap-devops status` shows `ocs` as `up` and
+`chap-devops open ocs` opens its web interface.
 
 To leave out the object store, use this `init` instead of the first one. OCS
 works the same, on the same volume:
 
 ```sh
-varde init climate --only ocs
+chap-devops init climate --only ocs
 ```
 
 ## Ingesting a first dataset
@@ -49,7 +49,7 @@ curl http://localhost:8790/stac/collections/chirps3_precipitation_daily
 
 The first command waits until the data is in, about 20 seconds. It worked when
 it answers with `"status":"completed"` and the second returns the collection;
-`varde status` then counts one dataset:
+`chap-devops status` then counts one dataset:
 
 ```text
 ocs   up   http://localhost:8790   1 dataset   424.0 KB data
@@ -58,7 +58,7 @@ ocs   up   http://localhost:8790   1 dataset   424.0 KB data
 The data size can be a little different on your machine.
 
 The extent is Laos until you change it, the country of the DHIS2 demo database
-varde seeds, so data ingested here covers the provinces that DHIS2 holds case
+chap-devops seeds, so data ingested here covers the provinces that DHIS2 holds case
 data for. Change it in `ocs/climate-service.yaml`, or at `init` with
 `--ocs-name`, `--ocs-country` and `--ocs-bbox`; `curl
 http://localhost:8790/extent` shows the one in use.
@@ -107,10 +107,10 @@ answers at once with the earlier ingestion rather than downloading it twice.
 Values per district or province, as the CSV Chap reads: OCS averages the
 dataset over each area in a GeoJSON `FeatureCollection` whose feature ids
 become the `location` column. A DHIS2 hands out its org units in that shape,
-so with the demo DHIS2 beside OCS (`varde components enable dhis2`, then
-`varde up`; or `--only ocs,s3,dhis2` at `init`, option 10 on the
-[AI page](../ai.md#10-climate-data-and-dhis2-no-chap)). `varde up` returns
-while DHIS2 still starts. Run `varde status` again until `dhis2` shows `up`,
+so with the demo DHIS2 beside OCS (`chap-devops components enable dhis2`, then
+`chap-devops up`; or `--only ocs,s3,dhis2` at `init`, option 10 on the
+[AI page](../ai.md#10-climate-data-and-dhis2-no-chap)). `chap-devops up` returns
+while DHIS2 still starts. Run `chap-devops status` again until `dhis2` shows `up`,
 then run:
 
 ```sh
@@ -157,10 +157,10 @@ instance, which refuses ingestion but not reading.
 Two settings matter once other people use it:
 
 ```sh
-varde components enable ocs --read-only                          # refuse writes over HTTP
-varde restart ocs                                                # apply read-only
-varde components enable ocs --base-url https://ocs.example.org   # behind a proxy
-varde up                                                         # apply the base URL
+chap-devops components enable ocs --read-only                          # refuse writes over HTTP
+chap-devops restart ocs                                                # apply read-only
+chap-devops components enable ocs --base-url https://ocs.example.org   # behind a proxy
+chap-devops up                                                         # apply the base URL
 ```
 
 `--read-only` changes `ocs/climate-service.yaml`. OCS reads that file only
@@ -168,18 +168,18 @@ when it starts, so the command tells you to restart it:
 
 ```text
 ocs is now read-only
-run `varde restart ocs` to apply
+run `chap-devops restart ocs` to apply
 ```
 
-`varde up` does not apply this change. It leaves OCS as it is, and it prints
-this warning on stderr. Until you run `varde restart ocs`, `varde status` shows
+`chap-devops up` does not apply this change. It leaves OCS as it is, and it prints
+this warning on stderr. Until you run `chap-devops restart ocs`, `chap-devops status` shows
 the same warning:
 
 ```text
-warning: `ocs/climate-service.yaml` changed after the ocs container started, so ocs may still use the old settings; run `varde restart ocs` to apply it
+warning: `ocs/climate-service.yaml` changed after the ocs container started, so ocs may still use the old settings; run `chap-devops restart ocs` to apply it
 ```
 
-`varde restart ocs` returns before OCS answers again. Run `varde status` until
+`chap-devops restart ocs` returns before OCS answers again. Run `chap-devops status` until
 `ocs` shows `up`. It worked when this answers `403`:
 
 ```sh
@@ -187,17 +187,17 @@ curl -s -o /dev/null -w '%{http_code}\n' -X POST http://localhost:8790/ingestion
 ```
 
 A read-write OCS answers `422` to the same request. The base URL is different:
-it is in `compose.ocs.yml`, so `varde up` applies it. `--base-url` says what it
+it is in `compose.ocs.yml`, so `chap-devops up` applies it. `--base-url` says what it
 set:
 
 ```text
 enabled ocs on http://localhost:8790
 set the ocs base URL to https://ocs.example.org
-run `varde up` to apply
+run `chap-devops up` to apply
 ```
 
 If you give the same base URL again, nothing changes, and the command prints
-no `varde up` line:
+no `chap-devops up` line:
 
 ```text
 ocs was already enabled on http://localhost:8790; nothing changed

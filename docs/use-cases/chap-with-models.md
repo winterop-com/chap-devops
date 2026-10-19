@@ -3,14 +3,14 @@
 The default, and what most deployments are: chap-core plus the models it runs.
 
 ```sh
-varde init mychap --models chapkit_simple_multistep_model
+chap-devops init mychap --models chapkit_simple_multistep_model
 cd mychap
-varde up
-varde status                 # chap-core up, every model registered
-varde models test --all      # make each model train and predict once
+chap-devops up
+chap-devops status                 # chap-core up, every model registered
+chap-devops models test --all      # make each model train and predict once
 ```
 
-It worked when `varde status` shows chap-core `up` and every model
+It worked when `chap-devops status` shows chap-core `up` and every model
 registered:
 
 ```text
@@ -20,10 +20,10 @@ MODEL                           STATE                       REACH          LAST 
 chapkit-simple-multistep-model  registered, not configured  via chap-core  1s ago
 
 1 model registered
-chapkit-simple-multistep-model: chap-core has no configured model for it, so nothing can run it; run `varde models configs sync`
+chapkit-simple-multistep-model: chap-core has no configured model for it, so nothing can run it; run `chap-devops models configs sync`
 ```
 
-and `varde models test --all` says every model passes:
+and `chap-devops models test --all` says every model passes:
 
 ```text
 testing 1 model (model level; add --backtest to go through chap-core)
@@ -32,12 +32,12 @@ chapkit-simple-multistep-model    pass    5s   1 training, 1 prediction
 1 of 1 model passes
 ```
 
-`registered, not configured` is the normal state after a plain `varde up`.
+`registered, not configured` is the normal state after a plain `chap-devops up`.
 chap-core v2.4.0 makes no configured model when a model registers, and the
-model level of `varde models test` does not need one. A backtest and the
+model level of `chap-devops models test` does not need one. A backtest and the
 Modeling App need one. The [backtest](#test-through-chap-core) below creates
-them, and so do `varde models configs sync` and `varde up --wait`. After that,
-`varde status` shows the model as `registered`. See
+them, and so do `chap-devops models configs sync` and `chap-devops up --wait`. After that,
+`chap-devops status` shows the model as `registered`. See
 [Configured models](../models.md#configured-models).
 
 You get chap-core's API on port 8700 and one service per model. The models
@@ -45,35 +45,35 @@ register with chap-core over the compose network and publish no host port.
 You reach them through chap-core at
 `http://localhost:8700/v2/services/<service_id>/run/`.
 
-To change the models later, use `varde ui`, or `varde models enable ID` and
-`varde models disable ID`. `disable` stops the model at once. After `enable`,
-run `varde up` to start the model.
+To change the models later, use `chap-devops ui`, or `chap-devops models enable ID` and
+`chap-devops models disable ID`. `disable` stops the model at once. After `enable`,
+run `chap-devops up` to start the model.
 
 ## Every model in the marketplace
 
 `all` is every model the marketplace lists (templates aside), and a list of
-ids picks some. `varde models list` prints them. Without `--models`, `init`
+ids picks some. `chap-devops models list` prints them. Without `--models`, `init`
 enables no model.
 
 This is a new deployment. It needs port 8700 too. If the deployment from the
-first section is still up, go to `mychap` and run `varde down --volumes --yes`
-first, then `cd ..`. `varde init` then warns that `mychap` also uses port
+first section is still up, go to `mychap` and run `chap-devops down --volumes --yes`
+first, then `cd ..`. `chap-devops init` then warns that `mychap` also uses port
 8700. While `mychap` is down, you can ignore that warning.
 
 ```sh
-varde init allmodels --models all
+chap-devops init allmodels --models all
 cd allmodels
-varde up
-varde status                 # again, until every model is registered
-varde models test --all      # make each model train and predict once
+chap-devops up
+chap-devops status                 # again, until every model is registered
+chap-devops models test --all      # make each model train and predict once
 ```
 
 The model images are large: four images of 1 to 7 GB each, all linux/amd64
-only. `varde init` already pulls one of them to read its user, and says
+only. `chap-devops init` already pulls one of them to read its user, and says
 ``asking ghcr.io/chap-models/chapkit_ghr_model:sha-dfb2e3f what uid `app` is (this pulls the image)``.
-The first `varde up` pulls the others, which can take many minutes.
+The first `chap-devops up` pulls the others, which can take many minutes.
 
-`varde up` returns before the models register. Right after it, `varde status`
+`chap-devops up` returns before the models register. Right after it, `chap-devops status`
 can show some or all models as not registered yet, and exits with 1:
 
 ```text
@@ -83,15 +83,15 @@ auto-arima-chapkit                running, not registered  via chap-core  -
 chapkit-simple-multistep-model    running, not registered  via chap-core  -
 
 4 of 4 models are not registered.
-auto-arima-chapkit: started under two minutes ago and registers once it is ready; run `varde status` again in a minute
+auto-arima-chapkit: started under two minutes ago and registers once it is ready; run `chap-devops status` again in a minute
 ...
 ```
 
-If you see this, wait a minute and run `varde status` again. On an M2 Max,
-all four models registered in less than a minute. It worked when `varde status`
+If you see this, wait a minute and run `chap-devops status` again. On an M2 Max,
+all four models registered in less than a minute. It worked when `chap-devops status`
 ends with `all 4 models registered`, followed by one
 `chap-core has no configured model for it` line for each model, as in the
-first section. `varde models test --all` then says:
+first section. `chap-devops models test --all` then says:
 
 ```text
 testing 4 models (model level; add --backtest to go through chap-core)
@@ -108,7 +108,7 @@ took about 60 seconds on an M2 Max.
 
 ## Test through chap-core
 
-`varde models test --all --backtest` tests each model through chap-core, the
+`chap-devops models test --all --backtest` tests each model through chap-core, the
 way the Modeling App does. It makes a dataset from the sample data of the
 model, runs a backtest on it and reads the scores. A backtest needs a
 configured model, so the command first creates the configured models from the
@@ -116,7 +116,7 @@ marketplace entry of each model, as `chap-admin install` does. You make no
 API call yourself.
 
 ```sh
-varde models test --all --backtest
+chap-devops models test --all --backtest
 ```
 
 It worked when every model passes with its scores, and the closing lines name
@@ -140,7 +140,7 @@ created configured models in chap-core for auto_arima_chapkit (monthly), chapkit
 The four backtests took about three minutes on an M2 Max. The scores are not
 the same from one run to the next. A second run creates no configured models,
 so it has no `created configured models` line. After the first run,
-`varde status` shows each model as `registered`.
+`chap-devops status` shows each model as `registered`.
 
 Next: [Models and the marketplace](../models.md), [Authentication](../auth.md)
 before you put it on a network, [Backup and restore](../backup.md).

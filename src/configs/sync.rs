@@ -5,7 +5,7 @@
 //! prediction and the Modeling App's model picker name. chap-core 2.4 stopped
 //! doing that. A registration now makes a model template at most, and the
 //! configured models come from the marketplace entry through `chap-admin
-//! install`. A model that varde started is registered, and nothing can run it.
+//! install`. A model that chap-devops started is registered, and nothing can run it.
 //!
 //! This module does what `chap-admin install` does after its service has
 //! registered (`_register_service` in chap-core's
@@ -45,7 +45,7 @@ pub const DEFAULT_CONFIGURATION: &str = "default";
 
 /// The help line that a model not yet registered gets.
 pub const NOT_REGISTERED_WAY_OUT: &str =
-    "run `varde models configs sync` again once `varde status` shows it registered";
+    "run `chap-devops models configs sync` again once `chap-devops status` shows it registered";
 
 /// One `POST /v1/crud/configured-models` body.
 #[derive(Debug, Clone, PartialEq, Serialize)]
@@ -65,7 +65,7 @@ pub enum Source {
     /// The marketplace entry of the model: one configured model for each of
     /// its configurations.
     Marketplace(Box<Model>),
-    /// A model added with `varde models add`, or one that runs an image of
+    /// A model added with `chap-devops models add`, or one that runs an image of
     /// its own: one `default` configured model with the service defaults.
     Custom,
 }
@@ -194,7 +194,7 @@ pub enum Outcome {
 
 /// The way out for a model of this deployment that reports no git revision.
 pub const NO_REVISION_WAY_OUT: &str = "build its image again with `--build-arg \
-     GIT_REVISION=$(git rev-parse HEAD)`, then run `varde restart`";
+     GIT_REVISION=$(git rev-parse HEAD)`, then run `chap-devops restart`";
 
 /// The way out for a model registered from outside this deployment that
 /// reports no git revision.
@@ -330,7 +330,7 @@ fn configure_one(
         };
     };
     // The template is named after what the service reports, which is the
-    // service id for every model varde knows; a name of its own is checked too.
+    // service id for every model chap-devops knows; a name of its own is checked too.
     if let Some(name) = template.get("name").and_then(|name| name.as_str())
         && name != target.service_id
         && is_configured(models, name, Some(version))
@@ -367,7 +367,7 @@ fn post(api: &Api, path: &str, body: &str) -> std::result::Result<serde_json::Va
     Ok(answer.json().unwrap_or(serde_json::Value::Null))
 }
 
-/// The lines of `varde models configs sync`: one for each model.
+/// The lines of `chap-devops models configs sync`: one for each model.
 pub fn command_lines(outcomes: &[ModelOutcome], lines: &mut Report) {
     for model in outcomes {
         let id = &model.id;
@@ -440,7 +440,7 @@ pub fn folded_lines(outcomes: &[ModelOutcome], not_registered: bool, lines: &mut
 /// The warning for a model the step could not configure.
 fn failed_line(id: &str, error: &str) -> String {
     format!(
-        "{id}: could not create its configured models: {error}; run `varde models configs sync {id}` again, and `varde logs chap` says why"
+        "{id}: could not create its configured models: {error}; run `chap-devops models configs sync {id}` again, and `chap-devops logs chap` says why"
     )
 }
 

@@ -1,4 +1,4 @@
-//! `varde models configs update ID NAME [--set KEY=VALUE ...] [--unset KEY]
+//! `chap-devops models configs update ID NAME [--set KEY=VALUE ...] [--unset KEY]
 //! [--covariates a,b]`, and `update ID NAME` alone, which opens the form at
 //! a terminal with the values the configured model has.
 //!
@@ -10,7 +10,7 @@ use crate::commands::Ctx;
 use crate::configs::{self, Config, Draft, options};
 use crate::error::{ChapError, Result};
 
-/// `varde models configs update`.
+/// `chap-devops models configs update`.
 pub fn update(ctx: &Ctx, args: &ConfigsUpdateArgs) -> Result<()> {
     let sets = args
         .set

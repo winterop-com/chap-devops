@@ -1,4 +1,4 @@
-//! `varde run -a`, in the foreground: follow the model's log until Ctrl-C, then
+//! `chap-devops run -a`, in the foreground: follow the model's log until Ctrl-C, then
 //! stop what this command started. And Ctrl-C part-way through a start, in
 //! either mode: take back out what the start put in.
 
@@ -30,7 +30,7 @@ pub(super) fn follow(ctx: &Ctx, report: &RunReport, purge: bool) -> Result<()> {
 
     if report.was_running {
         output::notice(&format!(
-            "{id} ran before this command, so it keeps running; `varde stop {id}` stops it"
+            "{id} ran before this command, so it keeps running; `chap-devops stop {id}` stops it"
         ));
         return Ok(());
     }
@@ -43,17 +43,17 @@ pub(super) fn follow(ctx: &Ctx, report: &RunReport, purge: bool) -> Result<()> {
             remove_group(report);
         }
         Ok(_) => output::notice(&format!(
-            "stopped {id}; its data stays, and `varde run {id}` starts it again with it"
+            "stopped {id}; its data stays, and `chap-devops run {id}` starts it again with it"
         )),
         Err(err) => output::warn(&format!(
-            "{id} did not stop: {err:#}; `varde stop {id}` stops it"
+            "{id} did not stop: {err:#}; `chap-devops stop {id}` stops it"
         )),
     }
     Ok(())
 }
 
 /// After a `--rm` stop: take the group away when it holds no model now, the
-/// way `varde stop --purge` does, with its network and its directory.
+/// way `chap-devops stop --purge` does, with its network and its directory.
 fn remove_group(report: &RunReport) {
     let Some(group) = report.group.as_deref() else {
         return;
@@ -62,9 +62,11 @@ fn remove_group(report: &RunReport) {
         Ok(Some(_)) => output::notice(&format!("removed group {group}")),
         Ok(None) => {}
         // A volume docker would not remove names its own way out.
-        Err(err) if err.to_string().contains("`varde stop") => output::warn(&format!("{err:#}")),
+        Err(err) if err.to_string().contains("`chap-devops stop") => {
+            output::warn(&format!("{err:#}"))
+        }
         Err(err) => output::warn(&format!(
-            "{err:#}; `varde stop --group {group} --purge` removes the group"
+            "{err:#}; `chap-devops stop --group {group} --purge` removes the group"
         )),
     }
 }
@@ -86,13 +88,15 @@ pub(super) fn take_back(
     } else if enabled {
         match stop_in(ctx, &project.dir, id, false) {
             Ok(_) => format!("{id} is taken back out of {}", project.dir.display()),
-            Err(err) => format!("{id} stays enabled ({err:#}); `varde stop {id}` takes it out"),
+            Err(err) => {
+                format!("{id} stays enabled ({err:#}); `chap-devops stop {id}` takes it out")
+            }
         }
     } else {
         let args = ["stop", service].map(str::to_string);
         match docker::compose_output(project, &args) {
             Ok((0, _, _)) => format!("{service} is stopped again"),
-            _ => format!("{service} may still run; `varde stop {id}` stops it"),
+            _ => format!("{service} may still run; `chap-devops stop {id}` stops it"),
         }
     };
     ChapError::Interrupted(what).into()

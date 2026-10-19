@@ -1,7 +1,7 @@
-//! `varde chapkit`: the chapkit CLI, run in the chap-core image.
+//! `chap-devops chapkit`: the chapkit CLI, run in the chap-core image.
 //!
 //! chapkit is a dependency of chap-core, so the chap-core image has its CLI,
-//! and there is no other image to pin. The run is the one `varde chap`
+//! and there is no other image to pin. The run is the one `chap-devops chap`
 //! makes: the current directory is mounted at the same path, and the run is
 //! the user of the host, so every file chapkit writes is on the host. See
 //! `docs/chap-cli.md`.
@@ -40,7 +40,7 @@ pub fn run(ctx: &Ctx, args: &ChapkitArgs) -> Result<()> {
     }
     if ctx.out.json {
         return Err(ChapError::Usage(
-            "`varde chapkit` prints chapkit's own output, so --json does not apply; drop it"
+            "`chap-devops chapkit` prints chapkit's own output, so --json does not apply; drop it"
                 .to_string(),
         )
         .into());
@@ -52,7 +52,7 @@ pub fn run(ctx: &Ctx, args: &ChapkitArgs) -> Result<()> {
     if args.image.is_some() {
         return Err(ChapError::Usage(
             "--image picks the image of `mlproject run` only; drop it, or use \
-             `varde chapkit --image IMAGE mlproject run DIR`"
+             `chap-devops chapkit --image IMAGE mlproject run DIR`"
                 .to_string(),
         )
         .into());
@@ -64,7 +64,7 @@ pub fn run(ctx: &Ctx, args: &ChapkitArgs) -> Result<()> {
         .map_err(|e| anyhow::anyhow!("reading the current directory: {e}"))?;
     let place = target(ctx, None)?;
     let deployment =
-        match place.group.is_none() && place.dir.join(crate::project::VARDE_DIR).is_dir() {
+        match place.group.is_none() && place.dir.join(crate::project::CHAP_DEVOPS_DIR).is_dir() {
             true => Some(Project::load(&place.dir)?),
             false => None,
         };
@@ -137,7 +137,7 @@ pub fn run(ctx: &Ctx, args: &ChapkitArgs) -> Result<()> {
             code,
             next: format!(
                 "docker could not start {reference}, and its message is above; \
-                 `varde chapkit --tag TAG` picks another chap-core tag"
+                 `chap-devops chapkit --tag TAG` picks another chap-core tag"
             ),
         }
         .into()),
@@ -174,7 +174,7 @@ fn serve_arguments(args: &[String]) -> Option<&[String]> {
     }
 }
 
-/// Why varde refuses the chapkit arguments, with the varde command that
+/// Why chap-devops refuses the chapkit arguments, with the chap-devops command that
 /// does the work: `chapkit test` needs a service that the container can
 /// reach, and the container is on no network of a model.
 fn refused(args: &[String]) -> Option<String> {
@@ -187,7 +187,7 @@ fn refused(args: &[String]) -> Option<String> {
     match words.as_slice() {
         ["test", ..] => Some(
             "`chapkit test` in this container cannot reach a model service; use \
-             `varde models test ID`, which runs it in the model's own container"
+             `chap-devops models test ID`, which runs it in the model's own container"
                 .to_string(),
         ),
         _ => None,
@@ -225,7 +225,7 @@ fn with_group_help(args: &[String]) -> Vec<String> {
 
 /// The error after a usage error of chapkit, with the way out: the help of
 /// the chapkit command the arguments name, which lists what it takes. The
-/// exit code stays 2, as for a usage error of varde.
+/// exit code stays 2, as for a usage error of chap-devops.
 fn usage_hint(args: &[String]) -> String {
     let words: Vec<&str> = args
         .iter()
@@ -239,13 +239,13 @@ fn usage_hint(args: &[String]) -> String {
     };
     format!(
         "chapkit did not accept the arguments, and its usage is above; \
-         `varde chapkit{command} --help` lists what the command takes"
+         `chap-devops chapkit{command} --help` lists what the command takes"
     )
 }
 
 /// The project directories in `written` whose `Dockerfile` copies a
 /// `uv.lock` that is not there: what `chapkit init` and `chapkit mlproject
-/// migrate` write. chapkit says to run `uv lock` on the host; varde runs it
+/// migrate` write. chapkit says to run `uv lock` on the host; chap-devops runs it
 /// in the same image, so the build needs no uv on the host.
 fn needs_lock(written: &[PathBuf]) -> Vec<PathBuf> {
     let mut dirs: Vec<PathBuf> = written
@@ -297,7 +297,7 @@ fn lock(spec: &RunSpec, dir: &Path, cwd: &Path) {
         )),
         _ => output::warn(&format!(
             "could not write {file}, and the `Dockerfile` copies it; run \
-             `varde chapkit --help` to make sure the image runs, then `uv lock` in {shown}"
+             `chap-devops chapkit --help` to make sure the image runs, then `uv lock` in {shown}"
         )),
     }
 }

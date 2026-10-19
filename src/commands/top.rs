@@ -1,4 +1,4 @@
-//! `varde top`: the live tree on a terminal, one snapshot anywhere else.
+//! `chap-devops top`: the live tree on a terminal, one snapshot anywhere else.
 
 use crate::cli::TopArgs;
 use crate::commands::Ctx;
@@ -10,7 +10,7 @@ use std::io::IsTerminal;
 use std::path::PathBuf;
 
 /// The deployments to show even with no container: the one the command runs
-/// in, and every `varde run` group.
+/// in, and every `chap-devops run` group.
 fn known(ctx: &Ctx) -> Vec<PathBuf> {
     let mut dirs: Vec<PathBuf> = super::run::groups().into_iter().map(|(_, d)| d).collect();
     if let Some(here) = Project::find_root(&ctx.project_dir) {
@@ -39,9 +39,9 @@ pub fn run(ctx: &Ctx, args: &TopArgs) -> Result<()> {
 fn snapshot_lines(nodes: &[Node], lines: &mut Report) {
     match nodes.is_empty() {
         true => lines
-            .info("no varde deployment has a container on this machine")
-            .hint("`varde run <model>` or `varde up` starts one"),
-        false => lines.hint("a snapshot: on a terminal `varde top` keeps it up to date"),
+            .info("no chap-devops deployment has a container on this machine")
+            .hint("`chap-devops run <model>` or `chap-devops up` starts one"),
+        false => lines.hint("a snapshot: on a terminal `chap-devops top` keeps it up to date"),
     };
 }
 

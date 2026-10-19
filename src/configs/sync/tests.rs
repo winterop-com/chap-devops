@@ -196,8 +196,8 @@ fn the_command_says_one_line_for_each_configured_model() {
         [
             "chapkit_ewars_model: created configured model monthly_climate",
             "chapkit_ewars_model: created configured model monthly_region_seasonal",
-            "auto_arima_chapkit: not registered with chap-core; run `varde models configs sync` \
-             again once `varde status` shows it registered",
+            "auto_arima_chapkit: not registered with chap-core; run `chap-devops models configs sync` \
+             again once `chap-devops status` shows it registered",
         ]
     );
 

@@ -12,15 +12,21 @@ const WINDOWS: &str = "x86_64-pc-windows-msvc";
 
 #[test]
 fn every_target_names_its_archive() {
-    assert_eq!(asset_name(LINUX), "varde-x86_64-unknown-linux-musl.tar.gz");
+    assert_eq!(
+        asset_name(LINUX),
+        "chap-devops-x86_64-unknown-linux-musl.tar.gz"
+    );
     assert_eq!(
         asset_name("aarch64-unknown-linux-musl"),
-        "varde-aarch64-unknown-linux-musl.tar.gz"
+        "chap-devops-aarch64-unknown-linux-musl.tar.gz"
     );
-    assert_eq!(asset_name(WINDOWS), "varde-x86_64-pc-windows-msvc.zip");
+    assert_eq!(
+        asset_name(WINDOWS),
+        "chap-devops-x86_64-pc-windows-msvc.zip"
+    );
     assert_eq!(
         asset_name("aarch64-pc-windows-msvc"),
-        "varde-aarch64-pc-windows-msvc.zip"
+        "chap-devops-aarch64-pc-windows-msvc.zip"
     );
     // Nothing in the name says which release it came from.
     for target in [LINUX, MAC, WINDOWS] {
@@ -34,7 +40,7 @@ fn both_macs_take_the_universal_archive() {
         assert_eq!(asset_target(target), "universal-apple-darwin", "{target}");
         assert_eq!(
             asset_name(target),
-            "varde-universal-apple-darwin.tar.gz",
+            "chap-devops-universal-apple-darwin.tar.gz",
             "{target}"
         );
     }
@@ -45,10 +51,10 @@ fn both_macs_take_the_universal_archive() {
 
 #[test]
 fn the_executable_inside_gets_an_exe_on_windows() {
-    assert_eq!(binary_name(LINUX), "varde");
-    assert_eq!(binary_name(MAC), "varde");
-    assert_eq!(binary_name(WINDOWS), "varde.exe");
-    assert_eq!(binary_name("aarch64-pc-windows-msvc"), "varde.exe");
+    assert_eq!(binary_name(LINUX), "chap-devops");
+    assert_eq!(binary_name(MAC), "chap-devops");
+    assert_eq!(binary_name(WINDOWS), "chap-devops.exe");
+    assert_eq!(binary_name("aarch64-pc-windows-msvc"), "chap-devops.exe");
 }
 
 #[test]
@@ -57,7 +63,7 @@ fn this_build_knows_its_own_target() {
     assert_ne!(TARGET, "unknown");
     // Whatever the host is, the asset it wants exists in the release
     // matrix, which is the property that matters.
-    assert!(asset_name(TARGET).starts_with("varde-"));
+    assert!(asset_name(TARGET).starts_with("chap-devops-"));
     assert!(asset_name(TARGET).contains(asset_target(TARGET)));
 }
 
@@ -67,7 +73,7 @@ fn a_release_payload_yields_its_tag_and_assets() {
         r#"{
               "tag_name": "v0.2.0",
               "assets": [
-                {"name": "varde-x86_64-unknown-linux-musl.tar.gz"},
+                {"name": "chap-devops-x86_64-unknown-linux-musl.tar.gz"},
                 {"name": "SHA256SUMS"}
               ]
             }"#,
@@ -75,8 +81,8 @@ fn a_release_payload_yields_its_tag_and_assets() {
     .unwrap();
     assert_eq!(release.tag, "v0.2.0");
     assert!(release.has_asset("SHA256SUMS"));
-    assert!(release.has_asset("varde-x86_64-unknown-linux-musl.tar.gz"));
-    assert!(!release.has_asset("varde-x86_64-pc-windows-msvc.zip"));
+    assert!(release.has_asset("chap-devops-x86_64-unknown-linux-musl.tar.gz"));
+    assert!(!release.has_asset("chap-devops-x86_64-pc-windows-msvc.zip"));
 }
 
 #[test]
@@ -97,14 +103,14 @@ fn the_asset_is_the_version_less_name() {
     let full = Release {
         tag: "v0.2.0".to_string(),
         assets: vec![
-            "varde-x86_64-unknown-linux-musl.tar.gz".to_string(),
+            "chap-devops-x86_64-unknown-linux-musl.tar.gz".to_string(),
             SUMS_FILE.to_string(),
         ],
         ..Default::default()
     };
     assert_eq!(
         pick_asset(&full, LINUX).unwrap(),
-        "varde-x86_64-unknown-linux-musl.tar.gz"
+        "chap-devops-x86_64-unknown-linux-musl.tar.gz"
     );
 
     // A payload with no asset list is taken at its word.
@@ -114,7 +120,7 @@ fn the_asset_is_the_version_less_name() {
     };
     assert_eq!(
         pick_asset(&bare, LINUX).unwrap(),
-        "varde-x86_64-unknown-linux-musl.tar.gz"
+        "chap-devops-x86_64-unknown-linux-musl.tar.gz"
     );
 
     // A release that really has nothing for this target names the archive
@@ -122,7 +128,9 @@ fn the_asset_is_the_version_less_name() {
     let err = pick_asset(&full, WINDOWS).expect_err("no windows archive");
     assert_eq!(
         err.to_string(),
-        format!("v0.2.0 has no varde-{WINDOWS}.zip, so varde cannot install it on {WINDOWS}")
+        format!(
+            "v0.2.0 has no chap-devops-{WINDOWS}.zip, so chap-devops cannot install it on {WINDOWS}"
+        )
     );
 }
 
@@ -138,27 +146,35 @@ fn newer_is_compared_against_this_build() {
 #[test]
 fn the_install_method_is_guessed_from_the_path() {
     let method = |path: &Path| install_method_of(Some(path), false);
-    let cargo: PathBuf = [r"/home/u", ".cargo", "bin", "varde"].iter().collect();
+    let cargo: PathBuf = [r"/home/u", ".cargo", "bin", "chap-devops"]
+        .iter()
+        .collect();
     assert_eq!(method(&cargo), "cargo install");
-    let cargo_win: PathBuf = [r"C:\Users\u", ".cargo", "bin", "varde.exe"]
+    let cargo_win: PathBuf = [r"C:\Users\u", ".cargo", "bin", "chap-devops.exe"]
         .iter()
         .collect();
     assert_eq!(method(&cargo_win), "cargo install");
     // A local build anywhere else is not a release archive: `cargo install
     // --root` and `make install` put it in a plain `bin/`.
-    for other in ["/usr/local/bin/varde", "/home/u/.local/bin/varde"] {
+    for other in [
+        "/usr/local/bin/chap-devops",
+        "/home/u/.local/bin/chap-devops",
+    ] {
         assert_eq!(method(Path::new(other)), "local build", "{other}");
     }
     // A checkout's own build, in either profile and on Windows too.
     for built in [
-        &["/home/u/varde", "target", "release", "varde"][..],
-        &[r"C:\src\varde", "target", "debug", "varde.exe"][..],
+        &["/home/u/chap-devops", "target", "release", "chap-devops"][..],
+        &[r"C:\src\chap-devops", "target", "debug", "chap-devops.exe"][..],
     ] {
         let built: PathBuf = built.iter().collect();
         assert_eq!(method(&built), "cargo build", "{built:?}");
     }
     // `.cargo` without `bin` under it is not a cargo install.
-    assert_eq!(method(Path::new("/home/u/.cargo/varde")), "local build");
+    assert_eq!(
+        method(Path::new("/home/u/.cargo/chap-devops")),
+        "local build"
+    );
     assert_eq!(install_method_of(None, false), "local build");
 }
 
@@ -166,7 +182,10 @@ fn the_install_method_is_guessed_from_the_path() {
 /// and this test binary is not one.
 #[test]
 fn a_release_build_is_a_release_archive_wherever_it_is() {
-    for path in ["/usr/local/bin/varde", "/home/u/.cargo/bin/varde"] {
+    for path in [
+        "/usr/local/bin/chap-devops",
+        "/home/u/.cargo/bin/chap-devops",
+    ] {
         assert_eq!(
             install_method_of(Some(Path::new(path)), true),
             "release archive"
@@ -175,77 +194,89 @@ fn a_release_build_is_a_release_archive_wherever_it_is() {
     assert_eq!(install_method_of(None, true), "release archive");
     // This test binary is a local build, so it is not reported as one.
     assert_eq!(
-        install_method(Some(Path::new("/usr/local/bin/varde"))),
+        install_method(Some(Path::new("/usr/local/bin/chap-devops"))),
         "local build"
     );
 }
 
 /// A `SHA256SUMS` in both spellings sha256sum and shasum write.
 const SUMS: &str = "\
-e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  varde-x86_64-unknown-linux-musl.tar.gz
-ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad *varde-universal-apple-darwin.tar.gz
-248d6a61d20638b8e5c026930c3e6039a33ce45964ff2167f6ecedd419db06c1  ./varde-x86_64-pc-windows-msvc.zip
+e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  chap-devops-x86_64-unknown-linux-musl.tar.gz
+ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad *chap-devops-universal-apple-darwin.tar.gz
+248d6a61d20638b8e5c026930c3e6039a33ce45964ff2167f6ecedd419db06c1  ./chap-devops-x86_64-pc-windows-msvc.zip
 ";
 
 #[test]
 fn the_sums_file_is_read_in_every_spelling() {
     assert_eq!(
-        sha256_for(SUMS, "varde-x86_64-unknown-linux-musl.tar.gz").unwrap(),
+        sha256_for(SUMS, "chap-devops-x86_64-unknown-linux-musl.tar.gz").unwrap(),
         "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
     );
     assert_eq!(
-        sha256_for(SUMS, "varde-universal-apple-darwin.tar.gz").unwrap(),
+        sha256_for(SUMS, "chap-devops-universal-apple-darwin.tar.gz").unwrap(),
         "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad"
     );
     assert_eq!(
-        sha256_for(SUMS, "varde-x86_64-pc-windows-msvc.zip").unwrap(),
+        sha256_for(SUMS, "chap-devops-x86_64-pc-windows-msvc.zip").unwrap(),
         "248d6a61d20638b8e5c026930c3e6039a33ce45964ff2167f6ecedd419db06c1"
     );
-    assert_eq!(sha256_for(SUMS, "varde-aarch64-apple-darwin.tar.gz"), None);
+    assert_eq!(
+        sha256_for(SUMS, "chap-devops-aarch64-apple-darwin.tar.gz"),
+        None
+    );
     assert_eq!(sha256_for("", "anything"), None);
     // A line that is not a digest is not a match.
-    assert_eq!(sha256_for("nothex  varde.tar.gz", "varde.tar.gz"), None);
+    assert_eq!(
+        sha256_for("nothex  chap-devops.tar.gz", "chap-devops.tar.gz"),
+        None
+    );
 }
 
 #[test]
 fn verification_passes_for_the_listed_bytes_and_fails_otherwise() {
-    verify(SUMS, "varde-x86_64-unknown-linux-musl.tar.gz", b"")
+    verify(SUMS, "chap-devops-x86_64-unknown-linux-musl.tar.gz", b"")
         .expect("the empty digest is the one listed");
-    verify(SUMS, "varde-universal-apple-darwin.tar.gz", b"abc")
+    verify(SUMS, "chap-devops-universal-apple-darwin.tar.gz", b"abc")
         .expect("the abc digest is the one listed");
 
-    let err = verify(SUMS, "varde-universal-apple-darwin.tar.gz", b"abd")
+    let err = verify(SUMS, "chap-devops-universal-apple-darwin.tar.gz", b"abd")
         .expect_err("a changed byte is a different digest");
     assert!(err.to_string().contains("does not match"), "{err}");
 
-    let err =
-        verify(SUMS, "varde-nowhere.tar.gz", b"").expect_err("an asset the manifest never listed");
+    let err = verify(SUMS, "chap-devops-nowhere.tar.gz", b"")
+        .expect_err("an asset the manifest never listed");
     assert!(err.to_string().contains("does not list"), "{err}");
 }
 
 #[test]
 fn the_staged_and_backup_files_sit_beside_the_binary() {
-    let unix = Path::new("/usr/local/bin/varde");
-    assert_eq!(staged_path(unix), Path::new("/usr/local/bin/varde.new"));
-    assert_eq!(backup_path(unix), Path::new("/usr/local/bin/varde.old"));
+    let unix = Path::new("/usr/local/bin/chap-devops");
+    assert_eq!(
+        staged_path(unix),
+        Path::new("/usr/local/bin/chap-devops.new")
+    );
+    assert_eq!(
+        backup_path(unix),
+        Path::new("/usr/local/bin/chap-devops.old")
+    );
 
-    // The `.exe` is dropped, so Windows stages `varde.new`, not
-    // `varde.exe.new`.
-    let windows: PathBuf = ["bin", "varde.exe"].iter().collect();
+    // The `.exe` is dropped, so Windows stages `chap-devops.new`, not
+    // `chap-devops.exe.new`.
+    let windows: PathBuf = ["bin", "chap-devops.exe"].iter().collect();
     assert_eq!(
         staged_path(&windows).file_name().unwrap(),
-        std::ffi::OsStr::new("varde.new")
+        std::ffi::OsStr::new("chap-devops.new")
     );
     assert_eq!(
         backup_path(&windows).file_name().unwrap(),
-        std::ffi::OsStr::new("varde.old")
+        std::ffi::OsStr::new("chap-devops.old")
     );
 }
 
 #[test]
 fn replacing_a_binary_swaps_the_contents_and_leaves_nothing_behind() {
     let tmp = tempfile::tempdir().unwrap();
-    let binary = tmp.path().join("varde");
+    let binary = tmp.path().join("chap-devops");
     std::fs::write(&binary, b"the old binary").unwrap();
     #[cfg(unix)]
     set_mode(&binary, 0o755);
@@ -281,7 +312,7 @@ fn replacing_a_binary_swaps_the_contents_and_leaves_nothing_behind() {
 #[test]
 fn replacing_preserves_a_mode_that_is_not_the_default() {
     let tmp = tempfile::tempdir().unwrap();
-    let binary = tmp.path().join("varde");
+    let binary = tmp.path().join("chap-devops");
     std::fs::write(&binary, b"old").unwrap();
     set_mode(&binary, 0o750);
 
@@ -294,7 +325,7 @@ fn replacing_preserves_a_mode_that_is_not_the_default() {
 #[test]
 fn a_leftover_backup_is_cleaned_up_and_a_missing_one_is_not_an_error() {
     let tmp = tempfile::tempdir().unwrap();
-    let binary = tmp.path().join("varde");
+    let binary = tmp.path().join("chap-devops");
     std::fs::write(&binary, b"current").unwrap();
 
     clean_backup(&binary);
@@ -307,10 +338,12 @@ fn a_leftover_backup_is_cleaned_up_and_a_missing_one_is_not_an_error() {
 #[test]
 fn a_writable_directory_is_replaceable_and_a_missing_one_is_not() {
     let tmp = tempfile::tempdir().unwrap();
-    let binary = tmp.path().join("varde");
+    let binary = tmp.path().join("chap-devops");
     std::fs::write(&binary, b"x").unwrap();
     assert!(is_replaceable(&binary));
-    assert!(!is_replaceable(&tmp.path().join("nowhere").join("varde")));
+    assert!(!is_replaceable(
+        &tmp.path().join("nowhere").join("chap-devops")
+    ));
 
     // The probe it writes is cleaned up, whatever the platform thinks of
     // deleting a file that is still open.
@@ -318,7 +351,7 @@ fn a_writable_directory_is_replaceable_and_a_missing_one_is_not() {
         .unwrap()
         .flatten()
         .map(|entry| entry.file_name().to_string_lossy().into_owned())
-        .filter(|name| name.starts_with(".varde-write-probe"))
+        .filter(|name| name.starts_with(".chap-devops-write-probe"))
         .collect();
     assert!(left.is_empty(), "the probe is gone, found {left:?}");
 }
@@ -326,17 +359,19 @@ fn a_writable_directory_is_replaceable_and_a_missing_one_is_not() {
 #[test]
 fn the_binary_is_found_wherever_the_archive_put_it() {
     let tmp = tempfile::tempdir().unwrap();
-    let inner = tmp.path().join("varde-v0.2.0-x86_64-unknown-linux-musl");
+    let inner = tmp
+        .path()
+        .join("chap-devops-v0.2.0-x86_64-unknown-linux-musl");
     std::fs::create_dir_all(inner.join("completions")).unwrap();
     std::fs::write(inner.join("README.md"), "readme").unwrap();
-    std::fs::write(inner.join("completions/varde.bash"), "completions").unwrap();
-    std::fs::write(inner.join("varde"), b"elf").unwrap();
+    std::fs::write(inner.join("completions/chap-devops.bash"), "completions").unwrap();
+    std::fs::write(inner.join("chap-devops"), b"elf").unwrap();
 
     assert_eq!(
         find_binary(tmp.path(), "x86_64-unknown-linux-musl"),
-        Some(inner.join("varde"))
+        Some(inner.join("chap-devops"))
     );
-    // A Windows archive has `varde.exe` and nothing called `varde`.
+    // A Windows archive has `chap-devops.exe` and nothing called `chap-devops`.
     assert_eq!(find_binary(tmp.path(), "x86_64-pc-windows-msvc"), None);
 }
 
@@ -409,9 +444,9 @@ fn only_the_exact_value_turns_the_notice_off() {
 #[test]
 fn the_notice_names_both_versions_and_is_silent_when_there_is_nothing_to_say() {
     let line = notice_line("v9.9.9", "0.1.0").expect("a newer release");
-    assert!(line.contains("varde v9.9.9 is available"), "{line}");
+    assert!(line.contains("chap-devops v9.9.9 is available"), "{line}");
     assert!(line.contains("you have v0.1.0"), "{line}");
-    assert!(line.contains("varde self update"), "{line}");
+    assert!(line.contains("chap-devops self update"), "{line}");
 
     assert_eq!(notice_line("v0.1.0", "0.1.0"), None);
     assert_eq!(notice_line("v0.0.9", "0.1.0"), None);
@@ -429,7 +464,7 @@ fn dev_release(commit: &str) -> Release {
     Release {
         tag: DEV_TAG.to_string(),
         assets: vec![
-            "varde-x86_64-unknown-linux-musl.tar.gz".to_string(),
+            "chap-devops-x86_64-unknown-linux-musl.tar.gz".to_string(),
             SUMS_FILE.to_string(),
         ],
         prerelease: true,
@@ -649,10 +684,10 @@ fn a_dev_build_is_up_to_date_only_on_the_commit_the_release_names() {
 fn the_dev_notice_speaks_only_when_it_knows_the_commit_moved() {
     let commit = "0b1c2d3e4f50617283940a1b2c3d4e5f60718293";
     let line = dev_notice_line(commit, "deadbee").expect("a different commit");
-    assert!(line.contains("newer varde dev build"), "{line}");
+    assert!(line.contains("newer chap-devops dev build"), "{line}");
     assert!(line.contains("commit 0b1c2d3"), "{line}");
     assert!(line.contains("you have deadbee"), "{line}");
-    assert!(line.contains("varde self update"), "{line}");
+    assert!(line.contains("chap-devops self update"), "{line}");
 
     // The same build, and the two "cannot tell" cases, say nothing: this
     // line is printed without being asked for.
@@ -674,7 +709,7 @@ fn the_stable_notice_cannot_be_talked_into_offering_a_prerelease() {
     let parsed = parse_release(
         r#"{"tag_name":"dev","prerelease":true,"published_at":"2026-09-23T17:08:44Z",
                 "body":"built from commit abc1234 on 2026-09-23",
-                "assets":[{"name":"varde-x86_64-unknown-linux-musl.tar.gz"}]}"#,
+                "assets":[{"name":"chap-devops-x86_64-unknown-linux-musl.tar.gz"}]}"#,
     )
     .unwrap();
     assert!(parsed.prerelease);
@@ -709,7 +744,7 @@ fn the_check_state_carries_the_commit() {
 fn the_download_urls_name_the_repository_and_the_tag() {
     assert_eq!(
         download_base("v0.2.0"),
-        "https://github.com/winterop-com/varde/releases/download/v0.2.0"
+        "https://github.com/winterop-com/chap-devops/releases/download/v0.2.0"
     );
     assert!(latest_release_url().contains(REPO));
     assert!(latest_release_url().starts_with(crate::github::DEFAULT_API));
@@ -802,7 +837,7 @@ fn serve(routes: Vec<(String, Vec<u8>)>) -> String {
 const FEED: &str = r#"{
       "tag_name": "v9.9.9",
       "assets": [
-        {"name": "varde-x86_64-unknown-linux-musl.tar.gz"},
+        {"name": "chap-devops-x86_64-unknown-linux-musl.tar.gz"},
         {"name": "SHA256SUMS"}
       ]
     }"#;
@@ -822,7 +857,7 @@ fn a_release_feed_is_read_over_http() {
     assert_eq!(release.tag, "v9.9.9");
     assert_eq!(
         pick_asset(&release, LINUX).unwrap(),
-        "varde-x86_64-unknown-linux-musl.tar.gz"
+        "chap-devops-x86_64-unknown-linux-musl.tar.gz"
     );
     assert!(is_newer_than_current(&release.tag));
 
@@ -846,7 +881,7 @@ fn an_archive_is_downloaded_verified_unpacked_and_swapped_in() {
     // Build an archive shaped like a release: the asset is named after
     // the target alone, and the one directory inside it carries the tag.
     let tag = "v9.9.9";
-    let name = format!("varde-{tag}-{}", asset_target(TARGET));
+    let name = format!("chap-devops-{tag}-{}", asset_target(TARGET));
     let staging = tmp.path().join("staging");
     std::fs::create_dir_all(staging.join(&name).join("completions")).unwrap();
     std::fs::write(
@@ -856,7 +891,10 @@ fn an_archive_is_downloaded_verified_unpacked_and_swapped_in() {
     .unwrap();
     std::fs::write(staging.join(&name).join("README.md"), b"readme").unwrap();
     std::fs::write(
-        staging.join(&name).join("completions").join("varde.bash"),
+        staging
+            .join(&name)
+            .join("completions")
+            .join("chap-devops.bash"),
         b"completions",
     )
     .unwrap();
@@ -935,7 +973,7 @@ fn the_build_day_is_the_day_of_the_build_not_of_the_release() {
         r#"{"tag_name":"dev","prerelease":true,"published_at":"2026-09-23T17:08:44Z",
                 "body":"Built from commit `b95828a0` on 2026-10-07 06:12 UTC.",
                 "assets":[{"name":"SHA256SUMS","updated_at":"2026-10-07T06:20:00Z"},
-                          {"name":"varde-x86_64-unknown-linux-musl.tar.gz",
+                          {"name":"chap-devops-x86_64-unknown-linux-musl.tar.gz",
                            "updated_at":"2026-10-07T06:19:00Z"}]}"#,
     )
     .unwrap();

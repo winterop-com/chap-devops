@@ -1,8 +1,8 @@
-//! `varde dhis2 show`: what DHIS2 has, asked and reported, changing nothing.
+//! `chap-devops dhis2 show`: what DHIS2 has, asked and reported, changing nothing.
 
 use super::*;
 
-/// `varde dhis2 show` — what this DHIS2 has, changing nothing.
+/// `chap-devops dhis2 show` — what this DHIS2 has, changing nothing.
 pub fn show(ctx: &Ctx, args: &Dhis2ShowArgs) -> Result<()> {
     let session = open_session(ctx, &args.common)?;
     // Without chap-core the route has nothing to point at: `connect` and
@@ -75,7 +75,7 @@ pub fn show(ctx: &Ctx, args: &Dhis2ShowArgs) -> Result<()> {
             dhis2::ROUTE_AUTHORITY
         )),
         Some(route) if route.token_refused => missing.push(format!(
-            "the `chap` route does not carry chap-core's API token: {}; run `varde dhis2 connect` \
+            "the `chap` route does not carry chap-core's API token: {}; run `chap-devops dhis2 connect` \
              to put it there",
             route.answered
         )),
@@ -90,13 +90,13 @@ pub fn show(ctx: &Ctx, args: &Dhis2ShowArgs) -> Result<()> {
     }
     match analytics {
         dhis2::AnalyticsEvidence::Never => missing.push("analytics has never run".to_string()),
-        // Not "analytics has never run": it may well have, and varde cannot
+        // Not "analytics has never run": it may well have, and chap-devops cannot
         // see the tables to tell. What it can say is that the timestamp beside
         // it proves nothing, and that one command settles the question.
         dhis2::AnalyticsEvidence::Unconfirmed => missing.push(
             "analytics may never have run on this deployment: a seeded database can carry the \
              dump's timestamp, and no run has finished since DHIS2 started; run \
-             `varde dhis2 analytics` to settle it"
+             `chap-devops dhis2 analytics` to settle it"
                 .to_string(),
         ),
         dhis2::AnalyticsEvidence::RanHere | dhis2::AnalyticsEvidence::Recorded => {}
@@ -135,7 +135,7 @@ pub fn show(ctx: &Ctx, args: &Dhis2ShowArgs) -> Result<()> {
 
 /// The last line of `show`: the command that does what is still missing.
 ///
-/// On the `dhis2` component, `varde dhis2 connect` does all three steps. On
+/// On the `dhis2` component, `chap-devops dhis2 connect` does all three steps. On
 /// an external DHIS2 it sets only the route, so the apps and analytics are
 /// named by their own commands, which its admin runs.
 pub(super) fn show_next(
@@ -145,20 +145,21 @@ pub(super) fn show_next(
     analytics_ok: bool,
 ) -> String {
     if route_ok && !apps_missing && analytics_ok {
-        return "the Modeling App can reach Chap; open DHIS2 with `varde open dhis2`".to_string();
+        return "the Modeling App can reach Chap; open DHIS2 with `chap-devops open dhis2`"
+            .to_string();
     }
     if !external {
-        return "run `varde dhis2 connect` to do the rest".to_string();
+        return "run `chap-devops dhis2 connect` to do the rest".to_string();
     }
     let mut steps = Vec::new();
     if !route_ok {
-        steps.push("`varde dhis2 connect` for the route");
+        steps.push("`chap-devops dhis2 connect` for the route");
     }
     if apps_missing {
-        steps.push("`varde dhis2 apps` for the apps");
+        steps.push("`chap-devops dhis2 apps` for the apps");
     }
     if !analytics_ok {
-        steps.push("`varde dhis2 analytics` for the analytics tables");
+        steps.push("`chap-devops dhis2 analytics` for the analytics tables");
     }
     let admin = match apps_missing || !analytics_ok {
         true => "; the apps and analytics change this DHIS2, so ask its admin first",
@@ -169,17 +170,18 @@ pub(super) fn show_next(
 
 /// The last line of `show` on a deployment without chap-core.
 ///
-/// The route needs chap-core, so `varde dhis2 connect` is not named: it
+/// The route needs chap-core, so `chap-devops dhis2 connect` is not named: it
 /// refuses there. The apps and analytics have commands of their own that
 /// work without it.
 pub(super) fn no_chap_core_next(apps_missing: bool, analytics_ok: bool) -> String {
-    let route = "the `chap` route needs chap-core; `varde components enable chap-core` adds it";
+    let route =
+        "the `chap` route needs chap-core; `chap-devops components enable chap-core` adds it";
     let mut steps = Vec::new();
     if apps_missing {
-        steps.push("`varde dhis2 apps` for the apps");
+        steps.push("`chap-devops dhis2 apps` for the apps");
     }
     if !analytics_ok {
-        steps.push("`varde dhis2 analytics` for the analytics tables");
+        steps.push("`chap-devops dhis2 analytics` for the analytics tables");
     }
     match steps.is_empty() {
         true => route.to_string(),
@@ -187,7 +189,7 @@ pub(super) fn no_chap_core_next(apps_missing: bool, analytics_ok: bool) -> Strin
     }
 }
 
-/// The two apps varde installs, as this instance has them.
+/// The two apps chap-devops installs, as this instance has them.
 ///
 /// **The two, and not the rest.** `show` exists to say whether DHIS2 has what
 /// Chap needs; the climate demo ships 29 bundled apps of its own, the same 29
@@ -243,7 +245,7 @@ pub(super) fn missing_labels(apps: &[ShownApp]) -> Vec<&'static str> {
 ///
 /// Two things it is not read against: DHIS2's notifier, which says whether a
 /// run has finished on *this* instance since it started, and
-/// `.varde/components.yaml`, which says whether the database was restored from
+/// `.chap-devops/components.yaml`, which says whether the database was restored from
 /// a seed dump and so came with somebody else's timestamp in it.
 ///
 /// A notifier that cannot be read is a trace line and not a failure - `show`
@@ -260,8 +262,8 @@ fn analytics_evidence(ctx: &Ctx, session: &Session) -> dhis2::AnalyticsEvidence 
             false
         }
     };
-    // A seed dump is something varde restores into its own `dhis2_db`; an
-    // external DHIS2 came with nothing of varde', so its timestamp is its own.
+    // A seed dump is something chap-devops restores into its own `dhis2_db`; an
+    // external DHIS2 came with nothing of chap-devops', so its timestamp is its own.
     let seeded = session.external().is_none()
         && session
             .project

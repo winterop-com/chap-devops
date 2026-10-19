@@ -7,17 +7,17 @@ use crate::error::Result;
 use std::path::{Path, PathBuf};
 
 /// The project files a backup holds, relative to the project directory and in
-/// a stable order: `.env`, then `.varde/**`, then the directory of every
+/// a stable order: `.env`, then `.chap-devops/**`, then the directory of every
 /// component that owns one in [`crate::components::Component::ALL`] order
 /// (`ocs/**`, then `dhis2/**`), then the root `compose*.yml`.
 ///
-/// `.varde/tmp/` is scratch space (this is where the archive is staged) and
+/// `.chap-devops/tmp/` is scratch space (this is where the archive is staged) and
 /// half-written `.tmp` state files are transient, so neither is included.
 /// Compose files are taken from the project root only; a `compose.yml` in a
 /// subdirectory belongs to something else.
 ///
 /// The component directories are in here because what they hold is the
-/// operator's own, not a rendered artifact: `varde sync` only ever creates a
+/// operator's own, not a rendered artifact: `chap-devops sync` only ever creates a
 /// missing `ocs/climate-service.yaml` or `dhis2/dhis.conf`, so nothing can
 /// rebuild the edits made to one, and DHIS2 does not start at all without its.
 /// [`crate::components::Component::dir`] is asked rather than any of them being
@@ -26,7 +26,7 @@ use std::path::{Path, PathBuf};
 /// from every archive.
 ///
 /// A directory is taken whether or not its component is enabled right now: a
-/// file that exists is one somebody wrote, `varde components disable` says the
+/// file that exists is one somebody wrote, `chap-devops components disable` says the
 /// directory is left alone because it is the operator's, and a backup that
 /// dropped it the moment the component went off would lose it at the one moment
 /// nothing else is looking after it.
@@ -36,9 +36,9 @@ pub fn project_files(dir: &Path) -> Vec<String> {
         out.push(crate::project::ENV_FILE.to_string());
     }
 
-    let varde = dir.join(crate::project::VARDE_DIR);
+    let chap_devops = dir.join(crate::project::CHAP_DEVOPS_DIR);
     let mut state = Vec::new();
-    collect_under(&varde, crate::project::VARDE_DIR, &mut state);
+    collect_under(&chap_devops, crate::project::CHAP_DEVOPS_DIR, &mut state);
     state.sort();
     out.extend(state);
 
@@ -81,17 +81,17 @@ fn collect_under(dir: &Path, prefix: &str, out: &mut Vec<String>) {
         let path = format!("{prefix}/{name}");
         if entry.path().is_dir() {
             // The staging directory of the backup being taken right now.
-            if prefix == crate::project::VARDE_DIR && name == TMP_DIR {
+            if prefix == crate::project::CHAP_DEVOPS_DIR && name == TMP_DIR {
                 continue;
             }
             collect_under(&entry.path(), &path, out);
         } else if name.starts_with('.') && name.ends_with(".tmp") {
             continue;
-        } else if prefix == crate::project::VARDE_DIR
+        } else if prefix == crate::project::CHAP_DEVOPS_DIR
             && (name == crate::project::LOCK_FILE || name.ends_with(".lock"))
         {
             // The locks of whichever commands are running - the state lock and
-            // `varde run`'s `up-<service>.lock` - belong to this machine's
+            // `chap-devops run`'s `up-<service>.lock` - belong to this machine's
             // processes, not to the deployment.
             continue;
         } else {
@@ -122,7 +122,7 @@ pub fn check_manifest_files(manifest: &Manifest, archive: &Path) -> Result<()> {
     {
         Some(rel) => Err(anyhow::anyhow!(
             "{} lists the deployment file `{rel}`, which is not inside a deployment directory; \
-             varde never writes such a path, so this archive was changed after `varde backup \
+             chap-devops never writes such a path, so this archive was changed after `chap-devops backup \
              create` made it - restore from another one",
             archive.display()
         )),
@@ -166,7 +166,7 @@ pub fn join_relative(root: &Path, rel: &str) -> PathBuf {
         .fold(root.to_path_buf(), |acc, part| acc.join(part))
 }
 
-/// A scratch directory under `.varde/tmp/`, removed when it goes out of scope.
+/// A scratch directory under `.chap-devops/tmp/`, removed when it goes out of scope.
 ///
 /// It lives inside the project so the staged copy and the finished archive are
 /// on the same filesystem, which keeps a multi-gigabyte model volume off
@@ -182,10 +182,10 @@ pub struct Stage {
 }
 
 impl Stage {
-    /// Create `.varde/tmp/<prefix>-<pid>` under `varde_dir`, and remove the
+    /// Create `.chap-devops/tmp/<prefix>-<pid>` under `chap_devops_dir`, and remove the
     /// stages of earlier runs that stopped before they could.
-    pub fn new(varde_dir: &Path, prefix: &str) -> Result<Stage> {
-        let tmp = varde_dir.join(TMP_DIR);
+    pub fn new(chap_devops_dir: &Path, prefix: &str) -> Result<Stage> {
+        let tmp = chap_devops_dir.join(TMP_DIR);
         let dir = tmp.join(format!("{prefix}-{}", std::process::id()));
         std::fs::create_dir_all(&tmp)
             .map_err(|e| anyhow::anyhow!("creating {}: {e}", tmp.display()))?;
@@ -228,7 +228,7 @@ impl Drop for Stage {
         // The handle closes before the file goes: Windows removes no open file.
         drop(self.lock.take());
         let _ = std::fs::remove_file(lock_path(&self.dir));
-        // And `.varde/tmp` itself, when this was the last stage in it: an
+        // And `.chap-devops/tmp` itself, when this was the last stage in it: an
         // empty directory left behind would show up in the next backup.
         if let Some(parent) = self.dir.parent() {
             let _ = std::fs::remove_dir(parent);
@@ -245,7 +245,7 @@ fn lock_path(dir: &Path) -> PathBuf {
     dir.with_file_name(format!("{name}.lock"))
 }
 
-/// Remove the `<prefix>-*` stages in `tmp` that no running varde holds:
+/// Remove the `<prefix>-*` stages in `tmp` that no running chap-devops holds:
 /// the ones a run left behind when it was killed. Best-effort, and never
 /// `keep`, the stage being made.
 fn remove_stale_stages(tmp: &Path, prefix: &str, keep: &Path) {
@@ -264,7 +264,7 @@ fn remove_stale_stages(tmp: &Path, prefix: &str, keep: &Path) {
             // Locked by nobody: its run has ended. The handle closes at the
             // end of this arm, before the file is removed.
             Ok(file) => file.try_lock().is_ok(),
-            // No lock file: an older varde made it, or its run removed the
+            // No lock file: an older chap-devops made it, or its run removed the
             // lock and stopped before the directory was gone.
             Err(_) => true,
         };

@@ -73,7 +73,7 @@ fn a_normal_terminal_shows_the_title_the_table_and_the_summary() {
     let registry = registry();
     let app = App::new(&registry, &ProjectState::default());
     let screen = render(&app, 120, 40);
-    assert!(screen.contains("varde · models"));
+    assert!(screen.contains("chap-devops · models"));
     assert!(screen.contains("registry: embedded"));
     assert!(screen.contains(&format!(
         "{} models · 0 enabled · 0 pending",
@@ -818,7 +818,7 @@ fn filter_mode_shows_what_is_being_typed_in_the_title() {
     }
     let screen = render(&app, 120, 40);
     assert!(
-        screen.contains("varde · models · filter ewars_"),
+        screen.contains("chap-devops · models · filter ewars_"),
         "{screen}"
     );
     assert!(screen.contains("CHAP-EWARS"));
@@ -887,7 +887,10 @@ fn a_manually_added_model_is_marked_and_named() {
 
     app.reduce(Action::Info);
     let screen = render(&app, 120, 40);
-    assert!(screen.contains("manual (added with `varde"), "{screen}");
+    assert!(
+        screen.contains("manual (added with `chap-devops"),
+        "{screen}"
+    );
     assert!(
         screen.contains("ghcr.io/example/example_manual_model:sha-"),
         "{screen}"
@@ -953,7 +956,7 @@ fn the_layout_holds_from_a_tiny_terminal_to_a_huge_one() {
     let app = App::new(&registry, &ProjectState::default());
     for (width, height) in [(60, 16), (80, 24), (200, 60)] {
         let screen = render(&app, width, height);
-        assert!(screen.contains("varde · models"), "{width}x{height}");
+        assert!(screen.contains("chap-devops · models"), "{width}x{height}");
         assert!(screen.contains("Marketplace"), "{width}x{height}");
         assert!(screen.contains("CHAP-EWARS"), "{width}x{height}");
         assert!(screen.contains("[space] toggle"), "{width}x{height}");
@@ -972,7 +975,7 @@ fn the_layout_holds_from_a_tiny_terminal_to_a_huge_one() {
     }
 }
 
-/// Eighty columns is the terminal varde has to assume: the id gives way
+/// Eighty columns is the terminal chap-devops has to assume: the id gives way
 /// first, marked, and the strip's lines are cut rather than wrapped.
 #[test]
 fn eighty_columns_truncates_the_id_and_the_strip() {
@@ -1023,7 +1026,7 @@ fn the_title_bar_drops_what_does_not_fit_instead_of_overflowing() {
     let first = narrow.lines().next().unwrap();
     assert_eq!(first.chars().count(), 60);
     assert!(!first.contains("registry: embedded"), "{first}");
-    assert!(first.contains("varde · models"));
+    assert!(first.contains("chap-devops · models"));
 }
 
 #[test]

@@ -65,7 +65,7 @@ pub(super) fn page_lines<'a>(view: &View, width: usize, theme: &Theme) -> Vec<Li
     };
     if configs.is_empty() {
         let text = format!(
-            "chap-core has no configured model of {}; press a to add one, or run `varde models \
+            "chap-core has no configured model of {}; press a to add one, or run `chap-devops models \
              configs sync {}`",
             view.model, view.model
         );

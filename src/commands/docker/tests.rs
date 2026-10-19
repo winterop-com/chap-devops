@@ -66,15 +66,18 @@ fn a_volume_is_reported_by_name_whatever_became_of_it() {
     // The kept line names both ways out, because the second one still
     // works once the deployment directory is gone.
     assert_eq!(
-        kept_volume_line(volume, Some("varde models disable chapkit_ewars_model")),
+        kept_volume_line(
+            volume,
+            Some("chap-devops models disable chapkit_ewars_model")
+        ),
         format!(
             "kept volume {volume}; remove it with \
-                 `varde models disable chapkit_ewars_model --purge` or \
+                 `chap-devops models disable chapkit_ewars_model --purge` or \
                  `docker volume rm {volume}`"
         )
     );
 
-    // After `varde models remove` no varde command names the volume any
+    // After `chap-devops models remove` no chap-devops command names the volume any
     // more, so only the docker command is offered.
     assert_eq!(
         kept_volume_line(volume, None),
@@ -117,7 +120,7 @@ fn up(attach: bool, extra: &[&str]) -> DockerCmd {
     })
 }
 
-/// The `DockerCmd` behind `varde down`, with its two flags.
+/// The `DockerCmd` behind `chap-devops down`, with its two flags.
 fn down(volumes: bool, extra: &[&str]) -> DockerCmd {
     DockerCmd::Down(DownArgs {
         volumes,
@@ -145,7 +148,7 @@ fn up_detaches_unless_attach_is_asked_for() {
     );
 }
 
-/// `varde` renders every file in the `-f` list, so a container whose
+/// `chap-devops` renders every file in the `-f` list, so a container whose
 /// service is in none of them belongs to something that was disabled.
 /// Leaving it running would keep its host port published after a
 /// `models disable` said it was gone.
@@ -157,7 +160,7 @@ fn up_and_restart_take_the_orphans_of_a_disabled_service_with_them() {
             "{cmd:?}"
         );
     }
-    // Once, even when the caller asked for it as well: `varde up
+    // Once, even when the caller asked for it as well: `chap-devops up
     // --remove-orphans` is a thing people type.
     let asked = args_for(&up(false, &["--remove-orphans"]), TERM);
     assert_eq!(asked.iter().filter(|a| *a == "--remove-orphans").count(), 1);
@@ -225,7 +228,7 @@ fn down_and_pull_are_bare_commands() {
     );
 }
 
-/// The `RestartArgs` a `varde restart` would have parsed.
+/// The `RestartArgs` a `chap-devops restart` would have parsed.
 fn restart(all: bool, services: &[&str]) -> DockerCmd {
     DockerCmd::Restart(crate::cli::RestartArgs {
         all,
@@ -294,21 +297,23 @@ fn restart_says_which_services_it_recreated() {
         summary(&after, &[]),
         "recreated chap, worker\n\
          hint: unchanged: postgres\n\
-         hint: run `varde status` to check that everything answers\n"
+         hint: run `chap-devops status` to check that everything answers\n"
     );
     // Everything moved: there is no second half to print.
     assert_eq!(
         summary(&[container("chap", "ddd", "t2")], &[]),
-        "recreated chap\nhint: run `varde status` to check that everything answers\n"
+        "recreated chap\nhint: run `chap-devops status` to check that everything answers\n"
     );
     // Nothing moved, which is an answer and not a failure, and the way to
     // force it names what was asked for.
     assert_eq!(
         summary(&before, &["ocs".to_string()]),
         "nothing needed a restart: every container matches its files\n\
-         hint: `varde restart --all ocs` recreates it anyway\n"
+         hint: `chap-devops restart --all ocs` recreates it anyway\n"
     );
-    assert!(summary(&before, &[]).ends_with("`varde restart --all` recreates every one anyway\n"));
+    assert!(
+        summary(&before, &[]).ends_with("`chap-devops restart --all` recreates every one anyway\n")
+    );
 }
 
 #[test]
@@ -467,24 +472,23 @@ fn up_summarises_what_it_started_and_what_it_left_alone() {
         summary(&before, &after),
         "started chap, chapkit-ewars-model\n\
          hint: unchanged: postgres\n\
-         hint: run `varde status` to check that everything answers\n"
+         hint: run `chap-devops status` to check that everything answers\n"
     );
 
     // A first start has nothing to leave alone.
-    assert!(
-        summary(&[], &after)
-            .starts_with("started chap, postgres, chapkit-ewars-model\nhint: run `varde status`")
-    );
+    assert!(summary(&[], &after).starts_with(
+        "started chap, postgres, chapkit-ewars-model\nhint: run `chap-devops status`"
+    ));
     // A no-op `up` says so rather than printing an empty list.
     assert!(summary(&after, &after).starts_with("already running: chap, postgres, chapkit"));
     // And an `up` that left nothing running is a problem, not a summary.
     assert_eq!(
         summary(&[], &[]),
-        "warning: nothing is running after `varde up`; run `varde logs` to see why\n"
+        "warning: nothing is running after `chap-devops up`; run `chap-devops logs` to see why\n"
     );
     // After `--wait` the hint to check is redundant: the wait checked.
     let waited = text(|lines| up_lines(&[], &after, &plain, true, lines));
-    assert!(!waited.contains("varde status"), "{waited}");
+    assert!(!waited.contains("chap-devops status"), "{waited}");
 }
 
 /// A deployment with a DHIS2 nothing has connected is told so by the one
@@ -505,34 +509,40 @@ fn up_names_the_connect_a_dhis2_deployment_still_needs() {
     let asked = up(&components, &after);
     assert!(
         asked.ends_with(
-            "\nvarde has not connected this DHIS2 to Chap; \
-                 run `varde dhis2 connect` once DHIS2 answers\n"
+            "\nchap-devops has not connected this DHIS2 to Chap; \
+                 run `chap-devops dhis2 connect` once DHIS2 answers\n"
         ),
         "{asked}"
     );
     // Under the line that is always there, not instead of it.
     assert!(
-        asked.contains("run `varde status` to check that everything answers"),
+        asked.contains("run `chap-devops status` to check that everything answers"),
         "{asked}"
     );
 
     components.dhis2.connected_at = Some("2026-09-27T09:12:33Z".to_string());
     let recorded = up(&components, &after);
-    assert!(!recorded.contains("varde dhis2 connect"), "{recorded}");
+    assert!(
+        !recorded.contains("chap-devops dhis2 connect"),
+        "{recorded}"
+    );
 
     // An `up` that started nothing has no deployment to connect, and the
     // line above already says to go and read the logs.
     components.dhis2.connected_at = None;
     assert_eq!(
         up(&components, &[]),
-        "warning: nothing is running after `varde up`; run `varde logs` to see why\n"
+        "warning: nothing is running after `chap-devops up`; run `chap-devops logs` to see why\n"
     );
 
     // And a deployment without chap-core is never asked: the route would
     // point at a service that is not there.
     components.set_enabled(crate::components::Component::ChapCore, false);
     let standalone = up(&components, &after);
-    assert!(!standalone.contains("varde dhis2 connect"), "{standalone}");
+    assert!(
+        !standalone.contains("chap-devops dhis2 connect"),
+        "{standalone}"
+    );
 }
 
 /// A mounted config written after its container was created is the edit
@@ -566,18 +576,18 @@ fn a_config_edited_after_its_container_started_is_recreated() {
     // Not running: nothing to recreate.
     assert!(edited_configs(&project, &[], &[]).is_empty());
 
-    // `varde up` and `varde status` give the same line with the way out.
+    // `chap-devops up` and `chap-devops status` give the same line with the way out.
     let lines = edited_config_warnings(&project, &old);
     assert_eq!(lines.len(), 1, "{lines:?}");
     assert!(
         lines[0].starts_with("`dhis2/dhis.conf` changed after the dhis2 container started")
-            && lines[0].ends_with("run `varde restart dhis2` to apply it"),
+            && lines[0].ends_with("run `chap-devops restart dhis2` to apply it"),
         "{lines:?}"
     );
     assert!(edited_config_warnings(&project, &new).is_empty());
 }
 
-/// `down --volumes` takes `dhis2_db` with it, and the next `varde up`
+/// `down --volumes` takes `dhis2_db` with it, and the next `chap-devops up`
 /// restores the seed dump into a new one - which ships a `chap` route
 /// pointing at somebody else's Chap. So the record of a connect goes with
 /// the volume it was true of, and the line says why.
@@ -613,7 +623,7 @@ fn down_volumes_forgets_a_connect_recorded_for_the_database_it_removed() {
         .unwrap()
         .unwrap();
     assert!(line.contains("`dhis2_db`"), "{line}");
-    assert!(line.contains("`varde dhis2 connect`"), "{line}");
+    assert!(line.contains("`chap-devops dhis2 connect`"), "{line}");
     assert_eq!(project.state.components.dhis2.connected_at, None);
     // And on disk, not only in memory: the next command reads the file.
     let reloaded = Project::load(temp.path()).unwrap();
@@ -649,13 +659,13 @@ fn down_reports_what_it_stopped_and_what_it_kept() {
     assert_eq!(
         kept(&stopped, name),
         "stopped chap, worker (2 containers)\n\
-         hint: kept the volumes mychap-1ab2c3_*; `varde down --volumes` removes them\n"
+         hint: kept the volumes mychap-1ab2c3_*; `chap-devops down --volumes` removes them\n"
     );
     assert!(kept(&stopped[..1], name).starts_with("stopped chap (1 container)\n"));
     // A deployment whose name could not be worked out still gets the hint.
     assert!(
         kept(&stopped, None)
-            .ends_with("hint: kept the volumes; `varde down --volumes` removes them\n"),
+            .ends_with("hint: kept the volumes; `chap-devops down --volumes` removes them\n"),
         "{}",
         kept(&stopped, None)
     );
@@ -698,9 +708,9 @@ fn down_volumes_names_the_volumes_it_removed() {
 
 #[test]
 fn down_names_what_brings_the_deployment_back() {
-    assert!(down_next(false).contains("`varde up`"));
+    assert!(down_next(false).contains("`chap-devops up`"));
     assert!(down_next(false).contains("with its data"));
-    assert!(down_next(true).contains("`varde up`"));
+    assert!(down_next(true).contains("`chap-devops up`"));
     assert!(down_next(true).contains("delete this folder"));
 }
 
@@ -715,35 +725,38 @@ fn a_volume_flag_after_down_is_refused_by_name() {
     // still say it was typed - and it has to be said, because compose
     // never saw it and the volumes are all still there.
     assert_eq!(
-        misused_volumes_flag(&argv(&["varde", "down", "-v"]), &[]),
+        misused_volumes_flag(&argv(&["chap-devops", "down", "-v"]), &[]),
         Some("-v")
     );
     assert_eq!(
-        misused_volumes_flag(&argv(&["varde", "-C", "/srv/chap", "down", "-v"]), &[]),
+        misused_volumes_flag(
+            &argv(&["chap-devops", "-C", "/srv/chap", "down", "-v"]),
+            &[]
+        ),
         Some("-v")
     );
     // Past a `--` it reaches EXTRA, where passing it through would
     // destroy the data of an operator who only asked for a louder `down`.
     for token in ["-v", "--volumes", "--volume"] {
         let extra = vec!["--timeout".to_string(), "5".to_string(), token.to_string()];
-        let line = argv(&["varde", "down", "--", "--timeout", "5", token]);
+        let line = argv(&["chap-devops", "down", "--", "--timeout", "5", token]);
         assert_eq!(misused_volumes_flag(&line, &extra), Some(token), "{token}");
     }
 
-    // `varde -v down` asked for a verbose stop and gets one.
+    // `chap-devops -v down` asked for a verbose stop and gets one.
     assert_eq!(
-        misused_volumes_flag(&argv(&["varde", "-v", "down"]), &[]),
+        misused_volumes_flag(&argv(&["chap-devops", "-v", "down"]), &[]),
         None
     );
     // And the flag that does the job is not the mistake it replaces.
     assert_eq!(
-        misused_volumes_flag(&argv(&["varde", "down", "--volumes", "--yes"]), &[]),
+        misused_volumes_flag(&argv(&["chap-devops", "down", "--volumes", "--yes"]), &[]),
         None
     );
     // Everything compose takes goes through untouched.
     assert_eq!(
         misused_volumes_flag(
-            &argv(&["varde", "down", "--", "--rmi", "local"]),
+            &argv(&["chap-devops", "down", "--", "--rmi", "local"]),
             &["--rmi".to_string(), "local".to_string()]
         ),
         None
@@ -760,8 +773,11 @@ fn the_refusal_names_both_flags_and_the_verbose_spelling() {
             "{message}"
         );
         assert!(message.contains("--verbose"), "{message}");
-        assert!(message.contains("`varde down --volumes`"), "{message}");
-        assert!(message.contains("`varde -v down`"), "{message}");
+        assert!(
+            message.contains("`chap-devops down --volumes`"),
+            "{message}"
+        );
+        assert!(message.contains("`chap-devops -v down`"), "{message}");
     }
 }
 
@@ -872,7 +888,7 @@ fn logs_names_the_services_there_are() {
 fn the_empty_state_line_says_what_to_do_about_it() {
     assert_eq!(
         NOTHING_RUNNING,
-        "nothing is running for this deployment; start Chap with `varde up`"
+        "nothing is running for this deployment; start Chap with `chap-devops up`"
     );
 }
 

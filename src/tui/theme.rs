@@ -14,7 +14,7 @@ use ratatui::style::{Color, Modifier, Style};
 /// The colours the browser draws with.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Theme {
-    /// Titles, key letters, focus: the one colour that means "this is varde".
+    /// Titles, key letters, focus: the one colour that means "this is chap-devops".
     pub accent: Color,
     /// Enabled, registered, verified.
     pub ok: Color,

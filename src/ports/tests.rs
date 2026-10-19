@@ -1,5 +1,5 @@
 use super::*;
-use crate::project::{EnabledModel, ProjectState, VARDE_COMPOSE};
+use crate::project::{CHAP_DEVOPS_COMPOSE, EnabledModel, ProjectState};
 use std::collections::{BTreeMap, BTreeSet};
 
 /// A listener on a port the kernel picked, so the test never fights
@@ -83,7 +83,7 @@ fn project() -> (tempfile::TempDir, Project) {
     )
     .unwrap();
     std::fs::write(
-        dir.path().join("compose.varde.yml"),
+        dir.path().join("compose.chap-devops.yml"),
         "services:\n  chap:\n    ports: !override\n      - \"${CHAP_API_PORT:-8123}:8000\"\n",
     )
     .unwrap();
@@ -107,7 +107,7 @@ fn project() -> (tempfile::TempDir, Project) {
         api_port: 8123,
         rendered_files: vec![
             "compose.yml".into(),
-            "compose.varde.yml".into(),
+            "compose.chap-devops.yml".into(),
             "compose.loud.yml".into(),
             "compose.quiet.yml".into(),
             "compose.marketplace.yml".into(),
@@ -146,7 +146,7 @@ fn claims_are_the_api_port_plus_the_published_overlays() {
 
 /// The preflight has to reserve the port the stack will really publish,
 /// which is the one `.env` names: checking the recorded port instead lets
-/// `varde up` sail past a conflict and hand it to Docker.
+/// `chap-devops up` sail past a conflict and hand it to Docker.
 #[test]
 fn the_api_claim_follows_the_env_override() {
     let (dir, project) = project();
@@ -225,7 +225,7 @@ fn a_component_message_points_at_the_command_that_moves_its_port() {
     let line = busy_line(&claim, Some(9001));
     assert!(line.contains("(needed by ocs)"), "{line}");
     assert!(
-        line.contains("`varde components enable ocs --port 9001`"),
+        line.contains("`chap-devops components enable ocs --port 9001`"),
         "{line}"
     );
     assert!(busy_line(&claim, None).contains("--port <free>"));
@@ -273,14 +273,14 @@ fn a_component_port_warning_names_the_listener_and_the_way_out() {
         )
     );
     assert!(
-        line.contains("`varde components enable ocs --port 18011`"),
+        line.contains("`chap-devops components enable ocs --port 18011`"),
         "{line}"
     );
 }
 
 /// The other half of what `init` covers: a port no listener holds, but the
 /// deployment next door publishes. Nothing is wrong today, which is exactly
-/// why nothing else would catch it until the second `varde up`.
+/// why nothing else would catch it until the second `chap-devops up`.
 #[test]
 fn a_component_port_another_deployment_publishes_is_reported_too() {
     let (_dir, project) = project();
@@ -410,7 +410,7 @@ fn a_running_service_keeps_its_own_port() {
     assert!(busy_claims(&claims, &OwnPorts::default(), &nothing_busy).is_empty());
 }
 
-/// A restore of `.varde/components.yaml` can move a running DHIS2 from 8781
+/// A restore of `.chap-devops/components.yaml` can move a running DHIS2 from 8781
 /// to 8780. The recreate publishes 8780, so the check asks about 8780 and
 /// does not let the container on 8781 vouch for it.
 #[test]
@@ -433,7 +433,7 @@ fn a_running_service_is_checked_on_the_port_the_recreate_moves_it_to() {
 }
 
 /// `components enable dhis2 --port 18781` while this deployment's own DHIS2
-/// runs on 18781: the listener is ours, even when `.varde/components.yaml`
+/// runs on 18781: the listener is ours, even when `.chap-devops/components.yaml`
 /// records another port.
 #[test]
 fn a_component_moved_onto_the_port_its_own_container_publishes_is_not_warned_about() {
@@ -477,8 +477,8 @@ fn a_model_message_points_at_expose_and_unexpose() {
     };
     let line = busy_line(&claim, Some(8010));
     assert!(line.contains("(needed by chapkit-ewars-model)"));
-    assert!(line.contains("`varde models unexpose chapkit-ewars-model`"));
-    assert!(line.contains("`varde models expose chapkit-ewars-model --port auto`"));
+    assert!(line.contains("`chap-devops models unexpose chapkit-ewars-model`"));
+    assert!(line.contains("`chap-devops models expose chapkit-ewars-model --port auto`"));
     assert!(!line.contains("--api-port"), "{line}");
 }
 
@@ -499,7 +499,7 @@ fn the_preflight_message_counts_and_offers_the_escape_hatch() {
         )
     );
     assert!(one.contains("CHAP_API_PORT=8001"), "{one}");
-    assert!(one.ends_with("or run `varde up --no-preflight` to hand the conflict to Docker"));
+    assert!(one.ends_with("or run `chap-devops up --no-preflight` to hand the conflict to Docker"));
 
     let two = preflight_message(&[
         Conflict {
@@ -518,7 +518,7 @@ fn the_preflight_message_counts_and_offers_the_escape_hatch() {
     assert!(two.contains("\n  port 5001 is already in use"));
 }
 
-/// A busy port another varde deployment publishes names that deployment,
+/// A busy port another chap-devops deployment publishes names that deployment,
 /// the command that stops it, and a real free port for a component.
 #[test]
 fn a_port_held_by_another_deployment_names_it_and_a_free_port() {
@@ -538,9 +538,9 @@ fn a_port_held_by_another_deployment_names_it_and_a_free_port() {
         holders: vec![&other],
     }]);
     assert!(text.contains("oa (/srv/oa) publishes it too"), "{text}");
-    assert!(text.contains("`varde -C /srv/oa down`"), "{text}");
+    assert!(text.contains("`chap-devops -C /srv/oa down`"), "{text}");
     assert!(
-        text.contains("`varde components enable ocs --port 9001`"),
+        text.contains("`chap-devops components enable ocs --port 9001`"),
         "{text}"
     );
     assert!(!text.contains("<free>"), "{text}");
@@ -584,13 +584,13 @@ fn a_stopped_deployment_does_not_hold_a_port_and_several_publish_it() {
 /// make it one: `api_port` recorded, and an optional `.env` line over it.
 fn deployment(parent: &Path, name: &str, recorded: u16, env: Option<u16>) -> PathBuf {
     let dir = parent.join(name);
-    std::fs::create_dir_all(dir.join(crate::project::VARDE_DIR)).unwrap();
+    std::fs::create_dir_all(dir.join(crate::project::CHAP_DEVOPS_DIR)).unwrap();
     let state = ProjectState {
         api_port: recorded,
         ..ProjectState::default()
     };
     std::fs::write(
-        dir.join(crate::project::VARDE_DIR)
+        dir.join(crate::project::CHAP_DEVOPS_DIR)
             .join(crate::project::PROJECT_FILE),
         serde_yaml_ng::to_string(&state).unwrap(),
     )
@@ -658,7 +658,7 @@ fn a_deployment_is_named_by_the_resolved_directory_and_a_missing_one_as_it_came(
 #[test]
 fn the_deployments_beside_a_new_one_are_found_and_read_like_any_project() {
     let home = tempfile::tempdir().unwrap();
-    // One claims the port in `.varde/project.yaml`, the other overrides a
+    // One claims the port in `.chap-devops/project.yaml`, the other overrides a
     // different recorded port from `.env` - which is the port that would
     // really be published, so it is the one that has to be found.
     let recorded = deployment(home.path(), "hello1", 8000, None);
@@ -682,8 +682,12 @@ fn a_deployment_never_counts_as_another_one_of_itself() {
     let one = deployment(home.path(), "hello1", 8000, None);
     // `init --force` over a deployment that is already there: its own old
     // files are on disk, and docker remembers it too.
-    let json =
-        serde_json::json!([ls_entry("hello1", &one, &["compose.yml", VARDE_COMPOSE])]).to_string();
+    let json = serde_json::json!([ls_entry(
+        "hello1",
+        &one,
+        &["compose.yml", CHAP_DEVOPS_COMPOSE]
+    )])
+    .to_string();
     let docker = || Some(json.clone());
     assert!(
         other_deployments(&one, &docker).is_empty(),
@@ -700,14 +704,14 @@ fn docker_known_deployments_are_found_and_deduplicated() {
     let elsewhere = tempfile::tempdir().unwrap();
     let far = deployment(elsewhere.path(), "hello2", 8000, None);
     let json = serde_json::json!([
-        ls_entry("hello1", &sibling, &["compose.yml", VARDE_COMPOSE]),
-        ls_entry("hello2", &far, &[VARDE_COMPOSE]),
+        ls_entry("hello1", &sibling, &["compose.yml", CHAP_DEVOPS_COMPOSE]),
+        ls_entry("hello2", &far, &[CHAP_DEVOPS_COMPOSE]),
         ls_entry(
             "something-else",
             &home.path().join("other"),
             &["docker-compose.yml"]
         ),
-        ls_entry("deleted", &home.path().join("gone"), &[VARDE_COMPOSE]),
+        ls_entry("deleted", &home.path().join("gone"), &[CHAP_DEVOPS_COMPOSE]),
     ])
     .to_string();
     let found = other_deployments(&home.path().join("hello3"), &|| Some(json.clone()));
@@ -716,7 +720,7 @@ fn docker_known_deployments_are_found_and_deduplicated() {
         names,
         vec!["hello1", "hello2"],
         "a sibling docker also knows is one deployment; a compose project \
-             with no compose.varde.yml is not ours, and a directory that is gone \
+             with no compose.chap-devops.yml is not ours, and a directory that is gone \
              has nothing left to warn about"
     );
 }
@@ -725,10 +729,10 @@ fn docker_known_deployments_are_found_and_deduplicated() {
 fn a_directory_that_is_not_a_project_contributes_nothing() {
     let home = tempfile::tempdir().unwrap();
     let empty = home.path().join("hello1");
-    std::fs::create_dir_all(empty.join(crate::project::VARDE_DIR)).unwrap();
+    std::fs::create_dir_all(empty.join(crate::project::CHAP_DEVOPS_DIR)).unwrap();
     std::fs::write(
         empty
-            .join(crate::project::VARDE_DIR)
+            .join(crate::project::CHAP_DEVOPS_DIR)
             .join(crate::project::PROJECT_FILE),
         "nonsense: [\n",
     )
@@ -790,7 +794,7 @@ fn several_deployments_are_named_three_at_a_time_and_then_counted() {
     // A component's port moves with the command that set it, to the free
     // port found above this one.
     assert!(
-        line.ends_with("at a time, or run `varde components enable ocs --port 9001`"),
+        line.ends_with("at a time, or run `chap-devops components enable ocs --port 9001`"),
         "{line}"
     );
 
@@ -808,7 +812,7 @@ fn several_deployments_are_named_three_at_a_time_and_then_counted() {
 }
 
 /// A component asked onto a port one of this deployment's own models
-/// publishes: whether or not the model is up, `varde up` cannot start both.
+/// publishes: whether or not the model is up, `chap-devops up` cannot start both.
 #[test]
 fn a_component_on_a_port_its_own_model_publishes_is_warned_about() {
     let (_dir, project) = project();

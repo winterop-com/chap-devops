@@ -1,14 +1,14 @@
-//! The deployments varde has written on this machine, by compose project.
+//! The deployments chap-devops has written on this machine, by compose project.
 //!
 //! A compose project name ends in random characters
 //! ([`crate::project::new_compose_project_name`]), so a volume docker holds
-//! cannot be traced back to the directory that made it. `varde cleanup` needs
+//! cannot be traced back to the directory that made it. `chap-devops cleanup` needs
 //! exactly that to tell the data of a deployment that was deleted from the
 //! data of one that is only down, so every save of a project records its
 //! name and directory here, in `<data dir>/deployments.yaml`.
 //!
 //! Best-effort throughout: a record that could not be written only means
-//! `varde cleanup` leaves that deployment's volumes alone, which is the safe
+//! `chap-devops cleanup` leaves that deployment's volumes alone, which is the safe
 //! way to be wrong.
 
 use crate::project::Project;
@@ -54,7 +54,7 @@ pub fn record(project: &Project) {
     let _ = write(&path, &known);
 }
 
-/// Drop these projects from the record: what `varde cleanup` took away.
+/// Drop these projects from the record: what `chap-devops cleanup` took away.
 pub fn forget(names: &[String]) -> crate::error::Result<()> {
     let path = file();
     let mut known = load_from(&path);
@@ -72,7 +72,7 @@ pub enum Presence {
     /// The directory holds it.
     Present,
     /// Provably gone: the directory was deleted from a parent that is still
-    /// there, or it now holds a deployment of another name (`varde init
+    /// there, or it now holds a deployment of another name (`chap-devops init
     /// --force` wrote over it).
     Gone,
     /// Neither can be proven, and why. Kept, because deleting a live
@@ -89,7 +89,7 @@ pub fn presence(name: &str, dir: &Path) -> Presence {
             Ok(Some(recorded)) if recorded == name => Presence::Present,
             Ok(Some(_)) => Presence::Gone,
             Ok(None) => Presence::Unsure(format!(
-                "{} records no compose project name; `varde -C {} sync` writes it",
+                "{} records no compose project name; `chap-devops -C {} sync` writes it",
                 dir.display(),
                 dir.display()
             )),
@@ -109,7 +109,7 @@ pub fn presence(name: &str, dir: &Path) -> Presence {
 /// The other directories that record the compose project name `name`: the
 /// recorded deployments, the directories beside `dir` and, when
 /// `compose_ls` answers, the deployments docker knows. Two such directories
-/// share every container and volume, so `varde down --volumes` in one of
+/// share every container and volume, so `chap-devops down --volumes` in one of
 /// them deletes the data of both.
 pub fn claimed_elsewhere(
     name: &str,
@@ -153,7 +153,7 @@ pub fn shared_name_line(name: &str, other: &Path) -> String {
 }
 
 /// Write the record through a temporary file of this process's own, so two
-/// varde saving at once cannot rename each other's half-written file.
+/// chap-devops saving at once cannot rename each other's half-written file.
 fn write(path: &Path, known: &BTreeMap<String, PathBuf>) -> crate::error::Result<()> {
     if let Some(parent) = path.parent() {
         std::fs::create_dir_all(parent)

@@ -158,9 +158,9 @@ fn the_readme_gives_the_commands_for_this_project() {
     let files = rendered(Template::ShellPy, false);
     let readme = file(&files, "README.md");
     assert!(readme.contains("-t my-model:dev ."));
-    assert!(readme.contains("varde models add my-model:dev"));
-    assert!(readme.contains("varde models test my_model --backtest"));
-    assert!(readme.contains("varde models configs add my_model --name long --set window=6"));
+    assert!(readme.contains("chap-devops models add my-model:dev"));
+    assert!(readme.contains("chap-devops models test my_model --backtest"));
+    assert!(readme.contains("chap-devops models configs add my_model --name long --set window=6"));
 }
 
 #[test]
@@ -174,12 +174,12 @@ fn an_mlproject_readme_serves_and_migrates_with_the_base_image() {
         let files = rendered(template, false);
         let readme = file(&files, "README.md");
         assert!(
-            readme.contains("varde chapkit mlproject run ."),
+            readme.contains("chap-devops chapkit mlproject run ."),
             "{template:?}"
         );
         assert!(
             readme.contains(&format!(
-                "varde chapkit mlproject migrate . --yes --base-image {base}\n"
+                "chap-devops chapkit mlproject migrate . --yes --base-image {base}\n"
             )),
             "{template:?}"
         );

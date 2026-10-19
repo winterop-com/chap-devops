@@ -58,17 +58,17 @@ versions.
 To run the model service alone:
 
 ```sh
-varde run {{ service_id }}:dev
+chap-devops run {{ service_id }}:dev
 ```
 
 To run it with chap-core, and train and predict through it:
 
 ```sh
-varde init lab --models none
+chap-devops init lab --models none
 cd lab
-varde models add {{ service_id }}:dev
-varde up --wait
-varde models test {{ model_id }} --backtest
+chap-devops models add {{ service_id }}:dev
+chap-devops up --wait
+chap-devops models test {{ model_id }} --backtest
 ```
 
 The model registers with chap-core as `{{ service_id }}`. This id is the
@@ -77,7 +77,7 @@ The model registers with chap-core as `{{ service_id }}`. This id is the
 {% if is_mlproject %}
 
 To serve the model from this directory with no build, run
-`varde chapkit mlproject run .` here. Ctrl-C stops it.
+`chap-devops chapkit mlproject run .` here. Ctrl-C stops it.
 
 ## Make it a chapkit service
 
@@ -85,7 +85,7 @@ To change the model to a chapkit service with a `main.py`, commit first, then
 run this here:
 
 ```sh
-varde chapkit mlproject migrate . --yes --base-image {{ migrate_base }}
+chap-devops chapkit mlproject migrate . --yes --base-image {{ migrate_base }}
 ```
 
 chapkit moves `MLproject` and the files the service does not need to `_old/`.
@@ -97,9 +97,9 @@ necessary for the scripts in `scripts/`.
 
 chap-core stores each version of a model only once. Before you build again,
 raise the version: {% if is_mlproject %}`version` in `MLproject`{% else %}`version` in `main.py`{% endif %}. Then commit, build
-with the same `docker build` line, and run `varde restart` in the deployment.
-`varde models test {{ model_id }} --backtest` creates the configured model
-`default` of the new version, or `varde models configs sync` does it without a
+with the same `docker build` line, and run `chap-devops restart` in the deployment.
+`chap-devops models test {{ model_id }} --backtest` creates the configured model
+`default` of the new version, or `chap-devops models configs sync` does it without a
 test.
 
 ## Options
@@ -118,5 +118,5 @@ A configured model in chap-core gives each option a value. It belongs to one
 version of the model, so add it again after a new version:
 
 ```sh
-varde models configs add {{ model_id }} --name long --set window=6
+chap-devops models configs add {{ model_id }} --name long --set window=6
 ```

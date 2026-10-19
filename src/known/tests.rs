@@ -52,7 +52,7 @@ fn a_typo_in_another_state_file_keeps_the_deployment() {
     project.state.compose_project = "demo-1a2b3c".to_string();
     project.save().unwrap();
     std::fs::write(
-        dir.join(".varde").join("components.yaml"),
+        dir.join(".chap-devops").join("components.yaml"),
         "chap_core: [oops",
     )
     .unwrap();
@@ -64,9 +64,9 @@ fn a_typo_in_another_state_file_keeps_the_deployment() {
 fn an_unreadable_name_or_a_missing_parent_is_not_proof() {
     let temp = tempfile::tempdir().unwrap();
     let dir = temp.path().join("demo");
-    std::fs::create_dir_all(dir.join(".varde")).unwrap();
+    std::fs::create_dir_all(dir.join(".chap-devops")).unwrap();
     std::fs::write(
-        dir.join(".varde").join("project.yaml"),
+        dir.join(".chap-devops").join("project.yaml"),
         "compose_project: [oops",
     )
     .unwrap();
@@ -83,7 +83,7 @@ fn an_unreadable_name_or_a_missing_parent_is_not_proof() {
 fn another_directory_with_the_same_name_is_found_once() {
     let temp = tempfile::tempdir().unwrap();
     let write_name = |dir: &str, name: &str| {
-        let path = temp.path().join(dir).join(".varde");
+        let path = temp.path().join(dir).join(".chap-devops");
         std::fs::create_dir_all(&path).unwrap();
         std::fs::write(
             path.join("project.yaml"),

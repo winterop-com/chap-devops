@@ -1,4 +1,4 @@
-//! What `varde top` shows: every varde deployment on the machine as a node,
+//! What `chap-devops top` shows: every chap-devops deployment on the machine as a node,
 //! with its services under it.
 
 use crate::docker::{self, Labeled};
@@ -11,9 +11,9 @@ use std::path::PathBuf;
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize)]
 #[serde(rename_all = "lowercase")]
 pub enum Kind {
-    /// `varde init`: a directory of the operator's own.
+    /// `chap-devops init`: a directory of the operator's own.
     Init,
-    /// `varde run`: a group varde keeps under its data directory.
+    /// `chap-devops run`: a group chap-devops keeps under its data directory.
     Run,
 }
 
@@ -69,10 +69,10 @@ pub struct Service {
 /// from the deployments on disk that have none running.
 ///
 /// `known` are deployment directories to show even without containers: the
-/// one the command was run in, and every `varde run` group.
+/// one the command was run in, and every `chap-devops run` group.
 pub fn collect(known: &[PathBuf]) -> Vec<Node> {
     build(
-        &docker::varde_containers(),
+        &docker::chap_devops_containers(),
         &docker::container_usage(),
         known,
         &|dir| Project::load(dir).ok(),
@@ -149,7 +149,7 @@ pub fn build(
             continue;
         };
         let group = project.state.group.clone();
-        // A group with nothing in it is nothing to watch; `varde run` makes
+        // A group with nothing in it is nothing to watch; `chap-devops run` makes
         // it again when it is wanted.
         if group.is_some() && project.state.models.is_empty() && !nodes.contains_key(&name) {
             continue;
@@ -249,7 +249,7 @@ fn url_of(project: &Project, service: &Service) -> Option<String> {
     }
     let component = match service.service.as_str() {
         // The API's own address, which is what every client is pointed at,
-        // rather than the documentation page `varde open` lands on.
+        // rather than the documentation page `chap-devops open` lands on.
         crate::compose::API_SERVICE if project.state.components.chap_core.enabled => {
             return Some(project.api_url());
         }

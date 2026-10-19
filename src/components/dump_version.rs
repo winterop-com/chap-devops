@@ -9,7 +9,7 @@ use super::*;
 use std::io::BufRead;
 use std::path::Path;
 
-/// The oldest DHIS2 minor version varde supports: the Modeling App and the
+/// The oldest DHIS2 minor version chap-devops supports: the Modeling App and the
 /// route to Chap need it.
 pub const DHIS2_OLDEST_MINOR: &str = "2.41";
 
@@ -93,7 +93,7 @@ pub fn tag_for_dump(dump_minor: &str, tag: Option<&str>) -> Result<String> {
     let dump = crate::dhis2::version_parts(dump_minor);
     if dump < crate::dhis2::version_parts(DHIS2_OLDEST_MINOR) {
         return Err(anyhow::anyhow!(
-            "the dump is from DHIS2 {dump_minor} (its newest Flyway migration), and varde \
+            "the dump is from DHIS2 {dump_minor} (its newest Flyway migration), and chap-devops \
              supports DHIS2 {DHIS2_OLDEST_MINOR} and newer; upgrade the database in DHIS2 first"
         ));
     }

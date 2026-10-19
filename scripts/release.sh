@@ -126,7 +126,7 @@ awk -v v="$version" '
 mv Cargo.toml.new Cargo.toml
 
 echo "==> updating Cargo.lock"
-if ! "$CARGO" update --package varde --offline; then
+if ! "$CARGO" update --package chap-devops --offline; then
   # A lockfile that has never been built offline may need a real resolve.
   "$CARGO" build
 fi
@@ -140,7 +140,7 @@ echo "==> make check test"
 
 git add Cargo.toml Cargo.lock
 git commit -m "chore: release ${tag}"
-git tag -a "$tag" -m "varde ${tag}"
+git tag -a "$tag" -m "chap-devops ${tag}"
 
 echo
 echo "==> committed and tagged ${tag}"

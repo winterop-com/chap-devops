@@ -301,11 +301,11 @@ fn the_ocs_config_scaffold_says_when_it_is_the_example() {
     assert_eq!(doc["extent"]["bbox"][3].as_f64(), Some(22.5));
     assert_eq!(doc["data_dir"].as_str(), Some("/app/data"));
     // `components enable ocs --read-only` and the plugin mount edit the
-    // file later, so the header names the two keys varde changes.
+    // file later, so the header names the two keys chap-devops changes.
     assert_eq!(
         example.lines().next(),
         Some(
-            "# Written once by varde when the ocs component was enabled; varde changes only \
+            "# Written once by chap-devops when the ocs component was enabled; chap-devops changes only \
              the read_only and plugins_dir keys."
         )
     );
@@ -390,7 +390,7 @@ fn a_seeded_dhis2_renders_four_services_and_three_volumes() {
     }
 
     // Rendering is a pure function of the spec, which is what lets
-    // `varde sync` compare the file byte for byte with what is on disk.
+    // `chap-devops sync` compare the file byte for byte with what is on disk.
     assert_eq!(render_dhis2(&dhis2_spec()), text);
 }
 
@@ -652,7 +652,7 @@ fn the_dump_one_shot_keeps_the_download_and_writes_the_one_pass_restore() {
     // The entrypoint loads *.sql.gz by itself; the seed must not be one.
     assert!(!DHIS2_SEED_FILE.ends_with(".sql.gz"));
     assert!(DHIS2_RESTORE_SCRIPT.ends_with(".sh"));
-    // A dump an earlier varde prepared would be loaded twice.
+    // A dump an earlier chap-devops prepared would be loaded twice.
     assert!(script.contains("rm -f dump.sql.gz out.part"), "{script}");
     // A dump from a newer pg_dump loads into the PostgreSQL 16 of the image.
     for line in [
@@ -893,8 +893,8 @@ fn the_dhis2_config_scaffold_keeps_the_placeholders_dhis2_substitutes() {
     assert_eq!(
         text.lines().next(),
         Some(
-            "# Written once by varde when the dhis2 component was enabled; \
-                 varde never rewrites it."
+            "# Written once by chap-devops when the dhis2 component was enabled; \
+                 chap-devops never rewrites it."
         )
     );
     assert!(text.ends_with('\n'));
@@ -987,19 +987,19 @@ fn a_seed_password_resets_every_user_after_the_dump() {
     // One hash for all the users, made by PostgreSQL.
     assert!(
         script.contains(
-            "(SELECT :varde_pgcrypto_schema.crypt('$$password', \
-             :varde_pgcrypto_schema.gen_salt('bf', 10)) AS hash)"
+            "(SELECT :chap_devops_pgcrypto_schema.crypt('$$password', \
+             :chap_devops_pgcrypto_schema.gen_salt('bf', 10)) AS hash)"
         ),
         "{script}"
     );
     // pgcrypto goes in a schema of its own: the dumps carry its functions in
     // `public` without the extension.
     assert!(
-        script.contains("CREATE EXTENSION pgcrypto SCHEMA varde_pgcrypto;"),
+        script.contains("CREATE EXTENSION pgcrypto SCHEMA chap_devops_pgcrypto;"),
         "{script}"
     );
     assert!(
-        script.contains("DROP SCHEMA varde_pgcrypto CASCADE;"),
+        script.contains("DROP SCHEMA chap_devops_pgcrypto CASCADE;"),
         "{script}"
     );
     // Before the check for a prepared dump, so a cached dump still gets it.
@@ -1080,7 +1080,8 @@ fn every_seed_empties_the_values_analytics_cannot_read() {
         "{script}"
     );
     assert!(
-        script.contains("varde: data values that analytics cannot read as a number, emptied:"),
+        script
+            .contains("chap-devops: data values that analytics cannot read as a number, emptied:"),
         "{script}"
     );
     // After the dump, before the password script and the mark.
@@ -1093,7 +1094,7 @@ fn every_seed_empties_the_values_analytics_cannot_read() {
 }
 
 /// A downloaded dump is checked for its DHIS2 version before the rewrite; a
-/// local one is not, because `varde init` read it already.
+/// local one is not, because `chap-devops init` read it already.
 #[test]
 fn only_a_downloaded_dump_is_checked_for_its_version() {
     let url = render_dhis2(&dhis2_spec());
@@ -1123,10 +1124,12 @@ fn only_a_downloaded_dump_is_checked_for_its_version() {
         script.find("dump_minor=") < script.find(&format!("mv raw.part {DHIS2_SEED_FILE}")),
         "before the dump is kept: {script}"
     );
-    // The way out is a command: the header of `.varde/components.yaml` says
+    // The way out is a command: the header of `.chap-devops/components.yaml` says
     // not to edit it by hand.
     assert!(
-        script.contains("run varde components enable dhis2 --tag $$dump_minor, then varde up"),
+        script.contains(
+            "run chap-devops components enable dhis2 --tag $$dump_minor, then chap-devops up"
+        ),
         "{script}"
     );
     assert!(!script.contains("components.yaml"), "{script}");

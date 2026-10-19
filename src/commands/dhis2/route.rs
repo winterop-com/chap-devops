@@ -1,15 +1,15 @@
-//! `varde dhis2 route`: the `chap` route, written and proved through.
+//! `chap-devops dhis2 route`: the `chap` route, written and proved through.
 
 use super::*;
 
-/// `varde dhis2 route` — create the `chap` route, or repoint the one that is
+/// `chap-devops dhis2 route` — create the `chap` route, or repoint the one that is
 /// there.
 pub fn route(ctx: &Ctx, args: &Dhis2RouteArgs) -> Result<()> {
     let session = open_session(ctx, &args.common)?;
     let route = write_route(ctx, &session)?;
     let report = Dhis2Report {
         instance: session.instance(),
-        next: "run `varde dhis2 apps` next, or `varde dhis2 show` to see what is still missing"
+        next: "run `chap-devops dhis2 apps` next, or `chap-devops dhis2 show` to see what is still missing"
             .to_string(),
         route: Some(route),
         apps: None,
@@ -138,7 +138,7 @@ const ROUTE_RETRY_DELAY: Duration = Duration::from_secs(2);
 ///
 /// DHIS2 answered the route write a moment ago, so a proxied request that
 /// gets no answer is about chap-core behind the route, not about DHIS2. The
-/// client's own sentence for an unreachable DHIS2 names `varde status` for
+/// client's own sentence for an unreachable DHIS2 names `chap-devops status` for
 /// the DHIS2 container, which sends the reader to the wrong service.
 pub(super) fn proxied_failure(err: &anyhow::Error) -> String {
     match err.downcast_ref::<crate::error::ChapError>() {
@@ -214,11 +214,11 @@ impl RouteProof {
 
 /// The way out for a route that nothing answered through, after the answer.
 ///
-/// varde asks chap-core directly first, at the address this machine uses.
+/// chap-devops asks chap-core directly first, at the address this machine uses.
 /// If chap-core answers there, the problem is between DHIS2 and chap-core,
 /// and the clause names that: the allowlist for an empty 503, and otherwise
 /// the address DHIS2 uses for chap-core. If chap-core does not answer here
-/// either, `varde status` is the next step, as before.
+/// either, `chap-devops status` is the next step, as before.
 pub(super) fn unanswered_way_out(session: &Session, proof: &RouteProof, target: &str) -> String {
     let project = &session.project;
     let api = crate::api::Api::new(
@@ -249,7 +249,7 @@ pub(super) fn way_out_for(
     target: &str,
 ) -> String {
     let Some(at) = answers_at else {
-        return "run `varde status` to see whether chap-core is up".to_string();
+        return "run `chap-devops status` to see whether chap-core is up".to_string();
     };
     let origin = dhis2::route_origin(target);
     match (proof.empty_503, external_chap_url) {
@@ -259,15 +259,15 @@ pub(super) fn way_out_for(
         ),
         (true, None) => format!(
             "chap-core answers at {at}, so the DHIS2 allowlist may refuse {origin}; add it to \
-             `route.remote_servers_allowed` in `dhis2/dhis.conf` and run `varde restart dhis2`"
+             `route.remote_servers_allowed` in `dhis2/dhis.conf` and run `chap-devops restart dhis2`"
         ),
         (false, Some(chap_url)) => format!(
             "chap-core answers at {at}, so DHIS2 may not reach it at {chap_url}; give the \
-             address DHIS2 reaches chap-core at with `varde dhis2 use --chap-url URL`"
+             address DHIS2 reaches chap-core at with `chap-devops dhis2 use --chap-url URL`"
         ),
         (false, None) => format!(
             "chap-core answers at {at}, so DHIS2 may not reach it at {origin}; \
-             `varde logs dhis2` may say why"
+             `chap-devops logs dhis2` may say why"
         ),
     }
 }

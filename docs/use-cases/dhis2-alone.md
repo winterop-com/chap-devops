@@ -4,29 +4,29 @@ A DHIS2 instance and its database, nothing else: for trying a DHIS2 version,
 developing an app, or restoring a database dump to look at it.
 
 ```sh
-varde init dhis --only dhis2
+chap-devops init dhis --only dhis2
 cd dhis
-varde up                     # returns when the containers start
-varde status                 # run it again until the dhis2 line says up
-varde open dhis2
+chap-devops up                     # returns when the containers start
+chap-devops status                 # run it again until the dhis2 line says up
+chap-devops open dhis2
 ```
 
 You get DHIS2 on `http://localhost:8780`, with its own PostgreSQL, and no
 chap-core, OCS or models.
 
-`varde up` prints `started dhis2, dhis2-db` when the containers start. The
-first `varde up` also pulls the images, about 2 GB on disk, and downloads the
+`chap-devops up` prints `started dhis2, dhis2-db` when the containers start. The
+first `chap-devops up` also pulls the images, about 2 GB on disk, and downloads the
 demo database, about 7 MB. DHIS2 then needs more time before it answers: less than
 a minute on a fast machine, several minutes on a slow one. Until then,
-`varde status` shows this and exits with 1:
+`chap-devops status` shows this and exits with 1:
 
 ```text
 dhis2   starting   http://localhost:8780
 
-1 of 1 component is still starting; run `varde status` again in a moment
+1 of 1 component is still starting; run `chap-devops status` again in a moment
 ```
 
-It worked when `varde status` shows this, and the login `admin` / `district`
+It worked when `chap-devops status` shows this, and the login `admin` / `district`
 works in the browser:
 
 ```text
@@ -44,49 +44,49 @@ starts from:
 
 | Version | Command | Database it starts with |
 | --- | --- | --- |
-| 2.42 (the default) | `varde init dhis --only dhis2` | the Laos climate demo |
-| 2.43 | `varde init dhis --only dhis2 --dhis2-tag 2.43` | empty |
-| 2.41 | `varde init dhis --only dhis2 --dhis2-tag 2.41` | empty |
-| the next, unreleased | `varde init dhis --only dhis2 --dhis2-image dhis2/core-dev --dhis2-tag master` | empty |
+| 2.42 (the default) | `chap-devops init dhis --only dhis2` | the Laos climate demo |
+| 2.43 | `chap-devops init dhis --only dhis2 --dhis2-tag 2.43` | empty |
+| 2.41 | `chap-devops init dhis --only dhis2 --dhis2-tag 2.41` | empty |
+| the next, unreleased | `chap-devops init dhis --only dhis2 --dhis2-image dhis2/core-dev --dhis2-tag master` | empty |
 
 Each command makes a new deployment `dhis`, and so do the commands in the
-next section. If `dhis` already exists, `init` stops with `already contains a varde deployment; choose another directory, or use --force to overwrite it`. Use a different name.
+next section. If `dhis` already exists, `init` stops with `already contains a chap-devops deployment; choose another directory, or use --force to overwrite it`. Use a different name.
 
-A full version such as `--dhis2-tag 2.42.6` works too. varde has a demo
+A full version such as `--dhis2-tag 2.42.6` works too. chap-devops has a demo
 database for 2.42 only, so 2.42 and every 2.42.x get it. Every other version
 starts empty, and `init` tells you so:
 
 ```text
-warning: varde knows no DHIS2 demo dump for 2.43, so `dhis2_db` starts empty; name one with `seed:` in `.varde/components.yaml` (a URL or a path) and run `varde sync`
+warning: chap-devops knows no DHIS2 demo dump for 2.43, so `dhis2_db` starts empty; name one with `seed:` in `.chap-devops/components.yaml` (a URL or a path) and run `chap-devops sync`
 ```
 
 An empty DHIS2 still has the `admin` / `district` login, as a superuser. A
 version that is not on the machine yet adds a pull of 1 to 1.5 GB to the first
-`varde up`.
+`chap-devops up`.
 
 ## Picking the data
 
 ```sh
-varde init dhis --only dhis2 --dhis2-seed none                  # empty, whatever the version
-varde init dhis --only dhis2 --dhis2-seed dumps/mine.sql.gz     # your own dump, a path
-varde init dhis --only dhis2 --dhis2-seed dumps/mine.sql.gz \
+chap-devops init dhis --only dhis2 --dhis2-seed none                  # empty, whatever the version
+chap-devops init dhis --only dhis2 --dhis2-seed dumps/mine.sql.gz     # your own dump, a path
+chap-devops init dhis --only dhis2 --dhis2-seed dumps/mine.sql.gz \
   --dhis2-seed-password                                         # every user logs in with district
-varde init dhis --only dhis2 --dhis2-tag 2.43 \
+chap-devops init dhis --only dhis2 --dhis2-tag 2.43 \
   --dhis2-seed https://databases.dhis2.org/sierra-leone/2.43/dhis2-db-sierra-leone.sql.gz
 ```
 
 A relative path is relative to the deployment directory, not to the directory
 you run `init` in. For the commands above, put the dump at
-`dhis/dumps/mine.sql.gz` before `varde up`. Until the dump is there, `init`
+`dhis/dumps/mine.sql.gz` before `chap-devops up`. Until the dump is there, `init`
 tells you:
 
 ```text
-warning: the dhis2 seed names dumps/mine.sql.gz, which is not in /path/to/dhis; copy the dump there before `varde up`, or run `varde components enable dhis2 --seed none`
+warning: the dhis2 seed names dumps/mine.sql.gz, which is not in /path/to/dhis; copy the dump there before `chap-devops up`, or run `chap-devops components enable dhis2 --seed none`
 ```
 
 The seed is applied once, when the database is first created; after that the
 database is DHIS2's. DHIS2's Sierra Leone demo is published for 2.41, 2.42 and
-2.43 at that address pattern, and the first `varde up` downloads about 90 MB
+2.43 at that address pattern, and the first `chap-devops up` downloads about 90 MB
 for it. It has no climate data, and its `admin` is not a superuser: it cannot create the route the Modeling App uses, so pick it for a
 DHIS2 on its own, not for one you will connect to Chap.
 
@@ -98,21 +98,21 @@ them. See
 
 ## Next
 
-`varde dhis2 connect` refuses here, since there is no chap-core to connect to:
+`chap-devops dhis2 connect` refuses here, since there is no chap-core to connect to:
 
 ```text
-error: chap-core is not a component of this deployment, so the route would point at a service that is not there; run `varde components enable chap-core` first
+error: chap-core is not a component of this deployment, so the route would point at a service that is not there; run `chap-devops components enable chap-core` first
 ```
 
-`varde dhis2 show` works here. Its `target` row says
-`none (this deployment has no chap-core)`, and it names no `varde dhis2
+`chap-devops dhis2 show` works here. Its `target` row says
+`none (this deployment has no chap-core)`, and it names no `chap-devops dhis2
 connect`. When the apps or the analytics tables are missing, its last line is:
 
 ```text
-run `varde dhis2 apps` for the apps, then `varde dhis2 analytics` for the analytics tables; the `chap` route needs chap-core; `varde components enable chap-core` adds it
+run `chap-devops dhis2 apps` for the apps, then `chap-devops dhis2 analytics` for the analytics tables; the `chap` route needs chap-core; `chap-devops components enable chap-core` adds it
 ```
 
-`varde components enable chap-core` adds one, then `varde up` starts it, and
+`chap-devops components enable chap-core` adds one, then `chap-devops up` starts it, and
 [Chap with a local DHIS2](./chap-with-local-dhis2.md) is that shape from the
 start. More: [The seed](../dhis2.md#the-seed),
 [Changing the DHIS2 version](../dhis2.md#changing-the-dhis2-version),

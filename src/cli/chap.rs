@@ -1,4 +1,4 @@
-//! `varde chap`: chap-core's own command line, run in a container.
+//! `chap-devops chap`: chap-core's own command line, run in a container.
 
 use clap::{Args, ValueEnum};
 
@@ -13,7 +13,7 @@ pub struct ChapArgs {
     #[arg(long, value_name = "IMAGE")]
     pub image: Option<ChapImage>,
 
-    /// `varde run` group whose network the container joins
+    /// `chap-devops run` group whose network the container joins
     #[arg(long, value_name = "NAME")]
     pub group: Option<String>,
 

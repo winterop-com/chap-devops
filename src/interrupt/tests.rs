@@ -8,13 +8,13 @@ fn tracked() -> Vec<String> {
 /// second Ctrl-C only while its guard lives.
 #[test]
 fn a_throwaway_has_a_unique_name_that_is_tracked_while_it_runs() {
-    let mut first = Throwaway::new("varde-test");
-    let mut second = Throwaway::new("varde-test");
+    let mut first = Throwaway::new("chap-devops-test");
+    let mut second = Throwaway::new("chap-devops-test");
     assert_ne!(first.name(), second.name());
     assert!(
         first
             .name()
-            .starts_with(&format!("varde-test-{}-", std::process::id())),
+            .starts_with(&format!("chap-devops-test-{}-", std::process::id())),
         "{}",
         first.name()
     );

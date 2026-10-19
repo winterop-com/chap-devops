@@ -125,7 +125,7 @@ pub fn docker_daemon_check(outcome: &Outcome, have_cli: bool) -> Check {
     }
 }
 
-/// Whether the installed Compose understands what `varde` renders.
+/// Whether the installed Compose understands what `chap-devops` renders.
 pub fn compose_verdict(found: Option<(u32, u32, u32)>) -> (Status, String, Option<String>) {
     let (wa, wb, wc) = docker::MIN_COMPOSE_VERSION;
     let Some((a, b, c)) = found else {
@@ -143,7 +143,7 @@ pub fn compose_verdict(found: Option<(u32, u32, u32)>) -> (Status, String, Optio
             Status::Warn,
             format!("v{a}.{b}.{c}, older than {wa}.{wb}.{wc}"),
             Some(format!(
-                "upgrade Docker Compose: compose.varde.yml uses `!override`, which needs \
+                "upgrade Docker Compose: compose.chap-devops.yml uses `!override`, which needs \
                  {wa}.{wb}.{wc} or newer, and compose.marketplace.yml uses `include:`"
             )),
         );
@@ -413,13 +413,13 @@ pub fn disk_path(root: Option<&str>) -> PathBuf {
     std::env::current_dir().unwrap_or_else(|_| PathBuf::from("."))
 }
 
-/// What this build of `varde` is, and whether there is a newer one.
+/// What this build of `chap-devops` is, and whether there is a newer one.
 ///
 /// Under `--offline` the lookup never happened, so the line is a skip that
 /// says so and still names the build: "there is no update" is not something
 /// this run is in a position to claim.
-pub fn varde_check(latest: ReleaseList<'_>) -> Check {
-    const ID: &str = "varde";
+pub fn chap_devops_check(latest: ReleaseList<'_>) -> Check {
+    const ID: &str = "chap-devops";
     let method = selfupdate::install_method(selfupdate::running_binary().as_deref());
     let detail = format!("v{VERSION}, {TARGET}, {method}");
     match latest {
@@ -427,7 +427,7 @@ pub fn varde_check(latest: ReleaseList<'_>) -> Check {
             ID,
             ID,
             format!("{detail}; {tag} is available"),
-            "run `varde self update`",
+            "run `chap-devops self update`",
         ),
         ReleaseList::Offline => {
             Check::skip(ID, ID, format!("{detail}; {}", ReleaseList::OFFLINE_WHY))
@@ -437,7 +437,7 @@ pub fn varde_check(latest: ReleaseList<'_>) -> Check {
 }
 
 /// The `leftovers` line: volumes that deployments whose directory is gone
-/// left in docker, which nothing else in varde would ever name again.
+/// left in docker, which nothing else in chap-devops would ever name again.
 /// `None` when docker could not be asked.
 pub fn leftovers_check(findings: Option<&crate::commands::cleanup::Findings>) -> Check {
     let Some(findings) = findings else {
@@ -460,7 +460,7 @@ pub fn leftovers_check(findings: Option<&crate::commands::cleanup::Findings>) ->
             if volumes == 1 { "" } else { "s" },
             if deployments == 1 { "" } else { "s" },
         ),
-        "`varde cleanup` deletes them; `varde cleanup --dry-run` lists them first",
+        "`chap-devops cleanup` deletes them; `chap-devops cleanup --dry-run` lists them first",
     )
 }
 

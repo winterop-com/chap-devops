@@ -164,7 +164,7 @@ fn expose_and_unexpose_move_a_models_host_port_without_moving_its_pin() {
         ])
         .assert()
         .success();
-    let pinned = read(&dir.join(".varde/models.yaml"));
+    let pinned = read(&dir.join(".chap-devops/models.yaml"));
 
     sandbox
         .models(&["expose", "chapkit_ewars_model", "--port", "auto", "-v"])
@@ -186,7 +186,7 @@ fn expose_and_unexpose_move_a_models_host_port_without_moving_its_pin() {
     assert_eq!(svc["ports"][0].as_str(), Some(published.as_str()));
 
     // Only the port moved: the version and the image pin are untouched.
-    let after = read(&dir.join(".varde/models.yaml"));
+    let after = read(&dir.join(".chap-devops/models.yaml"));
     assert_eq!(
         after.replace(&format!("host_port: {base}"), "host_port: null"),
         pinned,
@@ -209,7 +209,7 @@ fn expose_and_unexpose_move_a_models_host_port_without_moving_its_pin() {
     let svc =
         &yaml(&dir.join("compose.chapkit-ewars-model.yml"))["services"]["chapkit-ewars-model"];
     assert!(svc.get("ports").is_none());
-    assert_eq!(read(&dir.join(".varde/models.yaml")), pinned);
+    assert_eq!(read(&dir.join(".chap-devops/models.yaml")), pinned);
 
     // A model this project never enabled cannot be exposed.
     sandbox
@@ -307,8 +307,8 @@ fn json_output_parses_for_init_and_enable() {
         ".env",
         "compose.chapkit-ewars-model.yml",
         "compose.marketplace.yml",
-        ".varde/project.yaml",
-        ".varde/models.yaml",
+        ".chap-devops/project.yaml",
+        ".chap-devops/models.yaml",
     ] {
         // Compared as paths: the separator the CLI prints is the platform's.
         assert!(
@@ -404,7 +404,7 @@ fn enable_outside_a_project_says_so() {
         .models(&["enable", "chapkit_ewars_model"])
         .assert()
         .failure()
-        .stderr(predicates::str::contains("not a varde deployment"));
+        .stderr(predicates::str::contains("not a chap-devops deployment"));
 }
 
 #[test]
@@ -541,7 +541,7 @@ fn changing_commands_say_ok_and_name_the_model_under_json() {
 }
 
 /// Asking again for what the deployment already has changes nothing, says
-/// so, and does not ask for `varde up`.
+/// so, and does not ask for `chap-devops up`.
 #[test]
 fn a_second_enable_or_expose_says_nothing_changed() {
     let sandbox = Sandbox::new();
@@ -563,14 +563,14 @@ fn a_second_enable_or_expose_says_nothing_changed() {
         "{text}"
     );
     assert!(text.contains("nothing changed"), "{text}");
-    assert!(!text.contains("varde up"), "{text}");
+    assert!(!text.contains("chap-devops up"), "{text}");
     assert!(!text.contains("updated"), "{text}");
 
     sandbox
         .models(&["expose", "chapkit_ewars_model", "--port", "auto"])
         .assert()
         .success()
-        .stdout(predicates::str::contains("run `varde up` to apply"));
+        .stdout(predicates::str::contains("run `chap-devops up` to apply"));
     let port = state(&dir)["models"]["chapkit_ewars_model"]["host_port"].clone();
     let out = sandbox
         .models(&["expose", "chapkit_ewars_model", "--port", "auto"])
@@ -586,7 +586,7 @@ fn a_second_enable_or_expose_says_nothing_changed() {
         )),
         "{text}"
     );
-    assert!(!text.contains("run `varde up` to apply"), "{text}");
+    assert!(!text.contains("run `chap-devops up` to apply"), "{text}");
     assert_eq!(
         state(&dir)["models"]["chapkit_ewars_model"]["host_port"],
         port

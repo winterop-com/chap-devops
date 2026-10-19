@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # End-to-end run against real images: OCS, chap-core and DHIS2 in one
-# deployment, the default models beside them, and every check varde has.
+# deployment, the default models beside them, and every check chap-devops has.
 #
 #   scripts/e2e.sh                       # chap-core latest and master, DHIS2 2.41 2.42 2.43 dev
 #   scripts/e2e.sh --tags "v2.3.1"       # one tag
@@ -15,7 +15,7 @@
 # doctor, an OCS check, an OCS ingestion of a few days of CHIRPS3 (public, no
 # credentials), dhis2 connect, models test (every model trains and predicts),
 # models test --backtest (a dataset, a backtest and its scores through
-# chap-core) and the chap CLI through `varde chap` (an evaluation and its
+# chap-core) and the chap CLI through `chap-devops chap` (an evaluation and its
 # plot). A failed step collects the logs and the rest of that tag
 # carries on where it still can. A report is written next to the deployments.
 #
@@ -24,7 +24,7 @@
 
 set -uo pipefail
 
-VARDE="${VARDE:-}"
+CHAP_DEVOPS="${CHAP_DEVOPS:-}"
 TAGS="latest master"
 MODELS="default"
 DHIS2_VERSIONS="2.41 2.42 2.43 dev"
@@ -46,7 +46,7 @@ options:
   --models LIST    model ids, comma separated, \`default\` or \`all\` (default: default)
   --work DIR       where the deployments and the report go (default: a temp dir)
 
-environment: VARDE (the varde binary), WAIT_SECONDS (default 1800)
+environment: CHAP_DEVOPS (the chap-devops binary), WAIT_SECONDS (default 1800)
 USAGE
 }
 
@@ -65,15 +65,15 @@ while [ $# -gt 0 ]; do
 done
 
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-if [ -z "$VARDE" ]; then
-  if [ -x "$root/target/debug/varde" ]; then
-    VARDE="$root/target/debug/varde"
+if [ -z "$CHAP_DEVOPS" ]; then
+  if [ -x "$root/target/debug/chap-devops" ]; then
+    CHAP_DEVOPS="$root/target/debug/chap-devops"
   else
-    VARDE="$(command -v varde || true)"
+    CHAP_DEVOPS="$(command -v chap-devops || true)"
   fi
 fi
-if [ -z "$VARDE" ] || [ ! -x "$VARDE" ]; then
-  echo "error: no varde binary; run \`cargo build\` or set VARDE=/path/to/varde" >&2
+if [ -z "$CHAP_DEVOPS" ] || [ ! -x "$CHAP_DEVOPS" ]; then
+  echo "error: no chap-devops binary; run \`cargo build\` or set CHAP_DEVOPS=/path/to/chap-devops" >&2
   exit 2
 fi
 if ! docker info >/dev/null 2>&1; then
@@ -81,14 +81,14 @@ if ! docker info >/dev/null 2>&1; then
   exit 2
 fi
 if [ -z "$WORK" ]; then
-  WORK="$(mktemp -d "${TMPDIR:-/tmp}/varde-e2e.XXXXXX")"
+  WORK="$(mktemp -d "${TMPDIR:-/tmp}/chap-devops-e2e.XXXXXX")"
 fi
 mkdir -p "$WORK"
 report="$WORK/report.md"
 {
-  echo "# varde end-to-end run"
+  echo "# chap-devops end-to-end run"
   echo
-  echo "- varde: $("$VARDE" --version)"
+  echo "- chap-devops: $("$CHAP_DEVOPS" --version)"
   echo "- started: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
   echo "- tags: $TAGS"
   echo "- models: $MODELS"
@@ -119,23 +119,23 @@ run() {
   return 1
 }
 
-# wait_up DIR: until `varde status` exits 0, which is every service up and
+# wait_up DIR: until `chap-devops status` exits 0, which is every service up and
 # every model registered, or WAIT_SECONDS runs out.
 wait_up() {
   local dir="$1" deadline=$((SECONDS + WAIT_SECONDS))
   while [ $SECONDS -lt $deadline ]; do
-    if "$VARDE" -C "$dir" status; then
+    if "$CHAP_DEVOPS" -C "$dir" status; then
       return 0
     fi
     sleep 15
   done
-  "$VARDE" -C "$dir" status
+  "$CHAP_DEVOPS" -C "$dir" status
 }
 
-# ocs_url DIR: OCS's base URL, as varde status reports its health endpoint.
+# ocs_url DIR: OCS's base URL, as chap-devops status reports its health endpoint.
 ocs_url() {
   local url
-  url="$("$VARDE" -C "$1" status --json | sed -n 's/.*"health_url": *"\([^"]*\)".*/\1/p' | head -1)"
+  url="$("$CHAP_DEVOPS" -C "$1" status --json | sed -n 's/.*"health_url": *"\([^"]*\)".*/\1/p' | head -1)"
   [ -n "$url" ] || return 1
   echo "${url%/health}"
 }
@@ -151,7 +151,7 @@ get() {
 # ocs_check DIR: OCS answers its health endpoint and serves its STAC catalog.
 ocs_check() {
   local base
-  base="$(ocs_url "$1")" || { echo "no OCS health_url in varde status --json"; return 1; }
+  base="$(ocs_url "$1")" || { echo "no OCS health_url in chap-devops status --json"; return 1; }
   get "$base/health" && get "$base/stac/catalog.json"
 }
 
@@ -159,7 +159,7 @@ ocs_check() {
 # and the collection then listed by STAC.
 ocs_ingest() {
   local base
-  base="$(ocs_url "$1")" || { echo "no OCS health_url in varde status --json"; return 1; }
+  base="$(ocs_url "$1")" || { echo "no OCS health_url in chap-devops status --json"; return 1; }
   echo "POST $base/ingestions"
   curl -fsS --max-time 1800 -X POST "$base/ingestions" \
     -H 'Content-Type: application/json' \
@@ -169,31 +169,31 @@ ocs_ingest() {
   get "$base/stac/collections/chirps3_precipitation_daily"
 }
 
-# chap_cli DIR LOGS: the chap CLI through `varde chap`, in a directory of its
+# chap_cli DIR LOGS: the chap CLI through `chap-devops chap`, in a directory of its
 # own: an evaluation of the deployment's first model over its network, on
 # chap-core's Laos example data, then a plot of it. Both files must be on the
 # host afterwards.
 chap_cli() {
   local dir="$1" work="$2/chap-cli" service data
   data="https://raw.githubusercontent.com/dhis2-chap/chap-core/master/example_data"
-  service="$(sed -n 's/^ *service_id: *//p' "$dir/.varde/models.yaml" | head -1)"
-  [ -n "$service" ] || { echo "no enabled model in $dir/.varde/models.yaml"; return 1; }
+  service="$(sed -n 's/^ *service_id: *//p' "$dir/.chap-devops/models.yaml" | head -1)"
+  [ -n "$service" ] || { echo "no enabled model in $dir/.chap-devops/models.yaml"; return 1; }
   mkdir -p "$work" || return 1
   (
     cd "$work" || exit 1
     curl -fsSO "$data/laos_subset.csv" && curl -fsSO "$data/laos_subset.geojson" || exit 1
-    "$VARDE" -C "$dir" chap eval --model-name "http://$service:8000" \
+    "$CHAP_DEVOPS" -C "$dir" chap eval --model-name "http://$service:8000" \
       --dataset-csv laos_subset.csv --output-file eval.nc \
       --backtest-params.n-splits 2 --backtest-params.n-periods 3 || exit 1
-    "$VARDE" -C "$dir" chap plot-backtest eval.nc --output-file eval.html || exit 1
+    "$CHAP_DEVOPS" -C "$dir" chap plot-backtest eval.nc --output-file eval.html || exit 1
     test -s eval.nc && test -s eval.html
   )
 }
 
-# dhis2_seed VERSION: varde's own seed where it has one (the Laos climate demo,
+# dhis2_seed VERSION: chap-devops's own seed where it has one (the Laos climate demo,
 # 2.42), and otherwise an empty database. DHIS2's Sierra Leone demo exists for
 # other versions, but its admin is not a superuser and may not create the
-# route `varde dhis2 connect` writes; an empty DHIS2's admin is one.
+# route `chap-devops dhis2 connect` writes; an empty DHIS2's admin is one.
 dhis2_seed() {
   case "$1" in
     2.42 | 2.42.*) echo default ;;
@@ -205,29 +205,29 @@ dhis2_seed() {
 steps() {
   local label="$1" dir="$2" logs="$3"
   run "$label" init "$logs/init.log" \
-    "$VARDE" init "$dir" --force --chap-tag "${run_id%%/*}" --models "$MODELS" --with "$with" \
+    "$CHAP_DEVOPS" init "$dir" --force --chap-tag "${run_id%%/*}" --models "$MODELS" --with "$with" \
     --api-port "$api" --ocs-port "$ocs" --port-base "$base" "${extra[@]}" || return
-  run "$label" up "$logs/up.log" "$VARDE" -C "$dir" up || {
-    "$VARDE" -C "$dir" logs >"$logs/compose.log" 2>&1
+  run "$label" up "$logs/up.log" "$CHAP_DEVOPS" -C "$dir" up || {
+    "$CHAP_DEVOPS" -C "$dir" logs >"$logs/compose.log" 2>&1
     return
   }
   if ! run "$label" "wait until up" "$logs/status.log" wait_up "$dir"; then
-    "$VARDE" -C "$dir" logs >"$logs/compose.log" 2>&1
+    "$CHAP_DEVOPS" -C "$dir" logs >"$logs/compose.log" 2>&1
   fi
-  run "$label" doctor "$logs/doctor.log" "$VARDE" -C "$dir" doctor
+  run "$label" doctor "$logs/doctor.log" "$CHAP_DEVOPS" -C "$dir" doctor
   run "$label" ocs "$logs/ocs.log" ocs_check "$dir"
   run "$label" "ocs ingest" "$logs/ocs-ingest.log" ocs_ingest "$dir"
   if [ "$version" != - ]; then
-    run "$label" "dhis2 connect" "$logs/dhis2-connect.log" "$VARDE" -C "$dir" dhis2 connect
+    run "$label" "dhis2 connect" "$logs/dhis2-connect.log" "$CHAP_DEVOPS" -C "$dir" dhis2 connect
   fi
   run "$label" "models test" "$logs/models-test.log" \
-    "$VARDE" -C "$dir" models test --all -v
+    "$CHAP_DEVOPS" -C "$dir" models test --all -v
   run "$label" "models backtest" "$logs/models-backtest.log" \
-    "$VARDE" -C "$dir" models test --all --backtest -v
+    "$CHAP_DEVOPS" -C "$dir" models test --all --backtest -v
   run "$label" "chap cli" "$logs/chap-cli.log" chap_cli "$dir" "$logs"
-  "$VARDE" -C "$dir" status --json >"$logs/status.json" 2>&1
+  "$CHAP_DEVOPS" -C "$dir" status --json >"$logs/status.json" 2>&1
   if [ "$failures" -gt 0 ]; then
-    "$VARDE" -C "$dir" logs >"$logs/compose.log" 2>&1
+    "$CHAP_DEVOPS" -C "$dir" logs >"$logs/compose.log" 2>&1
   fi
 }
 
@@ -267,7 +267,7 @@ for run_id in "${runs[@]}"; do
   fi
   steps "$run_id" "$dir" "$logs"
   if [ "$KEEP" = 0 ]; then
-    "$VARDE" -C "$dir" down --volumes --yes >"$logs/down.log" 2>&1
+    "$CHAP_DEVOPS" -C "$dir" down --volumes --yes >"$logs/down.log" 2>&1
   fi
 done
 

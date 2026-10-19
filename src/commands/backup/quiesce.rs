@@ -142,7 +142,7 @@ impl<'a> Quiesce<'a> {
             self.stuck = true;
             output::warn(&format!(
                 "{} was {} for the backup and could not be started again: {why}; \
-                 run `varde docker run -- {} {}`",
+                 run `chap-devops docker run -- {} {}`",
                 self.service,
                 held.verb(),
                 held.release(),

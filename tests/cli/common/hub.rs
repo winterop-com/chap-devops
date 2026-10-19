@@ -47,7 +47,7 @@ pub(crate) const RATE_RESET: u64 = 1_758_805_440;
 
 /// A local stand-in for GitHub, ghcr and the marketplace, routed by path.
 ///
-/// One listener answers every request one `varde models add` makes: the
+/// One listener answers every request one `chap-devops models add` makes: the
 /// repository's default branch, its commits, a ghcr pull token, the OCI index
 /// of a tag, the amd64 manifest inside it, the config blob that manifest
 /// points at, and the registry index `--registry-url` names. Nothing in these
@@ -102,7 +102,7 @@ pub(crate) fn chap_compose(reference: &str) -> String {
          chap:\n    \
          image: ghcr.io/dhis2-chap/chap-core:${{CHAP_IMAGE_TAG:-latest}}\n    \
          environment:\n      \
-         VARDE_TEST_REF: {reference}\n  \
+         CHAP_DEVOPS_TEST_REF: {reference}\n  \
          worker:\n    \
          image: ghcr.io/dhis2-chap/chap-core:${{CHAP_IMAGE_TAG:-latest}}\n"
     )
@@ -141,7 +141,7 @@ impl Hub {
     }
 
     /// The same hub once the newer commit has been published too, which is
-    /// what `varde update` is meant to notice.
+    /// what `chap-devops update` is meant to notice.
     pub(crate) fn advanced(self) -> Hub {
         Hub {
             published: vec![NEW_TAG.to_string(), OLD_TAG.to_string()],

@@ -1,4 +1,4 @@
-//! `varde down`, and `--volumes` above all: the one wrapper that destroys
+//! `chap-devops down`, and `--volumes` above all: the one wrapper that destroys
 //! data, so it names what will go, asks first and reports what went.
 
 use super::note;
@@ -15,7 +15,7 @@ use std::io::{BufRead, IsTerminal, Write};
 ///
 /// A prompt nobody can answer is a hang, and going ahead unasked would
 /// destroy the data of whatever deployment the script happened to be in, so
-/// the flag that cannot be undone is the one place `varde` refuses instead.
+/// the flag that cannot be undone is the one place `chap-devops` refuses instead.
 const NO_TERMINAL: &str = "this destroys this deployment's data and there is no terminal to \
      confirm at; pass --yes";
 
@@ -29,17 +29,17 @@ const REMOVE_THEM: &str = "remove this deployment's volumes? [y/N] ";
 /// The `-v`-shaped token an operator meant for compose's `--volumes`, if
 /// `down` was given one.
 ///
-/// Two ways in, and neither can be passed on. `varde down -v` is taken by
+/// Two ways in, and neither can be passed on. `chap-devops down -v` is taken by
 /// clap as the global `--verbose` flag, so compose never sees it: the volumes
 /// stay while the person who typed it believes they went, which is the whole
 /// reason `--volumes` exists. Nothing in the parsed command line can tell
 /// that apart from a deliberately verbose stop, so the raw arguments answer
-/// it, and only the ones after `down` count - `varde -v down` is a verbose
+/// it, and only the ones after `down` count - `chap-devops -v down` is a verbose
 /// stop and stays one. Past a `--` the token reaches `EXTRA` instead, where
 /// passing it through would destroy the data of an operator who only asked
 /// for a louder `down`.
 ///
-/// `varde docker run -- down -v` is not this: it is the passthrough asking
+/// `chap-devops docker run -- down -v` is not this: it is the passthrough asking
 /// for compose's own command line, where `-v` means what compose says it
 /// means.
 pub fn misused_volumes_flag<'a>(argv: &'a [String], extra: &'a [String]) -> Option<&'a str> {
@@ -63,9 +63,9 @@ pub fn misused_volumes_flag<'a>(argv: &'a [String], extra: &'a [String]) -> Opti
 /// how to ask for the verbose `down` the other reading would have given.
 pub fn volumes_flag_message(token: &str) -> String {
     format!(
-        "`{token}` after `down` is not passed on to compose (`-v` there is varde's own \
-         --verbose flag); `varde down --volumes` removes this deployment's volumes and the \
-         data in them, and `varde -v down` is the verbose stop"
+        "`{token}` after `down` is not passed on to compose (`-v` there is chap-devops's own \
+         --verbose flag); `chap-devops down --volumes` removes this deployment's volumes and the \
+         data in them, and `chap-devops -v down` is the verbose stop"
     )
 }
 
@@ -203,21 +203,21 @@ fn volume_count(count: usize) -> String {
 /// `--volumes` that there is nothing left in the folder worth keeping.
 pub fn down_next(volumes_removed: bool) -> &'static str {
     match volumes_removed {
-        false => "run `varde up` to start it again, with its data",
+        false => "run `chap-devops up` to start it again, with its data",
         true => {
-            "run `varde up` to start it again with empty data, or delete this folder: its containers \
+            "run `chap-devops up` to start it again with empty data, or delete this folder: its containers \
              and volumes are gone"
         }
     }
 }
 
-/// Forget a recorded `varde dhis2 connect` when this run has just removed the
+/// Forget a recorded `chap-devops dhis2 connect` when this run has just removed the
 /// database it was true of, and give back the line that says so.
 ///
-/// `varde down --volumes` is the one wrapper that destroys data, and `dhis2_db`
+/// `chap-devops down --volumes` is the one wrapper that destroys data, and `dhis2_db`
 /// is one of the volumes it takes. The record left behind would then be a
 /// record of a route in a database that no longer exists, suppressing the hint
-/// on the next `varde up` - which restores the seed dump, and that dump ships a
+/// on the next `chap-devops up` - which restores the seed dump, and that dump ships a
 /// `chap` route pointing at a Chap this deployment has nothing to do with.
 ///
 /// Measured against what docker no longer holds rather than against the flag on
@@ -238,12 +238,12 @@ pub(super) fn forget_dhis2_connect(
     }
     project.state.components.dhis2.connected_at = None;
     // A state file that could not be written is worth a line of its own: the
-    // record is still there, and the next `varde up` will still be quiet about
+    // record is still there, and the next `chap-devops up` will still be quiet about
     // connecting. The `down` itself succeeded and is not failed for it.
     if let Err(why) = project.save() {
         return Some(Err(format!(
-            "the record of `varde dhis2 connect` could not be cleared from \
-             `.varde/components.yaml`: {why}; run `varde dhis2 connect` after the next `varde up`"
+            "the record of `chap-devops dhis2 connect` could not be cleared from \
+             `.chap-devops/components.yaml`: {why}; run `chap-devops dhis2 connect` after the next `chap-devops up`"
         )));
     }
     Some(Ok(match project.state.components.dhis2_seed_source() {
@@ -264,7 +264,7 @@ pub enum DownVolumes<'a> {
 }
 
 /// Remove what compose left of `before`: the volumes no compose file
-/// declares now, such as the data volume of a model that `varde models
+/// declares now, such as the data volume of a model that `chap-devops models
 /// remove` took out. Only a volume that carries this deployment's compose
 /// project label goes, so the prefix alone never decides. Gives back the
 /// volumes docker refused, each with its reason.
@@ -345,9 +345,9 @@ pub fn down_lines(
         DownVolumes::Kept => {
             lines.hint(match project_name {
                 Some(name) => {
-                    format!("kept the volumes {name}_*; `varde down --volumes` removes them")
+                    format!("kept the volumes {name}_*; `chap-devops down --volumes` removes them")
                 }
-                None => "kept the volumes; `varde down --volumes` removes them".to_string(),
+                None => "kept the volumes; `chap-devops down --volumes` removes them".to_string(),
             });
         }
         DownVolumes::Removed([]) => {

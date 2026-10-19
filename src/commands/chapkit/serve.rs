@@ -1,4 +1,4 @@
-//! `varde chapkit mlproject run DIR`: serve an MLproject model with
+//! `chap-devops chapkit mlproject run DIR`: serve an MLproject model with
 //! `chapkit mlproject run`, in the foreground, in an image that has chapkit.
 //!
 //! The chap-core image has chapkit but no R, so it cannot serve most
@@ -17,7 +17,7 @@ use crate::error::{ChapError, Result};
 use crate::interrupt::{self, Throwaway};
 use crate::output;
 use crate::ports;
-use crate::project::{DEFAULT_PORT_RANGE, Project, VARDE_DIR};
+use crate::project::{CHAP_DEVOPS_DIR, DEFAULT_PORT_RANGE, Project};
 use serde::Serialize;
 use std::collections::BTreeSet;
 use std::io::IsTerminal;
@@ -65,7 +65,7 @@ pub(super) const FLAVOURS: &[Flavour] = &[
     },
 ];
 
-/// One row of `varde chapkit --image`, and of its `--json`.
+/// One row of `chap-devops chapkit --image`, and of its `--json`.
 #[derive(Debug, Serialize)]
 struct ImageRow {
     name: &'static str,
@@ -76,7 +76,7 @@ struct ImageRow {
     local: bool,
 }
 
-/// What `varde chapkit --image` prints.
+/// What `chap-devops chapkit --image` prints.
 #[derive(Debug, Serialize)]
 struct ImageList {
     images: Vec<ImageRow>,
@@ -127,7 +127,7 @@ pub(super) fn list(ctx: &Ctx) -> Result<()> {
     let list = ImageList { images };
     ctx.out.report(&list, |r| {
         r.info(
-            "`varde chapkit --image NAME mlproject run DIR` serves an MLproject in one; \
+            "`chap-devops chapkit --image NAME mlproject run DIR` serves an MLproject in one; \
              an image name works too",
         );
         r.hint(
@@ -143,7 +143,7 @@ const MLPROJECT_FILES: &[&str] = &["MLproject", "MLproject.yaml", "MLproject.yml
 /// The port the service listens on in the container.
 const SERVICE_PORT: u16 = 8000;
 
-/// The options of `chapkit mlproject run` that varde sets itself.
+/// The options of `chapkit mlproject run` that chap-devops sets itself.
 const OWNED_OPTIONS: &[&str] = &[
     "--host",
     "--port",
@@ -164,7 +164,7 @@ const VALUE_OPTIONS: &[&str] = &[
 /// How long to wait between two checks of `/health`.
 const POLL: Duration = Duration::from_secs(1);
 
-/// How long the service may take to answer before varde says so.
+/// How long the service may take to answer before chap-devops says so.
 const SLOW_START: Duration = Duration::from_secs(120);
 
 /// The exit code `docker run` gives when it could not start the container.
@@ -176,7 +176,7 @@ const COMMAND_NOT_FOUND: i32 = 127;
 /// The exit code of a container that SIGTERM stopped, as `docker stop` does.
 const STOPPED_BY_SIGTERM: i32 = 143;
 
-/// The arguments after `mlproject run`, as varde reads them.
+/// The arguments after `mlproject run`, as chap-devops reads them.
 #[derive(Debug, Default, PartialEq, Eq)]
 pub(super) struct Request {
     /// The MLproject directory or file; `None` for the current directory.
@@ -198,8 +198,8 @@ pub(super) fn parse(rest: &[String]) -> std::result::Result<Request, String> {
             let name = word.split('=').next().unwrap_or(word);
             if OWNED_OPTIONS.contains(&name) {
                 return Err(format!(
-                    "varde sets `{name}` of `chapkit mlproject run` itself; drop it, and use the \
-                     URL that varde prints"
+                    "chap-devops sets `{name}` of `chapkit mlproject run` itself; drop it, and use the \
+                     URL that chap-devops prints"
                 ));
             }
             request.pass.push(word.clone());
@@ -396,7 +396,7 @@ pub(super) fn run(ctx: &Ctx, args: &ChapkitArgs, rest: &[String]) -> Result<()> 
             ),
             None => {
                 return Err(ChapError::Usage(format!(
-                    "varde cannot tell the language of the train command in {}; give \
+                    "chap-devops cannot tell the language of the train command in {}; give \
                      `--image py-data`, `r-tidyverse`, `r-inla`, or an image name",
                     mlproject_file.display()
                 ))
@@ -411,7 +411,7 @@ pub(super) fn run(ctx: &Ctx, args: &ChapkitArgs, rest: &[String]) -> Result<()> 
     ensure_image(&image)?;
 
     let place = target(ctx, None)?;
-    let project = match place.group.is_none() && place.dir.join(VARDE_DIR).is_dir() {
+    let project = match place.group.is_none() && place.dir.join(CHAP_DEVOPS_DIR).is_dir() {
         true => Some(Project::load(&place.dir)?),
         false => None,
     };
@@ -434,7 +434,7 @@ pub(super) fn run(ctx: &Ctx, args: &ChapkitArgs, rest: &[String]) -> Result<()> 
     let key = project.as_ref().and_then(registration_key);
 
     interrupt::install();
-    let mut guard = Throwaway::new("varde-mlproject");
+    let mut guard = Throwaway::new("chap-devops-mlproject");
     let serve = Serve {
         name: guard.name().to_string(),
         image: image.clone(),
@@ -508,8 +508,8 @@ pub(super) fn run(ctx: &Ctx, args: &ChapkitArgs, rest: &[String]) -> Result<()> 
 /// Wait for the container to stop, and say once when the service answers.
 ///
 /// A Ctrl-C in a terminal reaches `docker run` too, but a signal sent to
-/// varde alone (`kill -INT`, a process manager) does not: so on a request
-/// to stop, varde stops the container itself.
+/// chap-devops alone (`kill -INT`, a process manager) does not: so on a request
+/// to stop, chap-devops stops the container itself.
 fn watch(child: &mut std::process::Child, url: &str, registers: bool, name: &str) -> Result<i32> {
     let started = Instant::now();
     let mut answered = false;

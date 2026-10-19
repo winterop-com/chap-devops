@@ -115,8 +115,9 @@ pub(super) fn clean(
     before: &Option<Held>,
     keep: bool,
 ) -> Vec<Message> {
-    let shows =
-        format!("`varde api GET /v2/services/{service_id}/run/api/v1/configs` shows what it holds");
+    let shows = format!(
+        "`chap-devops api GET /v2/services/{service_id}/run/api/v1/configs` shows what it holds"
+    );
     let Some(before) = before else {
         return vec![Message::warning(format!(
             "{service_id}: could not list its configs, so nothing was cleaned up; {shows}"
@@ -206,8 +207,9 @@ pub(super) fn kept_line(
         artifacts.len(),
         if artifacts.len() == 1 { "" } else { "s" }
     );
-    let remove =
-        |path: String| format!("`varde docker exec {service_id} curl -fsS -X DELETE {url}{path}`");
+    let remove = |path: String| {
+        format!("`chap-devops docker exec {service_id} curl -fsS -X DELETE {url}{path}`")
+    };
     let commands: Vec<String> = match configs.is_empty() {
         false => configs
             .iter()

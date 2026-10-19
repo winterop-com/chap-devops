@@ -1,47 +1,47 @@
-# A DHIS2 from varde, with a chap-core elsewhere
+# A DHIS2 from chap-devops, with a chap-core elsewhere
 
-For chap-core development with the Modeling App in front of it: varde runs a
+For chap-core development with the Modeling App in front of it: chap-devops runs a
 DHIS2 (and any models), and chap-core runs somewhere else, usually from its own
 checkout on this machine.
 
 1. Start chap-core and make sure that it answers at `http://localhost:8000`.
    - From its checkout: make it listen on `0.0.0.0:8000`, not only on the
      loopback.
-   - From a second varde deployment: run the commands below.
+   - From a second chap-devops deployment: run the commands below.
 
    ```sh
-   varde init core --only chap-core --models none --api-port 8000
+   chap-devops init core --only chap-core --models none --api-port 8000
    cd core
-   varde up
-   varde status                 # wait for the chap-core line to say up
+   chap-devops up
+   chap-devops status                 # wait for the chap-core line to say up
    cd ..
    ```
 
 2. Make the DHIS2 deployment and connect it to that chap-core:
 
    ```sh
-   varde init lab --chap-core-url http://localhost:8000 --with dhis2
+   chap-devops init lab --chap-core-url http://localhost:8000 --with dhis2
    cd lab
-   varde up
-   varde status                 # wait for the dhis2 line to say up
-   varde dhis2 connect
-   varde open dhis2
+   chap-devops up
+   chap-devops status                 # wait for the dhis2 line to say up
+   chap-devops dhis2 connect
+   chap-devops open dhis2
    ```
 
 If chap-core is a container (the second deployment above, or `make restart` in
 the chap-core checkout), `init` gives this warning:
 
 ```text
-warning: chap-core at http://localhost:8000 is the container `core-f380cb-chap-1`, so it calls the models back at host.docker.internal; if it is a process on this machine instead, run `varde components enable chap-core --url http://localhost:8000 --models-host localhost`
+warning: chap-core at http://localhost:8000 is the container `core-f380cb-chap-1`, so it calls the models back at host.docker.internal; if it is a process on this machine instead, run `chap-devops components enable chap-core --url http://localhost:8000 --models-host localhost`
 ```
 
-The warning is about models only. varde found the container, so the models
+The warning is about models only. chap-devops found the container, so the models
 register with the correct address. A deployment with no models can ignore it.
 
-`varde up` returns after some seconds, before DHIS2 answers. The first `varde
+`chap-devops up` returns after some seconds, before DHIS2 answers. The first `chap-devops
 up` pulls the DHIS2 images, about 2 GB, and downloads the seed dump. Then
 DHIS2 needs some seconds to some minutes before it answers. Until then,
-`varde status` shows `dhis2   starting`.
+`chap-devops status` shows `dhis2   starting`.
 
 With `--chap-core-url`, `init` enables no model unless you name one. Add
 `--models ID,ID` to start models that register with that chap-core. If a model
@@ -62,7 +62,7 @@ for the DHIS2 beside it:
   route arrives from a container. A chap-core in a container publishes its
   port on all addresses already.
 
-On the seed database, `varde dhis2 connect` printed this:
+On the seed database, `chap-devops dhis2 connect` printed this:
 
 ```text
 DHIS2 2.42.6 at http://localhost:8780, as `admin`
@@ -70,7 +70,7 @@ repointed the `chap` route at http://host.docker.internal:8000/**; chap-core ans
 installed Modeling App 7.2.0
 installed DHIS2 Climate App 1.16.2
 analytics finished in 20 seconds (job AyL1NbEW3ot)
-the Modeling App can reach Chap; open DHIS2 with `varde open dhis2`
+the Modeling App can reach Chap; open DHIS2 with `chap-devops open dhis2`
 ```
 
 The seed database has a `chap` route already, so the second line says
@@ -80,19 +80,19 @@ If chap-core does not answer, `connect` still sets the route, but it gives a
 warning and ends with another line:
 
 ```text
-warning: the `chap` route is in place but nothing answered through it: HTTP 500 Internal Server Error: finishConnect(..) failed with error(-111): Connection refused: host.docker.internal/192.168.65.254:8000; run `varde status` to see whether chap-core is up
+warning: the `chap` route is in place but nothing answered through it: HTTP 500 Internal Server Error: finishConnect(..) failed with error(-111): Connection refused: host.docker.internal/192.168.65.254:8000; run `chap-devops status` to see whether chap-core is up
 ...
-run `varde dhis2 show` to see what is still missing
+run `chap-devops dhis2 show` to see what is still missing
 ```
 
-If you see this warning, start chap-core and run `varde dhis2 connect` again.
+If you see this warning, start chap-core and run `chap-devops dhis2 connect` again.
 See [The route is there but nothing answers through it](../troubleshooting.md#the-route-is-there-but-nothing-answers-through-it).
 
-`varde open dhis2` opens DHIS2 in the browser; with `--no-browser`, it prints
+`chap-devops open dhis2` opens DHIS2 in the browser; with `--no-browser`, it prints
 the address. Log in as `admin` with the password `district`. The Modeling App
 is `Modeling` in the apps menu.
 
-It worked when `varde dhis2 connect` says `chap-core answered through it` and
+It worked when `chap-devops dhis2 connect` says `chap-core answered through it` and
 ends with `the Modeling App can reach Chap`. In the Modeling App, the Settings
 page then shows the chap-core version and `Connected`.
 

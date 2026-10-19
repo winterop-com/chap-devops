@@ -27,7 +27,10 @@ fn the_columns_line_up_whatever_the_names_are() {
 
 #[test]
 fn without_a_project_a_hint_says_where_the_rest_would_be() {
-    let outside = report(vec![Check::ok("varde", "varde", "v0.2.0")], None);
+    let outside = report(
+        vec![Check::ok("chap-devops", "chap-devops", "v0.2.0")],
+        None,
+    );
     let mut lines = crate::output::Report::default();
     closing(&outside, &mut lines);
     assert_eq!(
@@ -36,7 +39,10 @@ fn without_a_project_a_hint_says_where_the_rest_would_be() {
     );
 
     // Inside one, the hint is not there at all.
-    let inside = report(vec![Check::ok("varde", "varde", "v0.2.0")], Some("/srv/x"));
+    let inside = report(
+        vec![Check::ok("chap-devops", "chap-devops", "v0.2.0")],
+        Some("/srv/x"),
+    );
     let mut lines = crate::output::Report::default();
     closing(&inside, &mut lines);
     assert!(
@@ -145,7 +151,7 @@ fn the_components_line_reports_the_set_and_the_ocs_config() {
         detail.contains("ocs/climate-service.yaml is missing"),
         "{detail}"
     );
-    assert!(fix.unwrap().contains("varde sync"));
+    assert!(fix.unwrap().contains("chap-devops sync"));
 
     // Present, but still the example: it deploys, it just deploys the
     // wrong country.

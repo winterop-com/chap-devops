@@ -1,9 +1,9 @@
 ---
 marp: true
-theme: varde
+theme: chap-devops
 paginate: true
-footer: varde - MLproject models
-title: MLproject models with varde
+footer: chap-devops - MLproject models
+title: MLproject models with chap-devops
 description: For people who have a model in the MLproject format: serve it with no build, evaluate it, test it through chap-core, and make it a chapkit service
 ---
 
@@ -11,7 +11,7 @@ description: For people who have a model in the MLproject format: serve it with 
 <!-- _paginate: false -->
 <!-- _footer: '' -->
 
-# MLproject models with varde
+# MLproject models with chap-devops
 
 ## Serve it with no build, evaluate it, and test it with chap-core
 
@@ -25,21 +25,21 @@ For people who have a model in the MLproject format
 | --- | --- | --- |
 | What it is | a directory with an `MLproject` file and scripts | a container with an HTTP API |
 | How it runs | chap runs the `train` and `predict` commands | chap calls it over HTTP |
-| An image to build | not with `varde chapkit mlproject run` | yes, from its `Dockerfile` |
-| In a deployment | registers while `mlproject run` serves it | a service that varde manages |
+| An image to build | not with `chap-devops chapkit mlproject run` | yes, from its `Dockerfile` |
+| In a deployment | registers while `mlproject run` serves it | a service that chap-devops manages |
 
-`varde chapkit mlproject run` makes the first kind act as the second, with no
+`chap-devops chapkit mlproject run` makes the first kind act as the second, with no
 image to build. You need Docker. Python, uv, R and chapkit are not necessary.
 
 ---
 
 ## Versions
 
-- `varde chapkit mlproject run` uses chapkit images of its own. It works
+- `chap-devops chapkit mlproject run` uses chapkit images of its own. It works
   with chap-core v2.4.0 and later.
 - `mlproject export`, `--run-config.as-chapkit` and the built-in models need
   chap-core v2.5.0, the newest release.
-- In a deployment on an older tag, `varde update` moves it to v2.5.0.
+- In a deployment on an older tag, `chap-devops update` moves it to v2.5.0.
 
 ---
 
@@ -48,14 +48,14 @@ image to build. You need Docker. Python, uv, R and chapkit are not necessary.
 A model from chap-models, or your own, works as it is. For a new one:
 
 ```sh
-varde models new rain-model --template mlproject-r
+chap-devops models new rain-model --template mlproject-r
 cd rain-model && git init && git add . && git commit -m "feat: first version"
 cd ..
 ```
 
 ```text
 created rain-model in rain-model (mlproject-r template, service id rain-model)
-next: run `varde chapkit mlproject run rain-model` to serve it with no build,
+next: run `chap-devops chapkit mlproject run rain-model` to serve it with no build,
   or build the image as `rain-model/README.md` says
 ```
 
@@ -66,7 +66,7 @@ For Python, use `--template mlproject-py`.
 ## Serve it, with no build
 
 ```sh
-varde chapkit mlproject run rain-model
+chap-devops chapkit mlproject run rain-model
 ```
 
 ```text
@@ -91,13 +91,13 @@ the MLproject service answers at http://localhost:5001
 stopped the MLproject service on http://localhost:5001
 ```
 
-- varde mounts the model directory at `/work`.
+- chap-devops mounts the model directory at `/work`.
 - The port is the first free port from 5001.
 - The options after `DIR` go to chapkit, such as `--log-level debug`.
 
 ---
 
-## Which image: `varde chapkit --image`
+## Which image: `chap-devops chapkit --image`
 
 | NAME | PLATFORMS | WHAT IT HAS |
 | --- | --- | --- |
@@ -122,8 +122,8 @@ The train command in `MLproject` selects the image:
 | `Rscript` | `r-tidyverse` |
 
 ```sh
-varde chapkit --image r-inla mlproject run my-model
-varde chapkit --image my-model-base:dev mlproject run my-model
+chap-devops chapkit --image r-inla mlproject run my-model
+chap-devops chapkit --image my-model-base:dev mlproject run my-model
 ```
 
 - A model that needs INLA needs `--image r-inla`.
@@ -132,9 +132,9 @@ varde chapkit --image my-model-base:dev mlproject run my-model
 
 ---
 
-## Packages: what varde does not install
+## Packages: what chap-devops does not install
 
-- varde does not install the packages that `uv_env` or `renv_env` names.
+- chap-devops does not install the packages that `uv_env` or `renv_env` names.
 - The image has only the packages of the table.
 - If the model needs another package, the train job stops with an error such
   as `No module named 'cyclopts'`.
@@ -142,7 +142,7 @@ varde chapkit --image my-model-base:dev mlproject run my-model
 Then do one of these:
 
 1. Give `--image` with an image that has the package.
-2. Let chap install the packages: `varde chap --run-config.as-chapkit`.
+2. Let chap install the packages: `chap-devops chap --run-config.as-chapkit`.
 
 ---
 
@@ -151,7 +151,7 @@ Then do one of these:
 In a second terminal, while the service runs:
 
 ```sh
-varde chap eval --model-name http://host.docker.internal:5001 \
+chap-devops chap eval --model-name http://host.docker.internal:5001 \
   --dataset-csv laos_subset.csv --output-file rain-model.nc
 ```
 
@@ -160,20 +160,20 @@ running `chap eval` in ghcr.io/dhis2-chap/chap-core:master
 files: chap reads and writes in /home/me
 model: http://host.docker.internal:5001 answers
 chap finished; it wrote rain-model.nc
-`varde chap plot-backtest rain-model.nc --output-file rain-model.html` plots it
+`chap-devops chap plot-backtest rain-model.nc --output-file rain-model.html` plots it
 ```
 
 ---
 
 ## Why not `localhost`
 
-- `varde chap` runs chap in a container.
+- `chap-devops chap` runs chap in a container.
 - In the container, `localhost` is the container itself. A `localhost` URL
   reaches nothing there.
 - `host.docker.internal` is the name of this machine in the container.
-- So give the port that varde printed, at `host.docker.internal`.
+- So give the port that chap-devops printed, at `host.docker.internal`.
 
-varde refuses a `localhost` URL before the run, and gives the same port at
+chap-devops refuses a `localhost` URL before the run, and gives the same port at
 `host.docker.internal`.
 
 ---
@@ -184,7 +184,7 @@ Without a service, chap runs the `train` and `predict` commands in its
 worker image:
 
 ```sh
-varde chap eval --model-name ./rain-model \
+chap-devops chap eval --model-name ./rain-model \
   --dataset-csv laos_subset.csv --output-file rain-model.nc
 ```
 
@@ -192,7 +192,7 @@ With `--run-config.as-chapkit`, chap serves the directory with chapkit in
 its container, and installs what `uv_env` or `renv_env` names:
 
 ```sh
-varde chap eval --model-name ./rain-model --run-config.as-chapkit \
+chap-devops chap eval --model-name ./rain-model --run-config.as-chapkit \
   --dataset-csv laos_subset.csv --output-file rain-model.nc
 ```
 
@@ -201,15 +201,15 @@ varde chap eval --model-name ./rain-model --run-config.as-chapkit \
 ## In a deployment: it registers with chap-core
 
 ```sh
-varde init lab --models none
+chap-devops init lab --models none
 cd lab
-varde up --wait
-varde chapkit mlproject run ../rain-model
+chap-devops up --wait
+chap-devops chapkit mlproject run ../rain-model
 ```
 
 ```text
 the MLproject service answers at http://localhost:5001; it registers with
-  chap-core in this deployment, which reaches it at http://varde-mlproject-18970-0:8000
+  chap-core in this deployment, which reaches it at http://chap-devops-mlproject-18970-0:8000
 ```
 
 The commands of the deployment use the model by its id: the `name` in
@@ -222,9 +222,9 @@ The commands of the deployment use the model by its id: the `name` in
 In a second terminal, in `lab`:
 
 ```text
-$ varde models configs sync rain-model
+$ chap-devops models configs sync rain-model
 rain-model: created configured model default
-$ varde models test rain-model --backtest
+$ chap-devops models test rain-model --backtest
 testing 1 model (through chap-core: a dataset, a backtest and its scores)
 rain-model    pass      13s   crps 31.4  mae 31.4  rmse 37.5
   configured model: default (id 21)
@@ -240,23 +240,23 @@ while the service runs.
 ## Commit first: chap-core needs a git revision
 
 - chap-core stores a model only with a git revision.
-- varde gives chapkit the git commit of the model directory.
-- If the directory has changes that are not committed, varde warns.
+- chap-devops gives chapkit the git commit of the model directory.
+- If the directory has changes that are not committed, chap-devops warns.
 
 After a change:
 
 1. Commit the change.
 2. Raise `version` in `MLproject`.
-3. Run `varde chapkit mlproject run DIR` again.
+3. Run `chap-devops chapkit mlproject run DIR` again.
 
-`varde status` does not show the service, because varde does not manage it.
+`chap-devops status` does not show the service, because chap-devops does not manage it.
 
 ---
 
 ## In the Modeling App
 
 With DHIS2 in the deployment, the served model is in **Select model**, by
-the `name` in `MLproject`, with the commit that varde gave chapkit.
+the `name` in `MLproject`, with the commit that chap-devops gave chapkit.
 
 - An evaluation runs as for any other model.
 - `rain-model` has no covariates, so map only **Disease cases**.
@@ -271,7 +271,7 @@ the `name` in `MLproject`, with the commit that varde gave chapkit.
 Commit first: the migration moves files to `_old/`. In the model directory:
 
 ```text
-$ varde chapkit mlproject migrate . --yes --base-image chapkit-r-tidyverse
+$ chap-devops chapkit mlproject migrate . --yes --base-image chapkit-r-tidyverse
 running `chapkit mlproject migrate` in ghcr.io/dhis2-chap/chap-core:master
 chapkit finished; it wrote .dockerignore, .gitignore, CHAPKIT.md, Dockerfile,
   Makefile, README.md, _old/.dockerignore, _old/.gitignore, and 6 more
@@ -291,9 +291,9 @@ docker build --platform linux/amd64 \
 ```
 
 ```text
-$ varde run rain-model:dev
+$ chap-devops run rain-model:dev
 running rain_model on http://localhost:5001 (answered in 2s)
-$ varde -C ~/.local/share/varde/run/default models test rain_model
+$ chap-devops -C ~/.local/share/chap-devops/run/default models test rain_model
 1 of 1 model passes
 ```
 
@@ -307,22 +307,22 @@ A chapkit service that runs scripts can write the `MLproject` of the same
 model:
 
 ```text
-$ varde chapkit mlproject export main.py -o MLproject
+$ chap-devops chapkit mlproject export main.py -o MLproject
 running `chapkit mlproject export` in ghcr.io/dhis2-chap/chap-core:master
 chapkit finished; it wrote MLproject
 ```
 
 - Only a service that runs scripts, such as one from `shell-py` or `shell-r`.
 - The exported `MLproject` runs only with chapkit's runner:
-  `varde chapkit mlproject run`, or `--run-config.as-chapkit`.
-- It does not run with `varde chap` alone.
+  `chap-devops chapkit mlproject run`, or `--run-config.as-chapkit`.
+- It does not run with `chap-devops chap` alone.
 
 ---
 
 ## What was tested
 
 On chap-core `master` (chapkit 2.4.0), macOS arm64. Each model was served
-with `mlproject run` and evaluated with `varde chap eval`:
+with `mlproject run` and evaluated with `chap-devops chap eval`:
 
 | Image | The models that pass |
 | --- | --- |
@@ -340,17 +340,17 @@ All three ran in `py-data`, the default image:
 | Model | Result |
 | --- | --- |
 | `chap_pymc` | fails: the image has no `cyclopts`, which its `uv_env` names |
-| `IMPA-TECH-SARIMA` | fails in the model, also without varde |
+| `IMPA-TECH-SARIMA` | fails in the model, also without chap-devops |
 | `rwanda_random_forest` | fails in its train script |
 
-A package that the image does not have: see **Packages: what varde does not
+A package that the image does not have: see **Packages: what chap-devops does not
 install**.
 
 ---
 
 ## When something fails: serve and test
 
-| varde or chap says | What to do |
+| chap-devops or chap says | What to do |
 | --- | --- |
 | `is not a git checkout, so chap-core cannot store the model` | `git init`, `git add .`, `git commit`, then serve again |
 | `has changes that are not committed` | Commit, raise `version` in `MLproject`, serve again |
@@ -363,7 +363,7 @@ install**.
 
 ## When something fails: migrate and export
 
-| varde or chapkit says | What to do |
+| chap-devops or chapkit says | What to do |
 | --- | --- |
 | `No Python (.py) or R (.r/.R) scripts at the project root` | Give `--base-image`, as `README.md` says |
 | `Only ShellModelRunner services can be exported` | Move the model to scripts, as in `shell-py` |
@@ -377,12 +377,12 @@ Each message is in the book's Troubleshooting chapter, with more detail.
 ## Start now
 
 ```sh
-varde models new rain-model --template mlproject-r
+chap-devops models new rain-model --template mlproject-r
 cd rain-model && git init && git add . && git commit -m "feat: first version"
-varde chapkit mlproject run .
+chap-devops chapkit mlproject run .
 ```
 
 - The guide, step by step:
-  **https://winterop-com.github.io/varde/use-cases/mlproject-model.html**
-- The chapter about `varde chapkit`:
-  **https://winterop-com.github.io/varde/chapkit-cli.html**
+  **https://winterop-com.github.io/chap-devops/use-cases/mlproject-model.html**
+- The chapter about `chap-devops chapkit`:
+  **https://winterop-com.github.io/chap-devops/chapkit-cli.html**

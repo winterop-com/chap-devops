@@ -108,7 +108,7 @@ pub fn components_verdict(
 /// facts is something to do.
 ///
 /// The missing-config `fail` carries none of it: there is no instance to hold
-/// datasets, credentials or plugins until the file is back, `varde sync` is the
+/// datasets, credentials or plugins until the file is back, `chap-devops sync` is the
 /// one next step either way, and the dataset count and the data size are only
 /// ever read out of a running container, which a deployment in that state does
 /// not have.
@@ -122,7 +122,8 @@ fn ocs_part(components: &Components, facts: &OcsFacts) -> Option<ComponentPart> 
             status: Status::Fail,
             detail: format!("{config} is missing"),
             fix: Some(
-                "run `varde sync` to scaffold it again, then edit it for your country".to_string(),
+                "run `chap-devops sync` to scaffold it again, then edit it for your country"
+                    .to_string(),
             ),
         });
     };
@@ -135,7 +136,7 @@ fn ocs_part(components: &Components, facts: &OcsFacts) -> Option<ComponentPart> 
             ),
             fix: Some(format!(
                 "edit {config} for your own country or region and delete the note at the top; \
-                 `varde components enable ocs --ocs-name NAME --ocs-country CODE --ocs-bbox \
+                 `chap-devops components enable ocs --ocs-name NAME --ocs-country CODE --ocs-bbox \
                  xmin,ymin,xmax,ymax` writes it for a deployment that has none"
             )),
         });
@@ -148,7 +149,7 @@ fn ocs_part(components: &Components, facts: &OcsFacts) -> Option<ComponentPart> 
 }
 
 /// The `dhis2` half: whether its one mandatory file is there, what the database
-/// will be seeded from, and whether a `varde dhis2 connect` has been recorded.
+/// will be seeded from, and whether a `chap-devops dhis2 connect` has been recorded.
 ///
 /// The missing file is the only thing here that is judged, and it is a fault
 /// with nothing arguable about it - DHIS2 throws on startup without
@@ -159,9 +160,9 @@ fn ocs_part(components: &Components, facts: &OcsFacts) -> Option<ComponentPart> 
 ///
 /// The connect record is reported on exactly those terms, and for the same
 /// reason it is never judged: a deployment nothing has connected is one with a
-/// step left, not a broken one, and `varde doctor` holds no DHIS2 credentials
+/// step left, not a broken one, and `chap-devops doctor` holds no DHIS2 credentials
 /// and could not check the route if it wanted to. What it can do is say what
-/// `.varde/components.yaml` holds, in words that cannot be read as a verdict on
+/// `.chap-devops/components.yaml` holds, in words that cannot be read as a verdict on
 /// the route - the command and the time it ran - so that an operator whose
 /// Modeling App cannot see Chap finds the answer on the line they were already
 /// reading. [`crate::commands::status`] is where the same fact turns into a
@@ -177,7 +178,7 @@ fn dhis2_part(components: &Components, facts: &Dhis2Facts) -> Option<ComponentPa
             status: Status::Fail,
             detail: format!("{config} is missing"),
             fix: Some(format!(
-                "run `varde sync` to scaffold {config} again: DHIS2 throws on startup without it, \
+                "run `chap-devops sync` to scaffold {config} again: DHIS2 throws on startup without it, \
                  and there is no environment-only mode"
             )),
         });
@@ -194,37 +195,37 @@ fn dhis2_part(components: &Components, facts: &Dhis2Facts) -> Option<ComponentPa
 }
 
 /// What the `dhis2` part says about the recorded connect: the time
-/// `varde dhis2 connect` last finished here, or that nothing has.
+/// `chap-devops dhis2 connect` last finished here, or that nothing has.
 ///
 /// Named as the command and a timestamp rather than as a state, because that is
 /// all it is. "connected: yes" would be a claim about a DHIS2 nothing here
-/// asked; "last `varde dhis2 connect`: the time it ran" is a fact about this
+/// asked; "last `chap-devops dhis2 connect`: the time it ran" is a fact about this
 /// file.
 ///
 /// Empty on a deployment with no chap-core, where there is nothing to connect
-/// to and `varde dhis2 connect` refuses - the same line
+/// to and `chap-devops dhis2 connect` refuses - the same line
 /// [`Components::dhis2_needs_connecting`] draws.
 fn dhis2_connect_note(components: &Components) -> String {
     if !components.chap_core.enabled {
         return String::new();
     }
     match &components.dhis2.connected_at {
-        Some(at) => format!("; last `varde dhis2 connect`: {at}"),
-        None => "; no `varde dhis2 connect` recorded".to_string(),
+        Some(at) => format!("; last `chap-devops dhis2 connect`: {at}"),
+        None => "; no `chap-devops dhis2 connect` recorded".to_string(),
     }
 }
 
 /// What the `dhis2` part says about the seed: which of the three answers
-/// `.varde/components.yaml` holds, and what `default` resolves to.
+/// `.chap-devops/components.yaml` holds, and what `default` resolves to.
 ///
 /// The resolution is worth printing because it is the half that does not follow
-/// from the setting: a minor line varde publishes no dump for resolves to
-/// nothing, and `varde doctor` is the last place to learn that before the first
-/// `varde up` brings up an empty DHIS2 with no explanation.
+/// from the setting: a minor line chap-devops publishes no dump for resolves to
+/// nothing, and `chap-devops doctor` is the last place to learn that before the first
+/// `chap-devops up` brings up an empty DHIS2 with no explanation.
 fn dhis2_seed_note(components: &Components) -> String {
     if components.dhis2_seed_is_unknown() {
         return format!(
-            "seed: default, and varde knows no dump for {} (the database starts empty)",
+            "seed: default, and chap-devops knows no dump for {} (the database starts empty)",
             crate::components::dhis2_minor(&components.dhis2.image_tag)
         );
     }
@@ -287,7 +288,7 @@ pub fn components_check(project: &Project, running: &BTreeSet<String>) -> Check 
             .and_then(|url| crate::status::ocs_datasets(&url)),
         data_bytes: live.then(|| docker::ocs_data_bytes(project)).flatten(),
     };
-    // Nothing is asked of a running DHIS2 here. What `varde status` can learn
+    // Nothing is asked of a running DHIS2 here. What `chap-devops status` can learn
     // over HTTP it has already put on the `dhis2` line, and everything past that
     // - the version most of all - is behind a login this CLI does not hold.
     let dhis2 = Dhis2Facts {

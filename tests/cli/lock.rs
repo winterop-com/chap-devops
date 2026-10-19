@@ -1,17 +1,17 @@
-//! Two varde commands on one deployment at once: the state lock in
-//! `.varde/lock` makes the second wait for the first.
+//! Two chap-devops commands on one deployment at once: the state lock in
+//! `.chap-devops/lock` makes the second wait for the first.
 
 use crate::common::*;
 use std::collections::BTreeSet;
 use std::process::{Command, Stdio};
 
-/// `varde --offline -C <project> <args>` as a plain process, so several can
+/// `chap-devops --offline -C <project> <args>` as a plain process, so several can
 /// run at the same time.
 fn spawn(sandbox: &Sandbox, args: &[&str]) -> std::process::Child {
-    Command::new(assert_cmd::cargo::cargo_bin("varde"))
-        .env("VARDE_CACHE_DIR", sandbox.cache.path())
-        .env("VARDE_DATA_DIR", sandbox.cache.path().join("data"))
-        .env("VARDE_NO_DOCKER_PROBE", "1")
+    Command::new(assert_cmd::cargo::cargo_bin("chap-devops"))
+        .env("CHAP_DEVOPS_CACHE_DIR", sandbox.cache.path())
+        .env("CHAP_DEVOPS_DATA_DIR", sandbox.cache.path().join("data"))
+        .env("CHAP_DEVOPS_NO_DOCKER_PROBE", "1")
         .env_remove("GITHUB_TOKEN")
         .env_remove("GH_TOKEN")
         .current_dir(sandbox.home.path())
@@ -22,7 +22,7 @@ fn spawn(sandbox: &Sandbox, args: &[&str]) -> std::process::Child {
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
         .spawn()
-        .expect("varde starts")
+        .expect("chap-devops starts")
 }
 
 #[test]
@@ -45,7 +45,7 @@ fn parallel_enables_with_port_auto_all_land_on_different_ports() {
         .map(|id| spawn(&sandbox, &["models", "enable", id, "--port", "auto"]))
         .collect();
     for (id, child) in ids.iter().zip(children) {
-        let out = child.wait_with_output().expect("varde finishes");
+        let out = child.wait_with_output().expect("chap-devops finishes");
         assert!(
             out.status.success(),
             "{id}: {}",

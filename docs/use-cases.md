@@ -3,14 +3,14 @@
 Helping someone as an AI assistant? Start at [For AI assistants](./ai.md),
 which turns these pages into a menu of options with the exact commands.
 
-`varde` deploys Chap, but Chap is only one of the shapes a deployment can take.
-The same directory layout, the same commands and the same `varde up` /
-`varde status` / `varde doctor` loop work for any combination of:
+`chap-devops` deploys Chap, but Chap is only one of the shapes a deployment can take.
+The same directory layout, the same commands and the same `chap-devops up` /
+`chap-devops status` / `chap-devops doctor` loop work for any combination of:
 
 | Piece | What it is | How you ask for it |
 | --- | --- | --- |
 | chap-core | Chap itself: the API, its worker, Valkey and PostgreSQL | on by default; `--without chap-core` or `--only` leaves it out |
-| model services | chapkit forecasting models from the marketplace, or your own | `--models ID,...`, later `varde models enable ID` |
+| model services | chapkit forecasting models from the marketplace, or your own | `--models ID,...`, later `chap-devops models enable ID` |
 | `ocs` | Open Climate Service: climate data over STAC and openEO | `--with ocs`, or `--only ocs` |
 | `s3` | an S3-compatible object store for OCS to keep objects in | `--with s3`, or `--only ocs,s3` |
 | `dhis2` | a demo or development DHIS2 with its own database | `--with dhis2`, or `--only dhis2` |
@@ -19,18 +19,18 @@ The same directory layout, the same commands and the same `varde up` /
 chap-core is part of it only if you list it. Each page below is one shape
 people actually deploy: the command that creates it, what you get, and what to
 run next. They are not exclusive: a deployment can move from one shape to
-another later with `varde components enable` / `disable` and `varde models
+another later with `chap-devops components enable` / `disable` and `chap-devops models
 enable` / `disable`. See [Growing a deployment](./use-cases/growing.md).
 
 ## Only one piece
 
 | I want | Page | First command |
 | --- | --- | --- |
-| only DHIS2 (2.42, 2.43, 2.41 or the next one) | [A DHIS2 on its own](./use-cases/dhis2-alone.md) | `varde init dhis --only dhis2` |
-| only OCS (with or without S3) | [An OCS server on its own](./use-cases/ocs-alone.md) | `varde init climate --only ocs,s3` |
-| only one model service | [A chapkit model service on its own](./use-cases/model-alone.md) | `varde run chapkit_simple_multistep_model` |
-| only some model services | [Several model services side by side](./use-cases/models-alone.md) | `varde init models --only none --models ID,ID` |
-| any number of model services, no folder | [Any number of model services, no folder](./use-cases/models-with-run.md) | `varde run ID`, once per model |
+| only DHIS2 (2.42, 2.43, 2.41 or the next one) | [A DHIS2 on its own](./use-cases/dhis2-alone.md) | `chap-devops init dhis --only dhis2` |
+| only OCS (with or without S3) | [An OCS server on its own](./use-cases/ocs-alone.md) | `chap-devops init climate --only ocs,s3` |
+| only one model service | [A chapkit model service on its own](./use-cases/model-alone.md) | `chap-devops run chapkit_simple_multistep_model` |
+| only some model services | [Several model services side by side](./use-cases/models-alone.md) | `chap-devops init models --only none --models ID,ID` |
+| any number of model services, no folder | [Any number of model services, no folder](./use-cases/models-with-run.md) | `chap-devops run ID`, once per model |
 
 ## Chap
 
@@ -42,18 +42,18 @@ enable` / `disable`. See [Growing a deployment](./use-cases/growing.md).
 
 ## Evaluating with the chap CLI
 
-- [Evaluating a model on your own data](./use-cases/evaluate-with-chap-cli.md): chap-core's `chap eval` on your CSV, through `varde chap`, with no Python or uv.
+- [Evaluating a model on your own data](./use-cases/evaluate-with-chap-cli.md): chap-core's `chap eval` on your CSV, through `chap-devops chap`, with no Python or uv.
 
 ## Developing Chap, a model or DHIS2
 
-- [A new model of your own](./use-cases/new-model.md): `varde models new` makes a model project in Python or R, and Docker builds it.
-- [An MLproject model, with no image to build](./use-cases/mlproject-model.md): `varde chapkit mlproject run` serves the directory, chap-core tests it, and `migrate` and `export` change it to a chapkit service and back.
-- [Your model from its checkout, with Chap](./use-cases/model-on-host.md): varde runs chap-core; you run your model with `uv run` and it registers.
+- [A new model of your own](./use-cases/new-model.md): `chap-devops models new` makes a model project in Python or R, and Docker builds it.
+- [An MLproject model, with no image to build](./use-cases/mlproject-model.md): `chap-devops chapkit mlproject run` serves the directory, chap-core tests it, and `migrate` and `export` change it to a chapkit service and back.
+- [Your model from its checkout, with Chap](./use-cases/model-on-host.md): chap-devops runs chap-core; you run your model with `uv run` and it registers.
 - [A model image you built yourself](./use-cases/local-model-image.md): `docker build` a model and run it in Chap without publishing it.
-- [chap-core from its checkout, with the models](./use-cases/chap-core-on-host.md): you run chap-core; varde runs the models and registers them with it.
-- [chap-core built from its checkout](./use-cases/chap-core-from-checkout.md): varde builds chap-core from your clone and runs it with everything else.
-- [A DHIS2 you run yourself, with Chap from varde](./use-cases/dhis2-dev-with-chap.md): your DHIS2 and a chap-core from varde, connected.
-- [A DHIS2 from varde, with a chap-core elsewhere](./use-cases/dhis2-with-chap-core-elsewhere.md): a DHIS2 from varde and your chap-core, connected.
+- [chap-core from its checkout, with the models](./use-cases/chap-core-on-host.md): you run chap-core; chap-devops runs the models and registers them with it.
+- [chap-core built from its checkout](./use-cases/chap-core-from-checkout.md): chap-devops builds chap-core from your clone and runs it with everything else.
+- [A DHIS2 you run yourself, with Chap from chap-devops](./use-cases/dhis2-dev-with-chap.md): your DHIS2 and a chap-core from chap-devops, connected.
+- [A DHIS2 from chap-devops, with a chap-core elsewhere](./use-cases/dhis2-with-chap-core-elsewhere.md): a DHIS2 from chap-devops and your chap-core, connected.
 
 ## More than one, and changing your mind
 
@@ -70,5 +70,5 @@ enable` / `disable`. See [Growing a deployment](./use-cases/growing.md).
 | `update` | no | pulls the images; `--chap-tag` and `--pin-chap-core` refuse |
 | `backup create` / `restore` | no | back up the files and the volumes, and a `pg_dump` of the DHIS2 database when DHIS2 is a component; there is no chap-core database to dump |
 | `open` | no | opens whatever is enabled |
-| `models test --backtest`, `jobs`, `api` | yes | refuse, naming `varde components enable chap-core` (`api --url` still works) |
+| `models test --backtest`, `jobs`, `api` | yes | refuse, naming `chap-devops components enable chap-core` (`api --url` still works) |
 | `dhis2 connect` | yes | refuses: there is no chap-core to connect DHIS2 to |

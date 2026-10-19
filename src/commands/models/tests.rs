@@ -176,7 +176,7 @@ fn info_names_the_source_and_the_branch_of_a_manual_model() {
     let text = detail_with(&manual, None, Some(&entry));
     assert!(text.contains("kind        manual"), "{text}");
     assert!(
-        text.contains("source      manual (`varde models add`, 2026-09-24)"),
+        text.contains("source      manual (`chap-devops models add`, 2026-09-24)"),
         "{text}"
     );
     assert!(text.contains("follows     main"), "{text}");
@@ -318,7 +318,7 @@ fn info_covers_every_documented_section() {
     // leaving the missing block to be noticed.
     assert!(text.ends_with(
         "chapkit_ewars_model is not enabled in this deployment\n\
-         hint: `varde models enable chapkit_ewars_model` enables it\n"
+         hint: `chap-devops models enable chapkit_ewars_model` enables it\n"
     ));
     assert!(text.lines().all(|l| !l.ends_with(' ')), "{text}");
 }
@@ -476,7 +476,7 @@ fn a_listing_ends_on_one_count_line_and_the_way_to_enable_is_a_hint() {
     assert_eq!(
         lines.text(),
         "1 listed, none enabled in this deployment\n\
-         hint: `varde models enable ID` enables one\n"
+         hint: `chap-devops models enable ID` enables one\n"
     );
 
     let mut lines = Report::default();
@@ -487,6 +487,6 @@ fn a_listing_ends_on_one_count_line_and_the_way_to_enable_is_a_hint() {
     list_lines(&[], true, true, &mut lines);
     assert_eq!(
         lines.text(),
-        "no models enabled\nhint: `varde models enable ID` enables one\n"
+        "no models enabled\nhint: `chap-devops models enable ID` enables one\n"
     );
 }

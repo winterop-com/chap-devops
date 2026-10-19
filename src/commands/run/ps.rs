@@ -1,4 +1,4 @@
-//! `varde ps`, and the scope `stop` and `top` share with it.
+//! `chap-devops ps`, and the scope `stop` and `top` share with it.
 
 use super::{group_dir, groups, groups_dir, target};
 use crate::cli::ModelPsArgs;
@@ -13,19 +13,19 @@ use std::collections::BTreeSet;
 use std::path::PathBuf;
 use std::time::Duration;
 
-/// One model as `varde ps` lists it.
+/// One model as `chap-devops ps` lists it.
 #[derive(Debug, Serialize)]
 pub struct PsRow {
     /// The group it runs in; `null` inside a deployment of the caller's own.
     pub group: Option<String>,
     #[serde(flatten)]
     pub model: ModelRef,
-    /// The `varde status` STATE word.
+    /// The `chap-devops status` STATE word.
     pub state: &'static str,
     pub project_dir: PathBuf,
 }
 
-/// What `varde ps` found, for `--json`.
+/// What `chap-devops ps` found, for `--json`.
 #[derive(Debug, Serialize)]
 pub(super) struct PsReport {
     pub(super) models: Vec<PsRow>,
@@ -54,7 +54,7 @@ pub(crate) fn scope(ctx: &Ctx, group: Option<&str>) -> Result<Vec<(Option<String
     })
 }
 
-/// Every model in `scope`, with its state as `varde status` would say it.
+/// Every model in `scope`, with its state as `chap-devops status` would say it.
 pub(crate) fn rows(scope: &[(Option<String>, PathBuf)]) -> Result<Vec<PsRow>> {
     let mut out = Vec::new();
     for (group, dir) in scope {
@@ -103,7 +103,7 @@ pub fn ps(ctx: &Ctx, args: &ModelPsArgs) -> Result<()> {
     })
 }
 
-/// The table of `varde ps`; empty when there is no model to list.
+/// The table of `chap-devops ps`; empty when there is no model to list.
 pub(super) fn ps_table(report: &PsReport, out: &Out) -> String {
     if report.models.is_empty() {
         return String::new();
@@ -135,7 +135,7 @@ pub(super) fn ps_table(report: &PsReport, out: &Out) -> String {
     out.table(&headers, &rows)
 }
 
-/// The lines after the table of `varde ps`, or in place of it. `group` is
+/// The lines after the table of `chap-devops ps`, or in place of it. `group` is
 /// the `--group` the command was given.
 pub(super) fn say(
     report: &PsReport,
@@ -147,17 +147,17 @@ pub(super) fn say(
         match (scope, group) {
             ([(None, _)], _) => lines.info("no models are enabled here"),
             ([], Some(name)) => lines.info(format!(
-                "there is no `varde run` group {name}; `varde ps` lists every group"
+                "there is no `chap-devops run` group {name}; `chap-devops ps` lists every group"
             )),
-            ([], None) => lines.info("nothing has been started with `varde run` yet"),
+            ([], None) => lines.info("nothing has been started with `chap-devops run` yet"),
             (_, Some(name)) => lines.info(format!("no model runs in group {name}")),
-            (_, None) => lines.info("no model runs in a `varde run` group"),
+            (_, None) => lines.info("no model runs in a `chap-devops run` group"),
         };
         lines.hint(match group {
             Some(name) if name != super::DEFAULT_GROUP => {
-                format!("`varde run <model> --group {name}` starts one")
+                format!("`chap-devops run <model> --group {name}` starts one")
             }
-            _ => "`varde run <model>` starts one".to_string(),
+            _ => "`chap-devops run <model>` starts one".to_string(),
         });
         return;
     }

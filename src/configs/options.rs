@@ -6,7 +6,7 @@
 //! JSON schema written by pydantic: a `type`, or an `anyOf` with `null` for an
 //! optional field, an `enum` for a `Literal`, `items` for a list. chap-core
 //! does not check the values of a chapkit configured model, and chapkit
-//! accepts extra keys, so a mistake would only show at the first run. varde
+//! accepts extra keys, so a mistake would only show at the first run. chap-devops
 //! checks them before the request.
 
 use serde::Serialize;
@@ -28,7 +28,7 @@ pub enum Kind {
     Enum {
         values: Vec<Json>,
     },
-    /// A schema varde does not read, such as a reference or an object: any
+    /// A schema chap-devops does not read, such as a reference or an object: any
     /// JSON value, or the text as a string.
     Any,
 }

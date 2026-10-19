@@ -1,4 +1,4 @@
-//! `varde models configs add ID --name NAME [--set KEY=VALUE ...]
+//! `chap-devops models configs add ID --name NAME [--set KEY=VALUE ...]
 //! [--covariates a,b]`, `add ID --from FILE`, and `add ID` alone, which
 //! opens the form at a terminal.
 
@@ -8,7 +8,7 @@ use crate::commands::Ctx;
 use crate::configs::{self, Draft, export, options};
 use crate::error::{ChapError, Result};
 
-/// `varde models configs add`.
+/// `chap-devops models configs add`.
 pub fn add(ctx: &Ctx, args: &ConfigsAddArgs) -> Result<()> {
     if let Some(file) = &args.from {
         return add_from(ctx, args, file);
@@ -84,7 +84,7 @@ fn first_of_version(session: &Session) -> bool {
 
 fn sync_hint(id: &str) -> String {
     format!(
-        "{id} has a configured model of this version now, so `varde models configs sync` adds \
+        "{id} has a configured model of this version now, so `chap-devops models configs sync` adds \
          no marketplace configuration to it"
     )
 }
@@ -110,7 +110,7 @@ fn add_from(ctx: &Ctx, args: &ConfigsAddArgs, file: &std::path::Path) -> Result<
         {
             return Err(ChapError::Usage(format!(
                 "{id} has a configured model {name} already; remove it from `{}`, or archive it \
-                 first with `varde models configs archive {id} {name}`",
+                 first with `chap-devops models configs archive {id} {name}`",
                 file.display()
             ))
             .into());
@@ -129,7 +129,7 @@ fn add_from(ctx: &Ctx, args: &ConfigsAddArgs, file: &std::path::Path) -> Result<
                 return Err(match done.is_empty() {
                     true => err,
                     false => anyhow::anyhow!(
-                        "{err}; created {} before it, and `varde models configs add {id} --from \
+                        "{err}; created {} before it, and `chap-devops models configs add {id} --from \
                          {}` refuses those names now",
                         done.join(", "),
                         file.display()

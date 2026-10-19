@@ -50,8 +50,8 @@ fn a_password_failure_maps_to_the_volume_it_came_from() {
         hint.contains("the database volume holds a different password"),
         "{hint}"
     );
-    assert!(hint.contains("varde down --volumes"), "{hint}");
-    assert!(hint.contains("varde doctor"), "{hint}");
+    assert!(hint.contains("chap-devops down --volumes"), "{hint}");
+    assert!(hint.contains("chap-devops doctor"), "{hint}");
 
     // The bare line chap-core prints, without the traceback around it.
     let bare = Unhealthy::of(
@@ -73,7 +73,7 @@ fn a_refused_database_maps_to_the_database() {
     let entry = Unhealthy::of("chap", logs);
     assert_eq!(
         entry.hint.as_deref(),
-        Some("the database or valkey did not come up; run `varde logs postgres`")
+        Some("the database or valkey did not come up; run `chap-devops logs postgres`")
     );
 }
 
@@ -278,7 +278,7 @@ fn a_seed_restore_that_stopped_says_the_volume_has_to_go() {
     );
     let hint = entry.hint.expect("a hint");
     assert!(
-        hint.contains("`varde components disable dhis2 --purge`"),
+        hint.contains("`chap-devops components disable dhis2 --purge`"),
         "{hint}"
     );
     // Never every volume: that would take the chap-core database as well.
@@ -295,7 +295,7 @@ fn a_database_without_the_seed_mark_says_so() {
     let (why, hint) = seed_mark_verdict(Some("")).expect("no mark");
     assert!(why.contains("did not finish"), "{why}");
     assert!(
-        hint.contains("`varde components disable dhis2 --purge`"),
+        hint.contains("`chap-devops components disable dhis2 --purge`"),
         "{hint}"
     );
 }
@@ -310,7 +310,7 @@ fn a_failed_dhis2_migration_says_to_go_up_one_version_at_a_time() {
     let hint = entry.hint.expect("a hint");
     assert!(hint.contains("one version at a time"), "{hint}");
     assert!(
-        hint.contains("`varde components enable dhis2 --tag VERSION`"),
+        hint.contains("`chap-devops components enable dhis2 --tag VERSION`"),
         "{hint}"
     );
     assert!(!hint.contains("components.yaml"), "{hint}");
@@ -326,10 +326,10 @@ const DUMP_LOG: &str = concat!(
     "dhis2-dump-1  | downloading https://databases.dhis2.org/climate/laos/2.42/laos.sql.gz\n",
     "dhis2-dump-1  | the dump is DHIS2 2.42 (its newest Flyway migration)\n",
     "dhis2-dump-1  | error: DHIS2 2.41 is older than the dump (DHIS2 2.42), and DHIS2 does not \
-     run a newer database; run varde components enable dhis2 --tag 2.42, then varde up\n",
+     run a newer database; run chap-devops components enable dhis2 --tag 2.42, then chap-devops up\n",
 );
 
-/// A one-shot that exits with an error is a failure `varde up` explains: its
+/// A one-shot that exits with an error is a failure `chap-devops up` explains: its
 /// log lines under `why dhis2-dump failed:`, and the command that fixes it.
 #[test]
 fn a_failed_dump_step_is_explained_with_the_command_that_fixes_it() {
@@ -349,6 +349,6 @@ fn a_failed_dump_step_is_explained_with_the_command_that_fixes_it() {
     assert_eq!(
         hint,
         "the dump is DHIS2 2.42, and DHIS2 does not run a newer database; run \
-         `varde components enable dhis2 --tag 2.42`, then `varde up`"
+         `chap-devops components enable dhis2 --tag 2.42`, then `chap-devops up`"
     );
 }

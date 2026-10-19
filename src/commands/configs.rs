@@ -1,4 +1,4 @@
-//! `varde models configs`: the configured models chap-core has of each model.
+//! `chap-devops models configs`: the configured models chap-core has of each model.
 //!
 //! The rules are in [`crate::configs`]; this module picks the models, asks
 //! chap-core and reports. `sync` is the step that other commands run too.
@@ -35,7 +35,10 @@ pub(crate) fn api_of(project: &Project) -> Api {
 /// The deployment, refused when it has no chap-core.
 fn project_of(ctx: &Ctx) -> Result<Project> {
     let project = ctx.project()?;
-    crate::components::require_chap_core(&project.state.components, "`varde models configs`")?;
+    crate::components::require_chap_core(
+        &project.state.components,
+        "`chap-devops models configs`",
+    )?;
     Ok(project)
 }
 
@@ -106,7 +109,7 @@ impl Session {
         }
         if self.existing.iter().any(|config| wanted(&config)) {
             return Err(anyhow::anyhow!(
-                "the configured model {name} of {id} is archived; `varde models configs list \
+                "the configured model {name} of {id} is archived; `chap-devops models configs list \
                  {id} --all` shows it"
             ));
         }
@@ -118,7 +121,7 @@ impl Session {
             .collect();
         Err(anyhow::anyhow!(match live.is_empty() {
             true => format!(
-                "{id} has no configured model {name}, and no other one; `varde models configs \
+                "{id} has no configured model {name}, and no other one; `chap-devops models configs \
                  list {id} --all` shows the archived ones"
             ),
             false => format!(
@@ -179,7 +182,7 @@ struct ModelConfigs {
     configs: Vec<Listed>,
 }
 
-/// `varde models configs [list] [ID] [--all]`.
+/// `chap-devops models configs [list] [ID] [--all]`.
 pub fn list(ctx: &Ctx, args: &ConfigsListArgs) -> Result<()> {
     let project = project_of(ctx)?;
     let ids: Vec<String> = args.id.iter().cloned().collect();
@@ -189,7 +192,7 @@ pub fn list(ctx: &Ctx, args: &ConfigsListArgs) -> Result<()> {
             .out
             .report(&serde_json::json!({ "models": [] }), |lines| {
                 lines.info(
-                    "this deployment enables no models; enable one with `varde models enable ID`",
+                    "this deployment enables no models; enable one with `chap-devops models enable ID`",
                 );
             });
     }
@@ -225,7 +228,7 @@ pub fn list(ctx: &Ctx, args: &ConfigsListArgs) -> Result<()> {
         .report(&serde_json::json!({ "models": models }), |lines| {
             for model in models.iter().filter(|model| model.configs.is_empty()) {
                 lines.info(format!(
-                    "{}: chap-core has no configured model of it; `varde models configs sync \
+                    "{}: chap-core has no configured model of it; `chap-devops models configs sync \
                      {}` creates them",
                     model.id, model.id
                 ));
@@ -289,7 +292,7 @@ fn rows(configs: &[Listed], all: bool) -> Vec<Vec<String>> {
         .collect()
 }
 
-/// `varde models configs archive ID NAME`.
+/// `chap-devops models configs archive ID NAME`.
 pub fn archive(ctx: &Ctx, args: &ConfigsArchiveArgs) -> Result<()> {
     let project = project_of(ctx)?;
     let target = one_target(ctx, &project, &args.id)?;
@@ -301,7 +304,7 @@ pub fn archive(ctx: &Ctx, args: &ConfigsArchiveArgs) -> Result<()> {
     let Some(config) = existing.iter().filter(wanted).find(|c| !c.archived) else {
         if existing.iter().any(|config| wanted(&config)) {
             return Err(anyhow::anyhow!(
-                "the configured model {} of {id} is archived already; `varde models configs \
+                "the configured model {} of {id} is archived already; `chap-devops models configs \
                  list {id} --all` shows it",
                 args.name
             ));
@@ -313,7 +316,7 @@ pub fn archive(ctx: &Ctx, args: &ConfigsArchiveArgs) -> Result<()> {
             .collect();
         return Err(anyhow::anyhow!(match live.is_empty() {
             true => format!(
-                "{id} has no configured model {}, and no other one; `varde models configs list \
+                "{id} has no configured model {}, and no other one; `chap-devops models configs list \
                  {id} --all` shows the archived ones",
                 args.name
             ),
@@ -336,12 +339,12 @@ pub fn archive(ctx: &Ctx, args: &ConfigsArchiveArgs) -> Result<()> {
         ));
         if !leaves_alone {
             lines.info(format!(
-                "{id} has no other configured model now, so `varde models configs sync` and \
-                 `varde up --wait` create its configured models again"
+                "{id} has no other configured model now, so `chap-devops models configs sync` and \
+                 `chap-devops up --wait` create its configured models again"
             ));
         } else if label != "by hand" {
             lines.hint(format!(
-                "`varde models configs sync` does not create {} again while {id} has other \
+                "`chap-devops models configs sync` does not create {} again while {id} has other \
                  configured models",
                 config.variant
             ));

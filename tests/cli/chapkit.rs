@@ -1,5 +1,5 @@
-//! `varde chapkit`: the chapkit CLI in the chap-core image, against the
-//! stand-in `docker` of the `varde chap` tests, so Unix only.
+//! `chap-devops chapkit`: the chapkit CLI in the chap-core image, against the
+//! stand-in `docker` of the `chap-devops chap` tests, so Unix only.
 #![cfg(unix)]
 
 use crate::chap::{chap_run, fake_docker, value_of, workdir};
@@ -76,7 +76,7 @@ fn a_new_project_with_no_lock_gets_uv_lock_in_the_same_image() {
         lock.ends_with(&format!("uv lock --quiet --directory {}", model.display())),
         "{lock}"
     );
-    // The stand-in writes no uv.lock, so varde says that the build needs it.
+    // The stand-in writes no uv.lock, so chap-devops says that the build needs it.
     assert!(
         stderr.contains("could not write model/uv.lock, and the `Dockerfile` copies it"),
         "{stderr}"
@@ -98,7 +98,7 @@ fn chapkit_in_a_deployment_uses_its_tag() {
 }
 
 #[test]
-fn chapkit_test_is_refused_with_the_varde_command() {
+fn chapkit_test_is_refused_with_the_chap_devops_command() {
     let sandbox = Sandbox::new();
     let work = workdir(&sandbox);
     let (_temp, bin, log) = fake_docker();
@@ -106,7 +106,7 @@ fn chapkit_test_is_refused_with_the_varde_command() {
     chap_with_docker(&sandbox, &work, &bin, &["chapkit", "test"])
         .assert()
         .code(2)
-        .stderr(predicates::str::contains("`varde models test ID`"));
+        .stderr(predicates::str::contains("`chap-devops models test ID`"));
     assert!(
         !std::fs::read_to_string(&log)
             .unwrap_or_default()
@@ -126,7 +126,7 @@ fn a_usage_error_of_chapkit_names_the_help_and_exits_2() {
         .code(2)
         .stderr(predicates::str::contains(
             "chapkit did not accept the arguments, and its usage is above; \
-             `varde chapkit artifact --help` lists what the command takes",
+             `chap-devops chapkit artifact --help` lists what the command takes",
         ))
         .stderr(predicates::str::contains("exited with status").not());
 }
@@ -306,7 +306,7 @@ fn mlproject_run_refuses_what_it_cannot_do() {
         ),
         (
             &["chapkit", "mlproject", "run", "model", "--port", "9000"][..],
-            "varde sets `--port`",
+            "chap-devops sets `--port`",
         ),
         (
             &["chapkit", "--tag", "v2.3.1", "mlproject", "run", "model"][..],
@@ -418,7 +418,7 @@ fn image_alone_lists_the_short_names() {
         );
     }
     assert!(
-        stdout.contains("`varde chapkit --image NAME mlproject run DIR`"),
+        stdout.contains("`chap-devops chapkit --image NAME mlproject run DIR`"),
         "{stdout}"
     );
     assert!(

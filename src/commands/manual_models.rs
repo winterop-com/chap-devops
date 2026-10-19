@@ -1,8 +1,8 @@
-//! `varde models add|remove`: models the marketplace does not list.
+//! `chap-devops models add|remove`: models the marketplace does not list.
 //!
 //! `add` resolves a repository URL or an image reference into the entry a
 //! marketplace file would have carried, records it in
-//! `.varde/models-manual.yaml` and then enables it down the same path as any
+//! `.chap-devops/models-manual.yaml` and then enables it down the same path as any
 //! other model. `remove` is the way back: it disables the model if it is on,
 //! and then drops the definition.
 
@@ -45,7 +45,7 @@ pub(crate) struct AddReport {
     /// Image and pin as docker is handed them.
     image_ref: String,
     commit: Option<String>,
-    /// The branch `varde update` follows, `null` for a pinned entry.
+    /// The branch `chap-devops update` follows, `null` for a pinned entry.
     follow: Option<String>,
     data_dir: String,
     user: String,
@@ -108,7 +108,7 @@ pub(crate) enum Added {
 
 /// [`add`] on a project the caller has loaded and locked, writing the state
 /// and printing nothing. `allow_template` lets a source that is a marketplace
-/// template be enabled, which `varde run --allow-template` asks for.
+/// template be enabled, which `chap-devops run --allow-template` asks for.
 pub(crate) fn add_in(
     ctx: &Ctx,
     project: &mut Project,
@@ -232,14 +232,14 @@ pub(crate) fn add_in(
         warnings.push(format!(
             "this is the image of the marketplace model {twin_id}, which registers with \
              chap-core as `{twin_service}`, so `{}` may never register; to run {twin_id}, \
-             run `varde models remove {}`, then `varde models enable {twin_id}`",
+             run `chap-devops models remove {}`, then `chap-devops models enable {twin_id}`",
             resolved.service_id, resolved.id
         ));
     } else if project.state.components.has_chap_core_api() {
         notes.push(format!(
             "the service must register with chap-core as `{}`; \
-             if its own MLServiceInfo.id differs, `varde status` shows it as unmanaged - \
-             run `varde models remove {}`, then add it again with `--service-id <that id>`",
+             if its own MLServiceInfo.id differs, `chap-devops status` shows it as unmanaged - \
+             run `chap-devops models remove {}`, then add it again with `--service-id <that id>`",
             resolved.service_id, resolved.id
         ));
     }
@@ -275,7 +275,7 @@ pub fn remove(ctx: &Ctx, args: &ModelsRemoveArgs) -> Result<()> {
         return Err(match crate::registry::load(&ctx.registry)?.get(&args.id) {
             Some(model) => anyhow::anyhow!(
                 "{} is a marketplace model, so there is no local definition to remove; \
-                 run `varde models disable {}`{}",
+                 run `chap-devops models disable {}`{}",
                 model.id,
                 model.id,
                 if args.purge { " --purge" } else { "" }
@@ -470,14 +470,14 @@ fn check_free(project: &Project, marketplace: &Registry, names: &Names) -> Resul
     let id = &names.id;
     if let Some(model) = marketplace.models.iter().find(|m| m.id == *id) {
         return Err(anyhow::anyhow!(
-            "the marketplace already lists {id} ({}); run `varde models enable {id}`, \
+            "the marketplace already lists {id} ({}); run `chap-devops models enable {id}`, \
              or pass `--id auto` (or `--id <other>`) to add this one beside it",
             model.display_name
         ));
     }
     if let Some(existing) = project.state.manual.get(id) {
         return Err(anyhow::anyhow!(
-            "{id} was already added, from {}; run `varde models remove {id}` first, \
+            "{id} was already added, from {}; run `chap-devops models remove {id}` first, \
              or pass `--id <other>`",
             existing
                 .repository
@@ -501,13 +501,13 @@ fn check_free(project: &Project, marketplace: &Registry, names: &Names) -> Resul
         if local {
             return Err(anyhow::anyhow!(
                 "the marketplace model {id} is enabled as the compose service `{service_id}`; \
-                 disable it with `varde models disable {id}` to run this local build in its place",
+                 disable it with `chap-devops models disable {id}` to run this local build in its place",
                 id = model.id
             ));
         }
         return Err(anyhow::anyhow!(
             "the marketplace model {id} already uses the compose service `{service_id}`; \
-             if this image is that model, `varde models enable {id}` runs it, and \
+             if this image is that model, `chap-devops models enable {id}` runs it, and \
              otherwise pass `--service-id <other>`",
             id = model.id
         ));
@@ -539,7 +539,7 @@ fn added_block(resolved: &Resolved, lines: &mut Report) {
         None => resolved.tag.clone(),
     };
     let follows = match &resolved.follow {
-        Some(branch) => format!("{branch} (`varde update` moves the pin)"),
+        Some(branch) => format!("{branch} (`chap-devops update` moves the pin)"),
         None => "nothing (pinned)".to_string(),
     };
     lines

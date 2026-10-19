@@ -180,7 +180,7 @@ pub enum Outcome {
 pub enum Effect {
     /// Hand this URL to the platform's opener.
     Open(String),
-    /// Re-fetch the catalogue, the way `varde registry update` does.
+    /// Re-fetch the catalogue, the way `chap-devops registry update` does.
     Refresh,
     /// Write a picture of the next frame to the working directory.
     ///
@@ -222,7 +222,7 @@ pub struct Row {
     /// pinned to one exact version (`models enable --version`): it keeps that
     /// version until the channel dialog picks a channel.
     pub channel: Option<Channel>,
-    /// Host port from `.varde/models.yaml`, for rows that are already enabled
+    /// Host port from `.chap-devops/models.yaml`, for rows that are already enabled
     /// and publish one.
     pub port: Option<u16>,
     /// The host port the row should end up with. Starts out matching
@@ -267,7 +267,7 @@ impl PortWant {
     }
 }
 
-/// One row of the components page, in the columns `varde components list`
+/// One row of the components page, in the columns `chap-devops components list`
 /// prints: COMPONENT, STATE, REACH, WHAT IT IS.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ComponentLine {
@@ -366,13 +366,13 @@ pub struct App<'a> {
     /// The component set the session wants, which saving turns into
     /// [`Selection::components`](crate::compose::Selection::components).
     pub components: Components,
-    /// `.varde/components.yaml` as it was when the browser opened; the wanted
+    /// `.chap-devops/components.yaml` as it was when the browser opened; the wanted
     /// set is the diff against this.
     pub initial_components: Components,
     /// Index into [`Component::ALL`], the components page's cursor.
     pub component_cursor: usize,
     pub show_templates: bool,
-    /// `.varde/models.yaml` as it was when the browser opened; the selection is the
+    /// `.chap-devops/models.yaml` as it was when the browser opened; the selection is the
     /// diff against this.
     pub initial: BTreeMap<String, EnabledModel>,
     /// The project's model port range, which the prompt refuses to leave.
@@ -501,7 +501,7 @@ impl<'a> App<'a> {
 
     /// Where a component is reached, as the REACH column prints it.
     ///
-    /// The same three answers `varde components list` gives: its own host port,
+    /// The same three answers `chap-devops components list` gives: its own host port,
     /// the compose network, or a dash for a component this deployment does not
     /// have. chap-core's port is the API port, which lives in `project.yaml`
     /// rather than in the component block, and OCS and DHIS2 answer through

@@ -63,7 +63,7 @@ fn probe_agent() -> ureq::Agent {
 
 /// The row of a deployment that has not been started costs no request at
 /// all. Nothing is there to answer, so the only thing a probe could buy is
-/// a timeout on every `varde status` - or an answer from whatever else
+/// a timeout on every `chap-devops status` - or an answer from whatever else
 /// holds that host port, which is how a stopped OCS came to read as `up`
 /// beside another deployment's OCS on the same default 9000.
 #[test]
@@ -243,7 +243,7 @@ fn a_dhis2_whose_database_runs_is_starting_not_stopped() {
     assert!(stand_in.asked().is_empty(), "{:?}", stand_in.asked());
     assert_eq!(
         components_closing_line(&rows),
-        "1 of 1 component is still starting; run `varde status` again in a moment"
+        "1 of 1 component is still starting; run `chap-devops status` again in a moment"
     );
 }
 

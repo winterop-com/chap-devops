@@ -23,7 +23,7 @@ fn tested_project(sandbox: &Sandbox) -> (PathBuf, u16) {
 
 /// chap-core in a container with models registered as `localhost:<port>`:
 /// registered, and every call back to them a 502. The backtest says so before
-/// it builds anything, and points at `varde status` for the fix.
+/// it builds anything, and points at `chap-devops status` for the fix.
 #[test]
 fn models_test_backtest_skips_a_model_chap_core_cannot_reach() {
     let sandbox = Sandbox::new();
@@ -52,7 +52,7 @@ fn models_test_backtest_skips_a_model_chap_core_cannot_reach() {
         ),
         "{text}"
     );
-    assert!(text.contains("run `varde status`"), "{text}");
+    assert!(text.contains("run `chap-devops status`"), "{text}");
     assert!(!text.contains("no configured model"), "{text}");
 }
 
@@ -73,7 +73,7 @@ fn models_test_takes_a_model_registered_from_outside_the_deployment() {
         .assert()
         .failure()
         .stderr(predicates::str::contains(
-            "`varde models test ID --backtest` tests one of the 4 registered from outside it \
+            "`chap-devops models test ID --backtest` tests one of the 4 registered from outside it \
              through chap-core",
         ))
         .stderr(predicates::str::contains(HOST_RUN_MODEL));
@@ -81,10 +81,10 @@ fn models_test_takes_a_model_registered_from_outside_the_deployment() {
     chap_in(&sandbox, &dir, &["models", "test", HOST_RUN_MODEL])
         .assert()
         .stdout(predicates::str::contains(
-            "varde does not run it, so there is no container to test it in",
+            "chap-devops does not run it, so there is no container to test it in",
         ))
         .stdout(predicates::str::contains(format!(
-            "run `varde models test {HOST_RUN_MODEL} --backtest`"
+            "run `chap-devops models test {HOST_RUN_MODEL} --backtest`"
         )));
 }
 
@@ -124,7 +124,7 @@ fn models_test_backtest_reports_scores_a_failure_and_a_skip() {
         "the stderr hint is the reason:\n{text}"
     );
     assert!(
-        text.contains(&format!("run `varde jobs logs bt-{FAILING_MODEL}`")),
+        text.contains(&format!("run `chap-devops jobs logs bt-{FAILING_MODEL}`")),
         "{text}"
     );
     // A model whose chapkit predates the route: a skip that names the version
@@ -144,7 +144,7 @@ fn models_test_backtest_reports_scores_a_failure_and_a_skip() {
     let recorded = recorded(&sandbox, &dir);
     // The dataset is named after the service and the moment, and the org
     // units arrived: `importedCount` is the count of features with a
-    // top-level id, so a zero here would mean varde forgot to set them.
+    // top-level id, so a zero here would mean chap-devops forgot to set them.
     let names: Vec<&str> = recorded["datasets"]
         .as_array()
         .expect("a list")
@@ -158,7 +158,7 @@ fn models_test_backtest_reports_scores_a_failure_and_a_skip() {
     );
     let ewars = names
         .iter()
-        .position(|name| name.starts_with("varde-test-chapkit-ewars-model-"))
+        .position(|name| name.starts_with("chap-devops-test-chapkit-ewars-model-"))
         .unwrap_or_else(|| panic!("{names:?}"));
     // The covariate its configured model asks for and the sample lacks took
     // over the spare `feature_0`; the other model's config asks for none, so
@@ -242,8 +242,8 @@ fn models_test_keep_leaves_the_dataset_and_says_so() {
     assert!(
         text.contains(&format!(
             "kept backtest {TEST_BACKTEST} and dataset {TEST_DATASET}; remove them with \
-             `varde api DELETE /v1/crud/backtests/{TEST_BACKTEST}` then \
-             `varde api DELETE /v1/crud/datasets/{TEST_DATASET}`"
+             `chap-devops api DELETE /v1/crud/backtests/{TEST_BACKTEST}` then \
+             `chap-devops api DELETE /v1/crud/datasets/{TEST_DATASET}`"
         )),
         "{text}"
     );
@@ -315,7 +315,7 @@ fn models_test_needs_an_id_or_all_and_the_model_has_to_be_enabled() {
         .assert()
         .failure()
         .stderr(predicates::str::contains(
-            "unknown model `nope`; run `varde models list` to see the model ids",
+            "unknown model `nope`; run `chap-devops models list` to see the model ids",
         ));
 
     // An id that is a model, but not one this deployment enables.
@@ -324,7 +324,7 @@ fn models_test_needs_an_id_or_all_and_the_model_has_to_be_enabled() {
         .failure()
         .stderr(
             predicates::str::contains("auto_arima_chapkit is not enabled in this deployment").and(
-                predicates::str::contains("varde models enable auto_arima_chapkit"),
+                predicates::str::contains("chap-devops models enable auto_arima_chapkit"),
             ),
         );
 
@@ -428,7 +428,7 @@ Result: ALL TESTS PASSED
         ),
         "{text}"
     );
-    assert!(text.contains("run `varde up`"), "{text}");
+    assert!(text.contains("run `chap-devops up`"), "{text}");
     assert!(text.contains("1 pass, 2 skipped"), "{text}");
 
     let calls = read(&log);
@@ -493,7 +493,7 @@ Result: ALL TESTS PASSED
     let text = kept["text"].as_str().unwrap_or_default();
     assert!(
         text.contains(&format!(
-            "remove it with `varde docker exec {PASSING_MODEL} curl -fsS -X DELETE \
+            "remove it with `chap-devops docker exec {PASSING_MODEL} curl -fsS -X DELETE \
              http://127.0.0.1:8000/api/v1/configs/{TEST_CONFIG}`"
         )),
         "{text}"

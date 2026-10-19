@@ -1,4 +1,4 @@
-//! `varde models expose` on a model whose container runs: its own live port
+//! `chap-devops models expose` on a model whose container runs: its own live port
 //! is not a conflict. Unix only: the stand-in docker is a shell script.
 
 #![cfg(unix)]
@@ -28,7 +28,7 @@ fn expose_again_on_the_own_live_port_changes_nothing() {
         .assert()
         .success();
 
-    // The model's container now publishes the port, as after `varde up`.
+    // The model's container now publishes the port, as after `chap-devops up`.
     let _live = std::net::TcpListener::bind(("0.0.0.0", base)).expect("the port is free");
     let (_fake, bin) = docker_publishing(&[("chapkit-ewars-model", Some(base))]);
     let cli = &["-C", dir.to_str().unwrap(), "models", "expose"];
@@ -41,7 +41,7 @@ fn expose_again_on_the_own_live_port_changes_nothing() {
             .stdout(predicates::str::contains(format!(
                 "chapkit-ewars-model is already exposed on http://localhost:{base}; nothing changed"
             )))
-            .stdout(predicates::str::contains("varde up").not());
+            .stdout(predicates::str::contains("chap-devops up").not());
     }
     assert_eq!(
         state(&dir)["models"]["chapkit_ewars_model"]["host_port"],
@@ -49,10 +49,10 @@ fn expose_again_on_the_own_live_port_changes_nothing() {
     );
 }
 
-/// A no-op expose before `varde up` on a container that runs without the
-/// port says that `varde up` applies it.
+/// A no-op expose before `chap-devops up` on a container that runs without the
+/// port says that `chap-devops up` applies it.
 #[test]
-fn expose_again_before_up_on_a_running_container_names_varde_up() {
+fn expose_again_before_up_on_a_running_container_names_chap_devops_up() {
     let sandbox = Sandbox::new();
     let dir = sandbox.project();
     let base = port_base();
@@ -85,6 +85,6 @@ fn expose_again_before_up_on_a_running_container_names_varde_up() {
         .assert()
         .success()
         .stdout(predicates::str::contains(
-            "its running container does not publish this port yet; run `varde up` to apply it",
+            "its running container does not publish this port yet; run `chap-devops up` to apply it",
         ));
 }

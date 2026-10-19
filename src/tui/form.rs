@@ -1,7 +1,7 @@
 //! The form of one configured model: a field for the name, one for each
 //! user option of the template, and one for the covariates.
 //!
-//! The same form is a page of `varde ui` and the whole screen of `varde
+//! The same form is a page of `chap-devops ui` and the whole screen of `chap-devops
 //! models configs add` and `update` at a terminal, so both look and behave
 //! the same. It is pure state: [`Form::apply`] takes an [`Action`] and says
 //! when the user saved or left.

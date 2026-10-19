@@ -1,4 +1,4 @@
-//! What `varde chap` asks docker for: the image, the mounts and the argument
+//! What `chap-devops chap` asks docker for: the image, the mounts and the argument
 //! list. Pure functions only, so the tests can check every case without a
 //! docker daemon.
 
@@ -134,7 +134,7 @@ pub fn loopback_port(url: &str) -> Option<u16> {
 
 /// Whether the chap arguments only ask for help or the version: no
 /// arguments, or `--help`, `-h` or `--version` anywhere. Such a run touches
-/// no model and writes no file, so varde says nothing about either.
+/// no model and writes no file, so chap-devops says nothing about either.
 pub fn is_help(args: &[String]) -> bool {
     args.is_empty()
         || args
@@ -177,8 +177,8 @@ pub fn unreachable_message(url: &str) -> String {
     match url_host(url) {
         Some(host) if !host.contains('.') => format!(
             "{head}; `{host}` is not a model of this deployment or group. Give a model id \
-             instead (`--model-name auto_arima_chapkit`) and varde starts it, or start one \
-             with `varde run ID`; the `models:` line lists the URLs that answer"
+             instead (`--model-name auto_arima_chapkit`) and chap-devops starts it, or start one \
+             with `chap-devops run ID`; the `models:` line lists the URLs that answer"
         ),
         _ => format!("{head}; check that the server runs and that this machine can reach it"),
     }
@@ -210,12 +210,12 @@ pub fn output_files(args: &[String]) -> Vec<String> {
     found
 }
 
-/// Why a chap command cannot work in a container, when varde knows it does
+/// Why a chap command cannot work in a container, when chap-devops knows it does
 /// not: `plot-dataset` shows its plot in a browser and writes no file.
 pub fn needs_a_browser(args: &[String]) -> Option<String> {
     (args.first().map(String::as_str) == Some("plot-dataset") && !is_help(args)).then(|| {
         "`chap plot-dataset` shows its plot in a browser and writes no file, and the \
-         container has no browser; `varde chap plot-backtest` writes a plot of an \
+         container has no browser; `chap-devops chap plot-backtest` writes a plot of an \
          evaluation to a file"
             .to_string()
     })
@@ -402,7 +402,7 @@ pub struct RunSpec {
     pub cwd: PathBuf,
     /// More directories mounted at the same path, for the paths outside `cwd`.
     pub mounts: Vec<PathBuf>,
-    /// varde's own directory for the runs and the caches.
+    /// chap-devops's own directory for the runs and the caches.
     pub data: PathBuf,
     /// `uid:gid` to run as; `None` keeps the image's own user.
     pub user: Option<(u32, u32)>,

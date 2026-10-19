@@ -28,7 +28,7 @@ fn a_registered_model_without_a_configured_model_is_not_configured() {
     mark_unconfigured(&mut rows, &registered, &configured);
     assert_eq!(rows[0].state, ModelState::NotConfigured);
     assert_eq!(rows[0].state.label(), "registered, not configured");
-    // It is something to do, and not a failure of `varde status`.
+    // It is something to do, and not a failure of `chap-devops status`.
     assert!(!rows[0].state.is_problem());
     // A row that is not registered stays as it is.
     assert_eq!(rows[1].state, ModelState::NotRunning);
@@ -38,8 +38,8 @@ fn a_registered_model_without_a_configured_model_is_not_configured() {
         hints(&rows, false, None, &[]),
         [
             "chapkit-ewars-model: chap-core has no configured model for it, so nothing can run \
-             it; run `varde models configs sync`",
-            "chapkit-rwanda-malaria-bym-model: start Chap with `varde up`, then `varde logs \
+             it; run `chap-devops models configs sync`",
+            "chapkit-rwanda-malaria-bym-model: start Chap with `chap-devops up`, then `chap-devops logs \
              chapkit-rwanda-malaria-bym-model`",
         ]
     );
@@ -94,7 +94,7 @@ fn an_unmanaged_model_whose_template_chap_core_refuses_is_named() {
 }
 
 /// A model of this deployment that registers with no git revision and has
-/// no configured model gets the no-revision line, and not the `varde models
+/// no configured model gets the no-revision line, and not the `chap-devops models
 /// configs sync` line, which cannot fix it.
 #[test]
 fn a_managed_model_with_no_revision_and_no_configured_model_is_told_to_rebuild() {
@@ -109,14 +109,14 @@ fn a_managed_model_with_no_revision_and_no_configured_model_is_told_to_rebuild()
     assert_eq!(
         revision_line(&warnings[0]),
         "chapkit-ewars-model: it reports no git revision, so chap-core stores no model template \
-         for it and `varde models configs sync` cannot configure it; build its image again with \
-         `--build-arg GIT_REVISION=$(git rev-parse HEAD)`, then run `varde restart`"
+         for it and `chap-devops models configs sync` cannot configure it; build its image again with \
+         `--build-arg GIT_REVISION=$(git rev-parse HEAD)`, then run `chap-devops restart`"
     );
     let fixes = hints(&rows, false, None, &warnings);
     assert!(
         !fixes
             .iter()
-            .any(|fix| fix.contains("varde models configs sync")),
+            .any(|fix| fix.contains("chap-devops models configs sync")),
         "{fixes:?}"
     );
     // Without the warning, the row still names the step.
@@ -124,7 +124,7 @@ fn a_managed_model_with_no_revision_and_no_configured_model_is_told_to_rebuild()
     assert!(
         fixes
             .iter()
-            .any(|fix| fix.ends_with("run `varde models configs sync`")),
+            .any(|fix| fix.ends_with("run `chap-devops models configs sync`")),
         "{fixes:?}"
     );
 }
@@ -182,7 +182,7 @@ fn an_unmanaged_model_with_configured_models_of_another_version_only_is_named() 
         lines,
         [
             "host-model: chap-core has configured models of it of other versions only, not of \
-          1.0.2; run `varde models configs sync host-model`"
+          1.0.2; run `chap-devops models configs sync host-model`"
         ]
     );
 

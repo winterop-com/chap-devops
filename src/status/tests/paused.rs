@@ -1,4 +1,4 @@
-//! A container that docker reports paused, as an interrupted `varde backup
+//! A container that docker reports paused, as an interrupted `chap-devops backup
 //! create` can leave it.
 
 use super::*;
@@ -24,20 +24,20 @@ fn a_paused_row_says_paused_and_names_the_way_out() {
 
     assert_eq!(
         components_closing_line(&report.components),
-        "1 of 1 component is paused; run `varde up` to resume it"
+        "1 of 1 component is paused; run `chap-devops up` to resume it"
     );
     assert_eq!(
         closing_line(&report.models),
-        "1 of 1 model is paused; run `varde up` to resume it"
+        "1 of 1 model is paused; run `chap-devops up` to resume it"
     );
     assert_eq!(
         paused_line(&BTreeSet::from(["dhis2".to_string()])).as_deref(),
-        Some("dhis2 is paused, so it does not answer; run `varde up` to resume it")
+        Some("dhis2 is paused, so it does not answer; run `chap-devops up` to resume it")
     );
     assert_eq!(
         paused_line(&paused).as_deref(),
         Some(
-            "chapkit-ewars-model, ocs are paused, so they do not answer; run `varde up` to \
+            "chapkit-ewars-model, ocs are paused, so they do not answer; run `chap-devops up` to \
              resume them"
         )
     );

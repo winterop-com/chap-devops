@@ -6,7 +6,7 @@ fn strings(args: &[&str]) -> Vec<String> {
 
 fn serve() -> Serve {
     Serve {
-        name: "varde-mlproject-1-0".to_string(),
+        name: "chap-devops-mlproject-1-0".to_string(),
         image: image_for("r-tidyverse"),
         dir: PathBuf::from("/models/ghr"),
         argument: ".".to_string(),
@@ -46,10 +46,10 @@ fn parse_takes_the_directory_and_passes_the_other_options() {
 }
 
 #[test]
-fn parse_refuses_what_varde_sets_and_a_second_directory() {
+fn parse_refuses_what_chap_devops_sets_and_a_second_directory() {
     for owned in ["--port", "--host=0.0.0.0", "--register-url"] {
         let why = parse(&strings(&[".", owned, "x"])).unwrap_err();
-        assert!(why.contains("varde sets"), "{why}");
+        assert!(why.contains("chap-devops sets"), "{why}");
     }
     let why = parse(&strings(&["one", "two"])).unwrap_err();
     assert!(why.contains("`two` is a second one"), "{why}");
@@ -107,7 +107,7 @@ fn docker_args_mount_the_project_and_publish_the_port() {
     serve.pass = strings(&["--config-format", "flat"]);
     let args = docker_args(&serve);
     let joined = args.join(" ");
-    assert!(joined.starts_with("run --rm -i --init --name varde-mlproject-1-0 -p 5001:8000"));
+    assert!(joined.starts_with("run --rm -i --init --name chap-devops-mlproject-1-0 -p 5001:8000"));
     assert!(joined.contains("-v /models/ghr:/work -w /work"), "{joined}");
     assert!(!joined.contains("--platform"), "{joined}");
     assert!(!joined.contains("--network"), "{joined}");
@@ -144,7 +144,7 @@ fn docker_args_register_on_the_deployment_network_without_the_key_value() {
         joined.contains("-e SERVICEKIT_ORCHESTRATOR_URL=http://chap:8000/v2/services/$register")
     );
     assert!(
-        joined.contains("-e SERVICEKIT_HOST=varde-mlproject-1-0"),
+        joined.contains("-e SERVICEKIT_HOST=chap-devops-mlproject-1-0"),
         "{joined}"
     );
     assert!(joined.contains("-e SERVICEKIT_PORT=8000"), "{joined}");

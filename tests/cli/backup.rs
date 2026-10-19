@@ -203,7 +203,7 @@ fn backup_restore_files_only_rebuilds_a_second_deployment() {
         text.contains("hint: the previous .env is in .env.before-restore"),
         "{text}"
     );
-    assert!(text.contains("run `varde up` to apply"));
+    assert!(text.contains("run `chap-devops up` to apply"));
 
     // The archive's `.env`, but for the one line its own `postgres` volume
     // decides: the role there was created with this deployment's password.
@@ -215,7 +215,7 @@ fn backup_restore_files_only_rebuilds_a_second_deployment() {
         archived.replace(password_line(&archived), "")
     );
     assert_eq!(read(&target.join(".env.before-restore")), before);
-    let models = read(&target.join(".varde/models.yaml"));
+    let models = read(&target.join(".chap-devops/models.yaml"));
     assert!(models.contains("chapkit_ewars_model"));
     assert_eq!(
         state(&target)["models"]["chapkit_ewars_model"]["service_id"],
@@ -227,10 +227,10 @@ fn backup_restore_files_only_rebuilds_a_second_deployment() {
         includes(&target),
         vec!["compose.chapkit-ewars-model.yml".to_string()]
     );
-    assert!(!target.join(".varde/tmp").exists());
+    assert!(!target.join(".chap-devops/tmp").exists());
 }
 
-/// A `.varde/` state file the archive does not carry was not part of the
+/// A `.chap-devops/` state file the archive does not carry was not part of the
 /// deployment it came from, so the restore takes this deployment's away
 /// rather than mixing the two.
 #[test]
@@ -238,7 +238,7 @@ fn restore_removes_optional_state_the_archive_does_not_have() {
     let sandbox = Sandbox::new();
     let source = sandbox.project();
     sandbox.init(&["--models", "none"]).assert().success();
-    assert!(!source.join(".varde/models-manual.yaml").exists());
+    assert!(!source.join(".chap-devops/models-manual.yaml").exists());
     let out = sandbox.home.path().join("archives");
     std::fs::create_dir_all(&out).unwrap();
     chap_in(
@@ -261,7 +261,7 @@ fn restore_removes_optional_state_the_archive_does_not_have() {
     let mut init = sandbox.chap();
     init.arg("init").arg(&target).args(["--models", "none"]);
     init.assert().success();
-    let manual = target.join(".varde/models-manual.yaml");
+    let manual = target.join(".chap-devops/models-manual.yaml");
     std::fs::write(&manual, "{}\n").unwrap();
 
     let report = json_of(&mut chap_in(
@@ -279,7 +279,7 @@ fn restore_removes_optional_state_the_archive_does_not_have() {
     assert!(!manual.exists(), "the destination's definitions went");
     assert_eq!(
         report["removed_state"],
-        serde_json::json!([".varde/models-manual.yaml"])
+        serde_json::json!([".chap-devops/models-manual.yaml"])
     );
 }
 
@@ -338,7 +338,7 @@ fn restore_rejects_something_that_is_not_a_backup() {
     )
     .assert()
     .failure()
-    .stderr(predicates::str::contains("is it a varde backup?"));
+    .stderr(predicates::str::contains("is it a chap-devops backup?"));
 
     chap_in(
         &sandbox,
@@ -360,7 +360,7 @@ fn backup_outside_a_project_says_so() {
     )
     .assert()
     .failure()
-    .stderr(predicates::str::contains("not a varde deployment"));
+    .stderr(predicates::str::contains("not a chap-devops deployment"));
 
     chap_in(
         &sandbox,
@@ -369,10 +369,10 @@ fn backup_outside_a_project_says_so() {
     )
     .assert()
     .failure()
-    .stderr(predicates::str::contains("not a varde deployment"));
+    .stderr(predicates::str::contains("not a chap-devops deployment"));
 }
 
-/// `varde down --volumes --yes` for a deployment, when the guard goes out of
+/// `chap-devops down --volumes --yes` for a deployment, when the guard goes out of
 /// scope: a test that fails half-way still leaves no container or volume
 /// behind.
 struct TakenDown(Option<assert_cmd::Command>);
@@ -400,11 +400,11 @@ fn probe_rows(sandbox: &Sandbox, dir: &std::path::Path) -> Vec<String> {
             "-d",
             "chap_core",
             "-tAc",
-            "select note from varde_probe order by note",
+            "select note from chap_devops_probe order by note",
         ],
     )
     .output()
-    .expect("varde runs");
+    .expect("chap-devops runs");
     assert!(
         out.status.success(),
         "psql failed: {}",
@@ -451,7 +451,7 @@ fn backup_and_restore_bring_the_database_back() {
         return;
     }
     let sandbox = Sandbox::new();
-    let dir = sandbox.project().with_file_name("varde-backup-db");
+    let dir = sandbox.project().with_file_name("chap-devops-backup-db");
     let mut init = sandbox.chap();
     init.arg("init")
         .arg(&dir)
@@ -474,7 +474,7 @@ fn backup_and_restore_bring_the_database_back() {
     psql(
         &sandbox,
         &dir,
-        "create table varde_probe (note text); insert into varde_probe values ('before');",
+        "create table chap_devops_probe (note text); insert into chap_devops_probe values ('before');",
     );
 
     let archives = sandbox.home.path().join("archives");
@@ -491,7 +491,7 @@ fn backup_and_restore_bring_the_database_back() {
     psql(
         &sandbox,
         &dir,
-        "insert into varde_probe values ('after the backup');",
+        "insert into chap_devops_probe values ('after the backup');",
     );
     assert_eq!(probe_rows(&sandbox, &dir), ["after the backup", "before"]);
 
@@ -512,7 +512,7 @@ fn backup_and_restore_bring_the_database_back() {
     assert_eq!(probe_rows(&sandbox, &dir), ["before"]);
 }
 
-/// The start at the end of a restore runs the port check of `varde up`, and a
+/// The start at the end of a restore runs the port check of `chap-devops up`, and a
 /// conflict there still says what was restored and how to start.
 #[cfg(unix)]
 #[test]
@@ -574,7 +574,7 @@ fn restore_says_what_it_restored_when_the_start_finds_a_port_in_use() {
         "{stderr}"
     );
     assert!(stderr.contains(&format!("port {busy}")), "{stderr}");
-    assert!(stderr.contains("`varde up`"), "{stderr}");
+    assert!(stderr.contains("`chap-devops up`"), "{stderr}");
     assert!(!stderr.contains("nothing was started"), "{stderr}");
     let calls = read(&log);
     assert!(!calls.contains(" up -d"), "{calls}");
@@ -582,7 +582,7 @@ fn restore_says_what_it_restored_when_the_start_finds_a_port_in_use() {
 }
 
 /// A `docker` in which the model runs, and whose read of the model volume
-/// sends Ctrl-C to varde (its parent). Every call goes to `calls.log`.
+/// sends Ctrl-C to chap-devops (its parent). Every call goes to `calls.log`.
 #[cfg(unix)]
 fn docker_pressing_ctrl_c_in_the_read() -> (tempfile::TempDir, PathBuf, PathBuf) {
     let temp = tempfile::tempdir().expect("a directory for the fake docker");
@@ -645,12 +645,12 @@ fn ctrl_c_during_a_backup_unpauses_the_model_and_removes_the_stage() {
     let calls = read(&log);
     assert!(calls.contains(" pause chapkit-ewars-model"), "{calls}");
     assert!(calls.contains("unpause chapkit-ewars-model"), "{calls}");
-    assert!(!dir.join(".varde/tmp").exists());
+    assert!(!dir.join(".chap-devops/tmp").exists());
     assert_eq!(std::fs::read_dir(&out).unwrap().count(), 0);
 }
 
 /// A `docker` whose plain `docker run` of a volume reader sends Ctrl-C to
-/// varde (its parent), as a terminal does to the whole process group. Every
+/// chap-devops (its parent), as a terminal does to the whole process group. Every
 /// call goes to `calls.log`.
 #[cfg(unix)]
 fn docker_pressing_ctrl_c_in_the_volume_read() -> (tempfile::TempDir, PathBuf, PathBuf) {
@@ -678,7 +678,7 @@ fn docker_pressing_ctrl_c_in_the_volume_read() -> (tempfile::TempDir, PathBuf, P
 }
 
 /// Ctrl-C can stop `docker run` before its container starts, and `--rm` then
-/// never applies. The reader has a known name, and varde removes it, so no
+/// never applies. The reader has a known name, and chap-devops removes it, so no
 /// container in state `Created` holds the volume.
 #[cfg(unix)]
 #[test]
@@ -704,7 +704,7 @@ fn ctrl_c_during_a_component_read_removes_the_reader_container() {
         .find_map(|line| line.strip_prefix("run --rm --name "))
         .and_then(|rest| rest.split_whitespace().next())
         .unwrap_or_else(|| panic!("a named reader: {calls}"));
-    assert!(name.starts_with("varde-volume-"), "{calls}");
+    assert!(name.starts_with("chap-devops-volume-"), "{calls}");
     assert!(calls.contains(&format!("rm -f {name}")), "{calls}");
     assert_eq!(std::fs::read_dir(&out).unwrap().count(), 0);
 }

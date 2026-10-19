@@ -1,5 +1,5 @@
-//! `varde components enable` on a component that is already enabled: what
-//! changed, and when there is nothing for `varde up` to apply.
+//! `chap-devops components enable` on a component that is already enabled: what
+//! changed, and when there is nothing for `chap-devops up` to apply.
 
 use crate::common::*;
 use predicates::prelude::PredicateBooleanExt;
@@ -14,7 +14,7 @@ fn the_same_port_again_changes_nothing() {
         .components(&["enable", "ocs", "--port", &ocs_port])
         .assert()
         .success()
-        .stdout(predicates::str::contains("run `varde up` to apply"));
+        .stdout(predicates::str::contains("run `chap-devops up` to apply"));
     sandbox
         .components(&["enable", "ocs", "--port", &ocs_port])
         .assert()
@@ -22,12 +22,12 @@ fn the_same_port_again_changes_nothing() {
         .stdout(predicates::str::contains(format!(
             "ocs was already enabled on http://localhost:{ocs_port}; nothing changed"
         )))
-        .stdout(predicates::str::contains("varde up").not());
+        .stdout(predicates::str::contains("chap-devops up").not());
 }
 
 /// `--read-write` on a running read-only OCS edits its config file, and a
-/// `varde up` after it says that the running ocs may still use the old
-/// settings, with `varde restart ocs` as the way out.
+/// `chap-devops up` after it says that the running ocs may still use the old
+/// settings, with `chap-devops restart ocs` as the way out.
 #[cfg(unix)]
 #[test]
 fn up_after_a_read_mode_change_names_the_restart() {
@@ -57,7 +57,7 @@ fn up_after_a_read_mode_change_names_the_restart() {
         .success()
         .stderr(predicates::str::contains(
             "`ocs/climate-service.yaml` changed after the ocs container started, so ocs may \
-             still use the old settings; run `varde restart ocs` to apply it",
+             still use the old settings; run `chap-devops restart ocs` to apply it",
         ));
 }
 
@@ -90,7 +90,7 @@ fn chap_core_back_names_the_host_ports_the_models_keep() {
         .success()
         .stdout(predicates::str::contains(format!(
             "the models keep their host ports (chapkit_ewars_model on \
-             http://localhost:{base}); `varde models unexpose ID` removes one"
+             http://localhost:{base}); `chap-devops models unexpose ID` removes one"
         )));
     // Once chap-core runs, an enable again does not repeat it.
     sandbox
@@ -118,12 +118,12 @@ fn a_new_base_url_is_named_and_the_same_one_changes_nothing() {
         .stdout(predicates::str::contains(
             "set the ocs base URL to https://ocs.example.org",
         ))
-        .stdout(predicates::str::contains("run `varde up` to apply"));
+        .stdout(predicates::str::contains("run `chap-devops up` to apply"));
     sandbox
         .components(&args)
         .assert()
         .success()
         .stdout(predicates::str::contains("nothing changed"))
         .stdout(predicates::str::contains("base URL").not())
-        .stdout(predicates::str::contains("varde up").not());
+        .stdout(predicates::str::contains("chap-devops up").not());
 }

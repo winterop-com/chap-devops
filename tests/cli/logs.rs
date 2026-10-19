@@ -1,4 +1,4 @@
-//! `varde logs`: what it hands compose, and what reaches a reader that is not
+//! `chap-devops logs`: what it hands compose, and what reaches a reader that is not
 //! a terminal. Unix only: the stand-in docker is a shell script.
 
 #![cfg(unix)]
@@ -80,7 +80,7 @@ fn logs_tail_reaches_compose_and_a_pipe_gets_no_colour_codes() {
 }
 
 /// A service that has never started has no log. `logs` says so and names
-/// `varde up`, and does not ask compose for a log that is not there.
+/// `chap-devops up`, and does not ask compose for a log that is not there.
 #[test]
 fn logs_of_a_service_with_no_container_says_so() {
     let sandbox = Sandbox::new();
@@ -93,7 +93,7 @@ fn logs_of_a_service_with_no_container_says_so() {
         .failure()
         .stdout(predicates::str::contains(
             "this deployment has no container for `chap`, so there is no log; start it with \
-             `varde up`",
+             `chap-devops up`",
         ));
     assert!(!read(&calls).contains(" logs "), "{}", read(&calls));
 

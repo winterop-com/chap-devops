@@ -3,7 +3,7 @@ use crate::cli::{Cli, Command, ModelsCmd};
 use clap::Parser;
 
 fn test_args(argv: &[&str]) -> crate::cli::ModelsTestArgs {
-    let mut full = vec!["varde", "models", "test"];
+    let mut full = vec!["chap-devops", "models", "test"];
     full.extend_from_slice(argv);
     let cli = Cli::try_parse_from(full).expect("the arguments parse");
     let Command::Models(models) = cli.command else {
@@ -55,7 +55,7 @@ fn each_count_option_goes_to_chapkit_test() {
 #[test]
 fn a_count_option_is_refused_with_backtest() {
     let mut full = vec![
-        "varde",
+        "chap-devops",
         "models",
         "test",
         "m",
@@ -70,5 +70,5 @@ fn a_count_option_is_refused_with_backtest() {
 
 #[test]
 fn a_count_of_zero_is_refused() {
-    assert!(Cli::try_parse_from(["varde", "models", "test", "m", "--rows", "0"]).is_err());
+    assert!(Cli::try_parse_from(["chap-devops", "models", "test", "m", "--rows", "0"]).is_err());
 }

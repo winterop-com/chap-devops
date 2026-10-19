@@ -14,7 +14,7 @@ fn the_help_line_points_at_the_documentation_url() {
     assert!(DOCS_URL.ends_with('/'), "a chapter is appended to it");
 }
 
-/// Why the blank line at the end of `varde --help` is not in `after_help`:
+/// Why the blank line at the end of `chap-devops --help` is not in `after_help`:
 /// clap trims the rendered help and appends exactly one newline, so the
 /// docs line is the last thing it will print whatever `after_help` ends
 /// with. `main` adds the blank line where the help is printed instead, and
@@ -113,7 +113,7 @@ fn no_help_is_longer_than_a_screen_and_no_option_longer_than_a_clause() {
     // The globals only reach the subcommands, and the usage lines only
     // exist, once clap has built the tree.
     root.build();
-    check(&mut root, "varde");
+    check(&mut root, "chap-devops");
 }
 
 /// Both spellings of help say the same thing, rather than a short one and
@@ -667,7 +667,7 @@ fn down_takes_volumes_and_yes_while_v_stays_verbose() {
     let (_, args) = down_args(&["-y", "--volumes"]);
     assert!(args.volumes && args.yes);
 
-    // The bug this exists for: `-v` is varde's own flag, so compose never
+    // The bug this exists for: `-v` is chap-devops's own flag, so compose never
     // sees it and the volumes stay.
     let (verbose, args) = down_args(&["-v"]);
     assert!(verbose);
@@ -955,7 +955,7 @@ fn every_registry_user_is_a_command() {
         for name in path.split(' ') {
             sub = sub
                 .find_subcommand(name)
-                .unwrap_or_else(|| panic!("`varde {path}` is not a command"));
+                .unwrap_or_else(|| panic!("`chap-devops {path}` is not a command"));
         }
     }
 }
@@ -970,16 +970,16 @@ fn hidden_registry_options_still_parse() {
             .unwrap_or_else(|e| panic!("{argv:?}: {e}"));
         Cli::from_arg_matches(&matches).unwrap()
     };
-    let cli = parse(&["varde", "--offline", "status"]);
+    let cli = parse(&["chap-devops", "--offline", "status"]);
     assert!(cli.offline);
     assert!(matches!(cli.command, Command::Status(_)));
-    assert!(parse(&["varde", "status", "--offline"]).offline);
-    assert!(parse(&["varde", "--offline", "init"]).offline);
+    assert!(parse(&["chap-devops", "status", "--offline"]).offline);
+    assert!(parse(&["chap-devops", "--offline", "init"]).offline);
     let url = "http://127.0.0.1:18001/registry.yaml";
     assert_eq!(
-        parse(&["varde", "logs", "--registry-url", url]).registry_url,
+        parse(&["chap-devops", "logs", "--registry-url", url]).registry_url,
         url
     );
-    let cli = parse(&["varde", "auth", "show", "--cache-dir", "cache"]);
+    let cli = parse(&["chap-devops", "auth", "show", "--cache-dir", "cache"]);
     assert_eq!(cli.cache_dir, Some(PathBuf::from("cache")));
 }

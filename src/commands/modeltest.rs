@@ -1,6 +1,6 @@
-//! `varde models test` — make a model do the work, and say whether it could.
+//! `chap-devops models test` — make a model do the work, and say whether it could.
 //!
-//! `varde status` and `varde doctor` can both be fully green while a model
+//! `chap-devops status` and `chap-devops doctor` can both be fully green while a model
 //! cannot produce a single prediction: registration is a heartbeat, and a
 //! heartbeat says the service is alive, not that its runtime works. This
 //! command is the check neither of them can make, at two levels.
@@ -74,10 +74,10 @@ const REQUEST_TIMEOUT: Duration = Duration::from_secs(120);
 /// What the process exits with when a model failed.
 ///
 /// Everything there was to say is on the screen already, so there is no
-/// `error:` line on top of it - the same reasoning as `varde doctor`.
+/// `error:` line on top of it - the same reasoning as `chap-devops doctor`.
 const EXIT_FAILED: i32 = 1;
 
-/// `varde models test [ID..] [--all]`.
+/// `chap-devops models test [ID..] [--all]`.
 pub fn run(ctx: &Ctx, args: &ModelsTestArgs) -> Result<()> {
     let project = ctx.project()?;
     // The model level runs `chapkit test` in the model's own container and
@@ -86,7 +86,7 @@ pub fn run(ctx: &Ctx, args: &ModelsTestArgs) -> Result<()> {
     if args.backtest {
         crate::components::require_chap_core(
             &project.state.components,
-            "`varde models test --backtest`",
+            "`chap-devops models test --backtest`",
         )?;
     }
     let token = crate::api::token_for(Some(&project.dir));
@@ -248,14 +248,14 @@ fn targets(
             let outside = unmanaged_services(project, api);
             return Err(match outside.as_slice() {
                 [] => anyhow::anyhow!(
-                    "this deployment enables no models; enable one with `varde models enable ID`"
+                    "this deployment enables no models; enable one with `chap-devops models enable ID`"
                 ),
                 [service] => anyhow::anyhow!(
-                    "this deployment enables no models; `varde models test {service} --backtest` \
+                    "this deployment enables no models; `chap-devops models test {service} --backtest` \
                      tests the one registered from outside it through chap-core"
                 ),
                 many => anyhow::anyhow!(
-                    "this deployment enables no models; `varde models test ID --backtest` tests \
+                    "this deployment enables no models; `chap-devops models test ID --backtest` tests \
                      one of the {} registered from outside it through chap-core ({})",
                     many.len(),
                     many.join(", ")
@@ -285,7 +285,7 @@ fn targets(
             .ok_or_else(|| ChapError::UnknownModel(given.clone()))?;
         let enabled = project.state.models.get(&model.id).ok_or_else(|| {
             anyhow::anyhow!(
-                "{} is not enabled in this deployment; enable it with `varde models enable {}`",
+                "{} is not enabled in this deployment; enable it with `chap-devops models enable {}`",
                 model.id,
                 model.id
             )

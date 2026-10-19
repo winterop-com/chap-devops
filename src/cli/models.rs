@@ -1,4 +1,4 @@
-//! `varde models`, `varde ui` and `varde registry`: the marketplace and what
+//! `chap-devops models`, `chap-devops ui` and `chap-devops registry`: the marketplace and what
 //! this deployment runs from it.
 
 use super::PortArg;
@@ -138,7 +138,7 @@ pub struct ModelsTestArgs {
 /// List, add, archive and sync the configured models of each model
 ///
 /// `args_conflicts_with_subcommands`: the bare command is `list`, so its
-/// options are repeated here, as `varde jobs` does.
+/// options are repeated here, as `chap-devops jobs` does.
 #[derive(Debug, Args)]
 #[command(args_conflicts_with_subcommands = true)]
 pub struct ConfigsArgs {

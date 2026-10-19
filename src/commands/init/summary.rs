@@ -9,7 +9,8 @@ use crate::project::{CHAP_TAG_ENV_VAR, Project};
 use std::path::{Path, PathBuf};
 
 /// What the summary says for a deployment that enables no models.
-pub(super) const NO_MODELS: &str = "no models are enabled; run `varde models enable ID` to add one";
+pub(super) const NO_MODELS: &str =
+    "no models are enabled; run `chap-devops models enable ID` to add one";
 
 /// The hint that goes with it in a deployment chap-core is not a component
 /// of, where a model enabled later runs on its own: it registers nowhere and
@@ -118,7 +119,7 @@ pub(super) fn summary(
         });
     }
     // No part of the token is printed: it stays in `.env`, and
-    // `varde auth show --reveal` is the way back to it.
+    // `chap-devops auth show --reveal` is the way back to it.
     let token = match (secrets.is_some(), project.state.auth.api_token) {
         (true, _) => Some("API token: generated into .env"),
         (false, true) => Some("API token: set in .env"),
@@ -126,7 +127,7 @@ pub(super) fn summary(
     };
     if let Some(token) = token {
         lines.info(token);
-        lines.hint("`varde auth show --reveal` prints the API token");
+        lines.hint("`chap-devops auth show --reveal` prints the API token");
     }
 
     if report.enabled.is_empty() {
@@ -153,7 +154,7 @@ pub(super) fn summary(
         if report.enabled.iter().any(|(_, m)| m.host_port.is_none()) {
             lines.hint(
                 "model services publish no host port; chap-core reaches them over the compose \
-                 network, and `varde models expose ID` publishes one",
+                 network, and `chap-devops models expose ID` publishes one",
             );
         }
     }
@@ -201,17 +202,17 @@ pub(super) fn summary(
     match empty {
         true => {
             lines.info(format!(
-                "run `cd {} && varde models add URL` to add a model",
+                "run `cd {} && chap-devops models add URL` to add a model",
                 dir.display()
             ));
-            lines.hint("`varde up` then starts it");
+            lines.hint("`chap-devops up` then starts it");
         }
         false => {
             lines.info(format!(
-                "run `cd {} && varde up` to start the deployment",
+                "run `cd {} && chap-devops up` to start the deployment",
                 dir.display()
             ));
-            lines.hint("`varde status` then shows what runs");
+            lines.hint("`chap-devops status` then shows what runs");
         }
     };
 }

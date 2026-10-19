@@ -1,4 +1,4 @@
-//! `varde run`, `ps` and `stop`: one model at a time, in a group varde keeps
+//! `chap-devops run`, `ps` and `stop`: one model at a time, in a group chap-devops keeps
 //! under its data directory or in the deployment the command is inside. Unix
 //! only: the stand-in docker is a shell script.
 
@@ -41,7 +41,7 @@ fn run_outside_a_deployment_starts_the_model_in_a_group_on_loopback() {
         "{overlay}"
     );
     // Nothing lands in the working directory.
-    assert!(!cwd.join(".varde").exists());
+    assert!(!cwd.join(".chap-devops").exists());
     assert!(!cwd.join("compose.yml").exists());
 
     // A second run of the same model starts it as it is.
@@ -149,14 +149,14 @@ fn a_group_labels_its_containers_with_the_run_kind_and_its_name() {
     );
 
     let dir = data(&sandbox).join("run").join("trial");
-    let project = read(&dir.join(".varde").join("project.yaml"));
+    let project = read(&dir.join(".chap-devops").join("project.yaml"));
     assert!(project.contains("\ngroup: trial\n"), "{project}");
     let overlay = read(&dir.join("compose.chapkit-ewars-model.yml"));
     for line in [
-        "      com.winterop.varde.role: model\n",
-        "      com.winterop.varde.model: \"chapkit_ewars_model\"\n",
-        "      com.winterop.varde.kind: run\n",
-        "      com.winterop.varde.group: \"trial\"\n",
+        "      com.winterop.chap-devops.role: model\n",
+        "      com.winterop.chap-devops.model: \"chapkit_ewars_model\"\n",
+        "      com.winterop.chap-devops.kind: run\n",
+        "      com.winterop.chap-devops.group: \"trial\"\n",
     ] {
         // Once on the model and once on its init container.
         assert_eq!(overlay.matches(line).count(), 2, "{line}{overlay}");
@@ -189,11 +189,14 @@ fn run_inside_a_deployment_uses_it_and_refuses_a_group() {
     // A deployment of the caller's own is not a group, and its labels say so.
     let overlay = read(&dir.join("compose.auto-arima-chapkit.yml"));
     assert!(
-        overlay.contains("com.winterop.varde.kind: init\n"),
+        overlay.contains("com.winterop.chap-devops.kind: init\n"),
         "{overlay}"
     );
-    assert!(!overlay.contains("com.winterop.varde.group"), "{overlay}");
-    assert!(!read(&dir.join(".varde").join("project.yaml")).contains("group:"));
+    assert!(
+        !overlay.contains("com.winterop.chap-devops.group"),
+        "{overlay}"
+    );
+    assert!(!read(&dir.join(".chap-devops").join("project.yaml")).contains("group:"));
     assert!(!data(&sandbox).join("run").exists());
 
     chap_with_docker(
@@ -205,7 +208,7 @@ fn run_inside_a_deployment_uses_it_and_refuses_a_group() {
     .assert()
     .failure()
     .stderr(predicates::str::contains(
-        "--group names a `varde run` group",
+        "--group names a `chap-devops run` group",
     ));
 }
 
@@ -223,7 +226,7 @@ fn run_of_an_unknown_id_says_so_and_makes_no_group() {
     let doc: Json = serde_json::from_slice(&out).expect("one JSON document");
     assert_eq!(doc["ok"], false);
     assert_eq!(
-        doc["hint"], "`varde models search does_not_exist` finds one",
+        doc["hint"], "`chap-devops models search does_not_exist` finds one",
         "{doc}"
     );
     assert!(!data(&sandbox).join("run").join("default").exists());
@@ -247,7 +250,7 @@ fn a_usage_error_under_json_is_json() {
             .contains("required arguments were not provided"),
         "{doc}"
     );
-    assert_eq!(doc["hint"], "`varde stop --help` lists what it takes");
+    assert_eq!(doc["hint"], "`chap-devops stop --help` lists what it takes");
 }
 
 #[test]
@@ -277,7 +280,7 @@ fn a_run_that_cannot_start_takes_its_model_back_out() {
     assert_eq!(
         doc["hint"],
         "check the reference, or run `docker login ghcr.io`, then \
-         `varde run chapkit_ewars_model --group trial` tries again"
+         `chap-devops run chapkit_ewars_model --group trial` tries again"
     );
     // The line compose said is in the message, and not a cause as well.
     assert_eq!(
@@ -308,7 +311,7 @@ fn parallel_runs_into_a_new_group_all_land_in_it() {
                         &["--json", "run", model, "--group", "fresh", "--no-wait"],
                     )
                     .output()
-                    .expect("varde ran")
+                    .expect("chap-devops ran")
                     .status
                     .code()
                 })
@@ -366,7 +369,10 @@ fn an_error_inside_a_group_names_models_remove_with_the_group_dir() {
     let dir = data(&sandbox).join("run").join("trial");
     let said = format!("{} {}", doc["error"], doc["hint"]);
     assert!(
-        said.contains(&format!("`varde -C {} models remove mine`", dir.display())),
+        said.contains(&format!(
+            "`chap-devops -C {} models remove mine`",
+            dir.display()
+        )),
         "{doc}"
     );
 }
@@ -399,13 +405,13 @@ fn a_run_into_a_group_names_its_log_with_the_group_dir() {
     let dir = data(&sandbox).join("run").join("trial");
     assert!(
         text.contains(&format!(
-            "`varde -C {} logs chapkit-ewars-model`",
+            "`chap-devops -C {} logs chapkit-ewars-model`",
             dir.display()
         )),
         "{text}"
     );
     assert!(
-        text.contains("`varde stop chapkit_ewars_model --group trial`"),
+        text.contains("`chap-devops stop chapkit_ewars_model --group trial`"),
         "{text}"
     );
 }
@@ -431,11 +437,11 @@ fn a_json_error_does_not_repeat_its_hint() {
         .clone();
     let doc: Json = serde_json::from_slice(&out).expect("one JSON document");
     let hint = doc["hint"].as_str().expect("a hint");
-    assert!(hint.contains("`varde ps`"), "{doc}");
+    assert!(hint.contains("`chap-devops ps`"), "{doc}");
     assert!(!doc["error"].as_str().unwrap().contains(hint), "{doc}");
 }
 
-/// A `docker` whose compose commands succeed, and that sends Ctrl-C to varde
+/// A `docker` whose compose commands succeed, and that sends Ctrl-C to chap-devops
 /// (its parent) at one point: `up` while the model starts, or `logs` while
 /// the foreground follows it. Every call goes to `calls.log`.
 fn docker_pressing_ctrl_c_at(
@@ -495,7 +501,7 @@ fn ctrl_c_in_the_foreground_stops_the_model_and_keeps_its_data() {
         .stdout(predicates::str::contains("chapkit_ewars_model").not());
 }
 
-/// `--rm` cleans up as `varde stop --purge` does: the group the model leaves
+/// `--rm` cleans up as `chap-devops stop --purge` does: the group the model leaves
 /// empty goes too, with its network and its directory.
 #[test]
 fn ctrl_c_in_the_foreground_with_rm_removes_the_emptied_group() {
@@ -552,7 +558,7 @@ fn without_attach_run_returns_and_leaves_the_model_running() {
     let sandbox = Sandbox::new();
     let (_temp, bin) = docker_running_services(&["chapkit-ewars-model"]);
 
-    // Without -a there is no foreground, as with `varde up`: the command
+    // Without -a there is no foreground, as with `chap-devops up`: the command
     // returns, and under -v a hint names the stop.
     chap_with_docker(
         &sandbox,
@@ -563,7 +569,7 @@ fn without_attach_run_returns_and_leaves_the_model_running() {
     .assert()
     .success()
     .stdout(predicates::str::contains(
-        "hint: `varde stop chapkit_ewars_model` stops it",
+        "hint: `chap-devops stop chapkit_ewars_model` stops it",
     ))
     .stderr(predicates::str::contains("following the log").not());
 }
@@ -591,7 +597,7 @@ fn chap_core_points_the_group_at_a_chap_core_elsewhere() {
     .success();
 
     let group = data(&sandbox).join("run").join("default");
-    let components = std::fs::read_to_string(group.join(".varde/components.yaml")).unwrap();
+    let components = std::fs::read_to_string(group.join(".chap-devops/components.yaml")).unwrap();
     assert!(
         components.contains("url: http://localhost:18999"),
         "{components}"
@@ -632,6 +638,6 @@ fn chap_core_in_a_deployment_of_its_own_is_refused_with_the_command_to_use() {
     .assert()
     .code(2)
     .stderr(predicates::str::contains(
-        "`varde components enable chap-core --url http://localhost:18999`",
+        "`chap-devops components enable chap-core --url http://localhost:18999`",
     ));
 }

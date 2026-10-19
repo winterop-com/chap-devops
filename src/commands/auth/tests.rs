@@ -1,6 +1,6 @@
 use super::*;
 
-/// What `varde auth show` prints: the tables, then the lines with their
+/// What `chap-devops auth show` prints: the tables, then the lines with their
 /// level in front.
 fn show_human(
     out: &Out,
@@ -39,7 +39,7 @@ fn show_says_off_and_what_to_do_about_it() {
     assert!(text.contains("API authentication  off"), "{text}");
     assert!(text.contains("Registration key    off"), "{text}");
     assert!(text.contains("nothing protects this API"), "{text}");
-    assert!(text.contains("hint: `varde auth enable`"), "{text}");
+    assert!(text.contains("hint: `chap-devops auth enable`"), "{text}");
     assert!(!text.contains("API token"), "there is none: {text}");
 }
 
@@ -69,7 +69,7 @@ fn show_hides_the_token_until_reveal_asks_for_it() {
 
 #[test]
 fn show_flags_a_state_file_that_disagrees_with_the_env() {
-    // `.env` has both, `.varde/` remembers neither: a hand edit.
+    // `.env` has both, `.chap-devops/` remembers neither: a hand edit.
     let text = show_human(
         &Out::default(),
         &on(),
@@ -79,7 +79,7 @@ fn show_flags_a_state_file_that_disagrees_with_the_env() {
         &[],
     );
     assert!(
-        text.contains("warning: `.varde/project.yaml` records"),
+        text.contains("warning: `.chap-devops/project.yaml` records"),
         "{text}"
     );
     assert!(text.contains("api_token: false"), "{text}");
@@ -185,7 +185,7 @@ fn the_written_files_are_hints() {
 fn the_key_line_of_a_chap_core_elsewhere_names_the_variable_and_the_file() {
     assert_eq!(
         external_key_line("http://localhost:8000"),
-        "varde does not change the chap-core at http://localhost:8000; set \
+        "chap-devops does not change the chap-core at http://localhost:8000; set \
          `SERVICEKIT_REGISTRATION_KEY` in `.env` to its registration key"
     );
 }

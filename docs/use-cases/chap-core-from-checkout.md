@@ -1,6 +1,6 @@
 # chap-core built from its checkout
 
-For testing a chap-core change the way it will ship: varde builds the chap-core
+For testing a chap-core change the way it will ship: chap-devops builds the chap-core
 and worker images from your checkout and runs them with everything else it
 normally runs (PostgreSQL, Valkey, the models, and OCS or DHIS2 if you add them
 with `--with`).
@@ -8,14 +8,14 @@ with `--with`).
 Replace `~/dev/chap-core` with the path of your chap-core checkout:
 
 ```sh
-varde init mychap --source ~/dev/chap-core --models chapkit_simple_multistep_model
+chap-devops init mychap --source ~/dev/chap-core --models chapkit_simple_multistep_model
 cd mychap
-varde up                     # builds both images from the checkout, then starts them
-varde status
+chap-devops up                     # builds both images from the checkout, then starts them
+chap-devops status
 ```
 
 The images are `linux/amd64`, so on an Apple Silicon Mac the build runs under
-emulation. The first `varde up` pulls the base images and builds both images,
+emulation. The first `chap-devops up` pulls the base images and builds both images,
 which took two to five minutes on an Apple Silicon Mac. It prints the full
 docker build log, and ends with the services it started:
 
@@ -30,33 +30,33 @@ MODEL                           STATE                       REACH          LAST 
 chapkit-simple-multistep-model  registered, not configured  via chap-core  1s ago
 
 1 model registered
-chapkit-simple-multistep-model: chap-core has no configured model for it, so nothing can run it; run `varde models configs sync`
+chapkit-simple-multistep-model: chap-core has no configured model for it, so nothing can run it; run `chap-devops models configs sync`
 ```
 
-It worked when `varde status` shows chap-core `up` and the model registered.
+It worked when `chap-devops status` shows chap-core `up` and the model registered.
 The version is the one that your checkout reports.
 
-`registered, not configured` is the normal state after a plain `varde up`.
+`registered, not configured` is the normal state after a plain `chap-devops up`.
 chap-core makes no configured model when a model registers. A backtest and the
-Modeling App need one. To make them, run `varde models configs sync`. After that,
-`varde status` shows the model as `registered`. See
+Modeling App need one. To make them, run `chap-devops models configs sync`. After that,
+`chap-devops status` shows the model as `registered`. See
 [Configured models](../models.md#configured-models).
 
 - **`compose.yml` comes from the checkout's own `compose.ghcr.yml`**, re-read on
-  every `varde sync`, so the services match the code you are building.
-- **Every `varde up` builds the checkout as it is now.** `compose.varde.yml`
+  every `chap-devops sync`, so the services match the code you are building.
+- **Every `chap-devops up` builds the checkout as it is now.** `compose.chap-devops.yml`
   gives `chap` and `worker` a `build:` from the checkout and
   `pull_policy: build`. Docker's layer cache makes a build with nothing changed
-  take some seconds, and `varde up` then says `already running: ...`. After a
+  take some seconds, and `chap-devops up` then says `already running: ...`. After a
   change in the code, the build installs the dependencies again (about a minute
-  on an Apple Silicon Mac), and `varde up` recreates only what moved:
+  on an Apple Silicon Mac), and `chap-devops up` recreates only what moved:
   `started chap, worker`.
 - **The images are `<project>-chap:checkout` and `<project>-worker:checkout`**,
   named after the deployment's compose project (such as
   `mychap-77c0c2-chap:checkout`), so a build never overwrites a released
   `ghcr.io/dhis2-chap/...` tag on this machine, and two deployments built from
   two checkouts never overwrite each other's. The worker image is about 12 GB.
-- **There is no pin.** `varde update` still moves the models and components, and
+- **There is no pin.** `chap-devops update` still moves the models and components, and
   refuses `--chap-tag`: check out the version you want in the checkout instead.
 
 The checkout has to have `Dockerfile`, `Dockerfile.worker` and
@@ -71,14 +71,14 @@ before a file is written (see
 1. Stop the deployment:
 
    ```sh
-   varde down
+   chap-devops down
    ```
 
 2. Run `init` again without `--source`, with the same `--with` and `--models`
    values you used:
 
    ```sh
-   varde init . --force --models chapkit_simple_multistep_model
+   chap-devops init . --force --models chapkit_simple_multistep_model
    ```
 
    `init` keeps `.env`, and moves its `CHAP_IMAGE_TAG` line from `checkout`
@@ -90,25 +90,25 @@ before a file is written (see
    components: chap-core
    chap-core: v2.4.0, API on http://localhost:8700
    enabled chapkit_simple_multistep_model v0.1.2 at http://localhost:8700/v2/services/chapkit-simple-multistep-model/run/
-   run `cd /home/me/mychap && varde up` to start the deployment
+   run `cd /home/me/mychap && chap-devops up` to start the deployment
    ```
 
 3. Start the deployment:
 
    ```sh
-   varde up
+   chap-devops up
    ```
 
-It worked when `varde status` shows the released version, such as `2.4.0`.
-Some seconds after `varde up`, `varde status` can show the model as
-`running, not registered` and exit with 1. If it does, run `varde status` again
+It worked when `chap-devops status` shows the released version, such as `2.4.0`.
+Some seconds after `chap-devops up`, `chap-devops status` can show the model as
+`running, not registered` and exit with 1. If it does, run `chap-devops status` again
 in a minute. If the checkout added a database migration, the released chap-core
 may not start on that data.
 
 The images built from the checkout stay on this machine. To get the disk space
 back, remove them with `docker image rm <project>-chap:checkout
 <project>-worker:checkout`. `<project>` is the `name:` line in
-`compose.varde.yml`, such as `mychap-77c0c2`.
+`compose.chap-devops.yml`, such as `mychap-77c0c2`.
 
 More: [chap-core from its checkout, with the models](./chap-core-on-host.md)
 runs chap-core as a process instead, without building images.

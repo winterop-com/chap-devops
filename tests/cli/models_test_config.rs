@@ -1,4 +1,4 @@
-//! Which configured model `varde models test --backtest` uses: the one
+//! Which configured model `chap-devops models test --backtest` uses: the one
 //! `--config` names, or the one it picks, and always the line that says so.
 
 use crate::common::*;
@@ -149,7 +149,7 @@ fn config_that_names_no_configured_model_is_a_skip_with_the_names() {
     );
     assert!(
         text.contains(
-            "  run `varde models configs list chapkit_ewars_model` to see its configured models"
+            "  run `chap-devops models configs list chapkit_ewars_model` to see its configured models"
         ),
         "{text}"
     );

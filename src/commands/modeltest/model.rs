@@ -30,9 +30,9 @@ pub(super) fn model_level(
     if enabled.compose_file.is_empty() {
         return run.end(
             Verdict::Skip,
-            "varde does not run it, so there is no container to test it in",
+            "chap-devops does not run it, so there is no container to test it in",
             Some(format!(
-                "run `varde models test {} --backtest` to test it through chap-core",
+                "run `chap-devops models test {} --backtest` to test it through chap-core",
                 enabled.service_id
             )),
         );
@@ -41,7 +41,7 @@ pub(super) fn model_level(
         return run.end(
             Verdict::Skip,
             "its container is not running",
-            Some("run `varde up`".to_string()),
+            Some("run `chap-devops up`".to_string()),
         );
     }
 
@@ -93,7 +93,7 @@ pub(super) fn model_level(
             Verdict::Skip,
             format!("no answer in {}", modeltest::took(timeout.as_secs())),
             Some(format!(
-                "raise the limit with `varde models test {id} --timeout {}`",
+                "raise the limit with `chap-devops models test {id} --timeout {}`",
                 timeout.as_secs() * 2
             )),
         );
@@ -109,7 +109,7 @@ pub(super) fn model_level(
                     Verdict::Skip,
                     "an MLproject service has no `chapkit test`",
                     Some(format!(
-                        "go through chap-core with `varde models test {id} --backtest`"
+                        "go through chap-core with `chap-devops models test {id} --backtest`"
                     )),
                 );
             }
@@ -117,8 +117,8 @@ pub(super) fn model_level(
                 Verdict::Skip,
                 format!("the image has no `chapkit test`{}", reported(info.as_ref())),
                 Some(format!(
-                    "update the model with `varde update`, or go through chap-core \
-                     with `varde models test {id} --backtest`"
+                    "update the model with `chap-devops update`, or go through chap-core \
+                     with `chap-devops models test {id} --backtest`"
                 )),
             );
         }
@@ -130,7 +130,7 @@ pub(super) fn model_level(
                 modeltest::SUMMARY_MARKER
             ),
             Some(format!(
-                "run `varde models test {id} -vv` for the full output"
+                "run `chap-devops models test {id} -vv` for the full output"
             )),
         );
     };
@@ -144,8 +144,8 @@ pub(super) fn model_level(
             Verdict::Fail,
             summary.why(),
             Some(format!(
-                "run `varde models test {id} -vv` for the full output, \
-                 and `varde logs {}` for the service's own",
+                "run `chap-devops models test {id} -vv` for the full output, \
+                 and `chap-devops logs {}` for the service's own",
                 enabled.service_id
             )),
         )

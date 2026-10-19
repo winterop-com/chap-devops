@@ -42,11 +42,11 @@ fn report_with(
     components: Vec<ManifestComponent>,
 ) -> BackupReport {
     BackupReport {
-        path: PathBuf::from("/backups/varde-backup-e2e-20260923-071000.tar.gz"),
+        path: PathBuf::from("/backups/chap-devops-backup-e2e-20260923-071000.tar.gz"),
         size_bytes: 5 * 1024 * 1024,
         manifest: Manifest {
             schema_version: crate::backup::SCHEMA_VERSION,
-            created_by: "varde 0.1.0".into(),
+            created_by: "chap-devops 0.1.0".into(),
             created_at: "2026-09-23T07:10:00Z".into(),
             project: "e2e".into(),
             chap_image_tag: Some("latest".into()),
@@ -79,7 +79,7 @@ fn the_output_is_one_line_and_the_parts_are_hints() {
         vec![component("ocs", None)],
     ));
     assert!(text.starts_with(
-        "wrote /backups/varde-backup-e2e-20260923-071000.tar.gz \
+        "wrote /backups/chap-devops-backup-e2e-20260923-071000.tar.gz \
          (5.0 MB gzipped, 46.0 KB of data)\n"
     ));
     assert!(text.contains("hint: files: .env, compose.yml\n"));
@@ -92,7 +92,7 @@ fn the_output_is_one_line_and_the_parts_are_hints() {
     assert!(!text.contains("warning:"));
     // And it ends on the command that reads the archive back.
     assert!(text.ends_with(
-        "hint: `varde backup restore /backups/varde-backup-e2e-20260923-071000.tar.gz` \
+        "hint: `chap-devops backup restore /backups/chap-devops-backup-e2e-20260923-071000.tar.gz` \
          restores it\n"
     ));
     assert_eq!(text.lines().filter(|l| !l.starts_with("hint:")).count(), 1);
@@ -224,7 +224,7 @@ fn the_compose_argument_lists_never_ask_for_a_terminal() {
 #[test]
 fn the_project_name_falls_back_to_something_printable() {
     assert_eq!(project_name(Path::new("/srv/e2e")), "e2e");
-    assert_eq!(project_name(Path::new("/")), "varde");
+    assert_eq!(project_name(Path::new("/")), "chap-devops");
 }
 
 /// A read that failed makes the run fail; data there was no reason to read -
@@ -281,7 +281,7 @@ fn a_long_pause_is_said_before_it_starts() {
     )
     .expect("a large volume");
     assert!(
-        warning.starts_with("dhis2 is paused while varde copies 40.0 GB of `x_dhis2_home`"),
+        warning.starts_with("dhis2 is paused while chap-devops copies 40.0 GB of `x_dhis2_home`"),
         "{warning}"
     );
     assert!(warning.contains("`--no-components`"), "{warning}");
@@ -295,7 +295,7 @@ fn a_long_pause_is_said_before_it_starts() {
     )
     .expect("a large volume");
     assert!(
-        warning.starts_with("chapkit-ewars-model is paused while varde copies 1.0 GB"),
+        warning.starts_with("chapkit-ewars-model is paused while chap-devops copies 1.0 GB"),
         "{warning}"
     );
     assert!(
@@ -320,6 +320,6 @@ fn a_stopped_backup_names_what_it_paused() {
     assert_eq!(
         interrupted(&owned(&["ocs"]), &owned(&["dhis2"])).to_string(),
         "stopped by Ctrl-C; no archive was written; ocs was paused for the backup and runs \
-         again; dhis2 could not be started again; run `varde up` to resume it"
+         again; dhis2 could not be started again; run `chap-devops up` to resume it"
     );
 }

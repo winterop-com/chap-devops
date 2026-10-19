@@ -1,6 +1,6 @@
 # Any number of model services, no folder
 
-One chapkit model or ten, each answering on its own port, with no `varde init`,
+One chapkit model or ten, each answering on its own port, with no `chap-devops init`,
 no deployment directory and no chap-core. For calling models' APIs directly,
 comparing several side by side, or a tool (a UI, a notebook, a test harness)
 that only needs "start this model and tell me where it answers".
@@ -8,17 +8,17 @@ that only needs "start this model and tell me where it answers".
 From any directory that is not a deployment:
 
 ```sh
-varde run chapkit_simple_multistep_model
-varde run auto_arima_chapkit
-varde run https://github.com/chap-models/chapkit_ghr_model
-varde ps                     # every model, its state and its URL
+chap-devops run chapkit_simple_multistep_model
+chap-devops run auto_arima_chapkit
+chap-devops run https://github.com/chap-models/chapkit_ghr_model
+chap-devops ps                     # every model, its state and its URL
 ```
 
-Each `varde run` returns once the model answers on its `/health` and prints
+Each `chap-devops run` returns once the model answers on its `/health` and prints
 where it answers. Between the two lines, docker compose shows its progress:
 
 ```text
-starting chapkit-simple-multistep-model (chapkit_simple_multistep_model in /home/me/.local/share/varde/run/default)
+starting chapkit-simple-multistep-model (chapkit_simple_multistep_model in /home/me/.local/share/chap-devops/run/default)
 ...
 running chapkit_simple_multistep_model on http://localhost:5001 (answered in 4s)
 ```
@@ -27,7 +27,7 @@ The first run of a model pulls its image. A marketplace model image is several
 gigabytes, so this can take many minutes; a later run starts in seconds.
 
 The GitHub URL above is a model that the marketplace lists. Before the
-`starting` line, varde says so, then reads the user of the image (this pulls
+`starting` line, chap-devops says so, then reads the user of the image (this pulls
 the image), and then starts that marketplace model:
 
 ```text
@@ -41,7 +41,7 @@ other. A marketplace id, a GitHub repository URL, a ghcr image and a local
 `name:tag` are all accepted; see
 [Running one model](../run.md#what-the-model-can-be).
 
-It worked when `varde ps` lists every model as `up`, each with its own URL:
+It worked when `chap-devops ps` lists every model as `up`, each with its own URL:
 
 ```text
 GROUP    ID                              SERVICE                         STATE  URL
@@ -50,26 +50,26 @@ default  chapkit_ghr_model               chapkit-ghr-model               up     
 default  chapkit_simple_multistep_model  chapkit-simple-multistep-model  up     http://localhost:5001
 ```
 
-`varde top` shows the same, live.
+`chap-devops top` shows the same, live.
 
 ## Starting many at once
 
 `--no-wait` returns as soon as the container starts, so a whole set can start
 in parallel. Runs into the same group take turns where they have to and never
-step on each other; a run that waits for its turn says `another varde command
+step on each other; a run that waits for its turn says `another chap-devops command
 is changing this deployment; waiting for it to finish`.
 
 ```sh
 for m in chapkit_simple_multistep_model auto_arima_chapkit chapkit_ghr_model; do
-  varde run "$m" --no-wait &
+  chap-devops run "$m" --no-wait &
 done
 wait
-varde ps                     # `running, not answering` until each one is ready
+chap-devops ps                     # `running, not answering` until each one is ready
 ```
 
 With `--no-wait`, each run prints `started` in place of `running`. The runs
 take their turns in no fixed order, so the ports can go to the models in a
-different order each time. Read each URL from `varde ps` or from `--json`.
+different order each time. Read each URL from `chap-devops ps` or from `--json`.
 
 Running a model that already runs starts nothing new: it reports the same id
 and port. A repository or image you ran before is that same model again, not a
@@ -79,15 +79,15 @@ does not read the image again, recreate the container, or move the port.
 
 ## Keeping sets apart: groups
 
-Without a folder, varde keeps the models in a *group* under its data
+Without a folder, chap-devops keeps the models in a *group* under its data
 directory, `default` unless you name one. A group per experiment keeps sets
 apart, and every group can be listed and stopped on its own:
 
 ```sh
-varde run chapkit_simple_multistep_model --group dengue
-varde run auto_arima_chapkit --group dengue
-varde run chapkit_simple_multistep_model --group malaria   # one more, separate copy
-varde ps --group dengue
+chap-devops run chapkit_simple_multistep_model --group dengue
+chap-devops run auto_arima_chapkit --group dengue
+chap-devops run chapkit_simple_multistep_model --group malaria   # one more, separate copy
+chap-devops ps --group dengue
 ```
 
 ```text
@@ -99,19 +99,19 @@ dengue  chapkit_simple_multistep_model  chapkit-simple-multistep-model  up     h
 The same model in two groups is two containers with two ports and two data
 volumes. Group names are lowercase letters, digits, `-` and `_`.
 
-A group is an ordinary varde deployment that varde keeps for you, so the other
-commands reach it with `-C`. The `starting` line of `varde run` names the
-group directory, and `varde -v run` prints the full log command:
+A group is an ordinary chap-devops deployment that chap-devops keeps for you, so the other
+commands reach it with `-C`. The `starting` line of `chap-devops run` names the
+group directory, and `chap-devops -v run` prints the full log command:
 
 ```sh
-varde -C ~/.local/share/varde/run/dengue logs chapkit-simple-multistep-model
+chap-devops -C ~/.local/share/chap-devops/run/dengue logs chapkit-simple-multistep-model
 ```
 
-The path is the default data directory; `$VARDE_DATA_DIR` or `$XDG_DATA_HOME`
+The path is the default data directory; `$CHAP_DEVOPS_DATA_DIR` or `$XDG_DATA_HOME`
 moves it ([Where it runs: groups](../run.md#where-it-runs-groups)).
 
-For a group that does not exist, `varde ps --group` says
-`` there is no `varde run` group X; `varde ps` lists every group ``.
+For a group that does not exist, `chap-devops ps --group` says
+`` there is no `chap-devops run` group X; `chap-devops ps` lists every group ``.
 
 ## From a script
 
@@ -119,7 +119,7 @@ Under `--json` each command prints one JSON document on stdout, and docker's
 progress goes to stderr:
 
 ```sh
-varde --json run chapkit_simple_multistep_model --group dengue
+chap-devops --json run chapkit_simple_multistep_model --group dengue
 ```
 
 The fields a tool needs are `url`, `port`, `id`, `group` and `project_dir`; a
@@ -130,36 +130,36 @@ failure is `{"ok": false, "error": ..., "hint": ...}` with a non-zero exit. See
 ## Stopping
 
 ```sh
-varde stop chapkit_ghr_model                                # one model, in whichever group has it
-varde stop chapkit_simple_multistep_model --group malaria   # one model in one group
-varde stop --group dengue                                   # every model in one group
-varde stop --all                                            # every model in every group
-varde stop --group dengue --purge                           # and its data, and the group itself
+chap-devops stop chapkit_ghr_model                                # one model, in whichever group has it
+chap-devops stop chapkit_simple_multistep_model --group malaria   # one model in one group
+chap-devops stop --group dengue                                   # every model in one group
+chap-devops stop --all                                            # every model in every group
+chap-devops stop --group dengue --purge                           # and its data, and the group itself
 ```
 
 An id alone works only when one group has that model. After the steps above,
-`chapkit_simple_multistep_model` runs in three groups, so `varde stop chapkit_simple_multistep_model`
+`chapkit_simple_multistep_model` runs in three groups, so `chap-devops stop chapkit_simple_multistep_model`
 stops nothing and says:
 
 ```text
 error: chapkit_simple_multistep_model runs in the groups default, dengue, malaria; name one with `--group default`
 ```
 
-A stop keeps the model's data volume, so the next `varde run` of it continues
+A stop keeps the model's data volume, so the next `chap-devops run` of it continues
 with the same data. The port can be a different one. `--purge` deletes the
 data too, and removes a group it leaves empty: its network, its directory and
 every volume it had, including those of models stopped earlier. To remove
-every group and all its data, use `varde stop --all --purge`.
+every group and all its data, use `chap-devops stop --all --purge`.
 
 In the order above, `dengue` has no running model when `--purge` comes, so
-varde says:
+chap-devops says:
 
 ```text
 nothing was running to stop
 removed group dengue
 ```
 
-`varde -v stop` also names each volume that it removed.
+`chap-devops -v stop` also names each volume that it removed.
 
 ## When a folder is the better fit
 

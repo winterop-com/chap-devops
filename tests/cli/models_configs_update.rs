@@ -1,4 +1,4 @@
-//! `varde models configs update`, `export` and `add --from` against a
+//! `chap-devops models configs update`, `export` and `add --from` against a
 //! stand-in chap-core in the shape of 2.4.
 
 use crate::common::*;
@@ -30,7 +30,9 @@ fn stderr_of(output: &std::process::Output) -> String {
 }
 
 fn run(sandbox: &Sandbox, dir: &std::path::Path, args: &[&str]) -> std::process::Output {
-    chap_in(sandbox, dir, args).output().expect("varde runs")
+    chap_in(sandbox, dir, args)
+        .output()
+        .expect("chap-devops runs")
 }
 
 #[test]

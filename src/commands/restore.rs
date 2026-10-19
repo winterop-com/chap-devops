@@ -1,4 +1,4 @@
-//! `varde backup restore` — put a deployment back from an archive.
+//! `chap-devops backup restore` — put a deployment back from an archive.
 //!
 //! The order matters and is the whole design:
 //!
@@ -6,7 +6,7 @@
 //!    volume is about to be swapped, so nothing writes while their storage
 //!    changes under them (skipped when nothing is running),
 //! 2. write the project files back and re-render the compose files from the
-//!    `.varde/` that just arrived. Everything after this step works from the
+//!    `.chap-devops/` that just arrived. Everything after this step works from the
 //!    project as it now is - its compose file list, its components, its
 //!    credentials - and not from the one this process started with,
 //! 3. `pg_restore --clean --if-exists` into a postgres started just for this,
@@ -35,7 +35,7 @@ use crate::commands::Ctx;
 use crate::docker;
 use crate::error::Result;
 use crate::output;
-use crate::project::{PROJECT_FILE, Project, VARDE_DIR};
+use crate::project::{CHAP_DEVOPS_DIR, PROJECT_FILE, Project};
 use database::restore_database;
 use files::restore_files;
 use serde::Serialize;
@@ -44,13 +44,13 @@ use std::io::{BufRead, IsTerminal, Write};
 use std::path::Path;
 use volumes::{restore_components, restore_models};
 
-/// The shape of `varde backup restore --json`.
+/// The shape of `chap-devops backup restore --json`.
 #[derive(Debug, Serialize)]
 pub struct RestoreReport {
     pub plan: RestorePlan,
     /// Project files written, relative to the project directory.
     pub files: Vec<String>,
-    /// Optional `.varde/` state files removed because the archive carries
+    /// Optional `.chap-devops/` state files removed because the archive carries
     /// none: the deployment it came from had none, so keeping this one's
     /// would mix two deployments' state. See [`files::OPTIONAL_STATE`].
     pub removed_state: Vec<String>,
@@ -145,7 +145,7 @@ pub fn run(ctx: &Ctx, args: &RestoreArgs) -> Result<()> {
         report.stopped = report.plan.stop.clone();
     }
 
-    let stage = Stage::new(&project.varde_dir(), "restore")?;
+    let stage = Stage::new(&project.chap_devops_dir(), "restore")?;
     if !report.plan.files.is_empty() {
         // Everything below works from the deployment the archive just made of
         // this directory: the `-f` list it renders may now hold
@@ -171,12 +171,12 @@ pub fn run(ctx: &Ctx, args: &RestoreArgs) -> Result<()> {
 }
 
 /// The compose project name the archive was taken under, when its
-/// `.varde/project.yaml` recorded one.
+/// `.chap-devops/project.yaml` recorded one.
 ///
 /// Read out of the archive without unpacking it, because the plan says what
 /// will happen to this deployment's identity before anything is touched.
 fn archived_identity(archive: &Path, members: &BTreeSet<String>) -> Option<String> {
-    let member = format!("{FILES_MEMBER}/{VARDE_DIR}/{PROJECT_FILE}");
+    let member = format!("{FILES_MEMBER}/{CHAP_DEVOPS_DIR}/{PROJECT_FILE}");
     if !members.contains(&member) {
         return None;
     }
@@ -188,7 +188,7 @@ fn archived_identity(archive: &Path, members: &BTreeSet<String>) -> Option<Strin
 fn read_manifest(archive: &Path) -> Result<Manifest> {
     let body = backup::tar_read_member(archive, MANIFEST_MEMBER).map_err(|e| {
         e.context(format!(
-            "{} has no {MANIFEST_MEMBER}; is it a varde backup?",
+            "{} has no {MANIFEST_MEMBER}; is it a chap-devops backup?",
             archive.display()
         ))
     })?;
@@ -271,12 +271,12 @@ fn plan(
         }
     }
 
-    // The identity only comes into it when `.varde/project.yaml` is one of the
+    // The identity only comes into it when `.chap-devops/project.yaml` is one of the
     // files being written; without that nothing can change it.
     let archived_identity = archived_identity.filter(|_| {
         files
             .iter()
-            .any(|rel| rel == &format!("{VARDE_DIR}/{PROJECT_FILE}"))
+            .any(|rel| rel == &format!("{CHAP_DEVOPS_DIR}/{PROJECT_FILE}"))
     });
     let destination = project.compose_project_name().unwrap_or_default();
     let compose_project = backup::restored_compose_project(
@@ -344,7 +344,7 @@ fn compose(project: &Project, args: &[String]) -> Result<()> {
     Ok(())
 }
 
-/// Start the deployment the way `varde up` does: the port check first, then
+/// Start the deployment the way `chap-devops up` does: the port check first, then
 /// `docker compose up -d`.
 ///
 /// The data is back whether or not the start works, so a failure says what
@@ -356,14 +356,14 @@ fn start(ctx: &Ctx, project: &Project, report: &RestoreReport) -> Result<()> {
         // was started" is true of the start alone and is left out.
         let why = why.to_string().replacen("; nothing was started", "", 1);
         return Err(anyhow::anyhow!(
-            "{restored}, and did not start the deployment: {why}\n  if you move the port, run `varde up` to start it"
+            "{restored}, and did not start the deployment: {why}\n  if you move the port, run `chap-devops up` to start it"
         ));
     }
     let code = docker::run_compose(project, &["up".to_string(), "-d".to_string()])?;
     if code != 0 {
         return Err(anyhow::anyhow!(
             "{restored}, and `docker compose up -d` exited {code}; fix what the lines above say, \
-             then run `varde up`"
+             then run `chap-devops up`"
         ));
     }
     Ok(())
@@ -457,8 +457,8 @@ fn say(report: &RestoreReport, lines: &mut output::Report) {
     match report.started {
         true => lines
             .info("the deployment is starting")
-            .hint("`varde status` shows when it answers"),
-        false => lines.info("run `varde up` to apply"),
+            .hint("`chap-devops status` shows when it answers"),
+        false => lines.info("run `chap-devops up` to apply"),
     };
     if loaded_dhis2_dump(report) {
         lines.info(DHIS2_ANALYTICS_LINE);
@@ -468,7 +468,7 @@ fn say(report: &RestoreReport, lines: &mut output::Report) {
 /// The next step after a DHIS2 database came back from its dump, which has
 /// no analytics tables.
 const DHIS2_ANALYTICS_LINE: &str = "the DHIS2 dump has no analytics tables; when DHIS2 \
-     answers, run `varde dhis2 analytics` to make them again";
+     answers, run `chap-devops dhis2 analytics` to make them again";
 
 /// Whether this restore loaded a DHIS2 database from a `pg_dump`.
 fn loaded_dhis2_dump(report: &RestoreReport) -> bool {

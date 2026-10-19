@@ -1,4 +1,4 @@
-//! `varde models configs list`, `add` and `archive` against a stand-in
+//! `chap-devops models configs list`, `add` and `archive` against a stand-in
 //! chap-core in the shape of 2.4.
 
 use crate::common::*;
@@ -88,7 +88,7 @@ fn add_creates_a_configured_model_with_checked_values() {
     assert!(
         stderr_of(&output).contains(&format!(
             "{EWARS} has a configured model short_lags already; give another --name, or \
-             archive it first with `varde models configs archive {EWARS} short_lags`"
+             archive it first with `chap-devops models configs archive {EWARS} short_lags`"
         )),
         "{}",
         stderr_of(&output)
@@ -296,7 +296,7 @@ fn archive_archives_and_list_all_shows_it() {
     .clone();
     assert!(
         stdout_of(&output).contains(
-            "has no other configured model now, so `varde models configs sync` and `varde up \
+            "has no other configured model now, so `chap-devops models configs sync` and `chap-devops up \
              --wait` create its configured models again"
         ),
         "{}",
@@ -316,7 +316,7 @@ fn list_says_how_to_create_them_when_there_are_none() {
     assert_eq!(
         stdout_of(&output),
         format!(
-            "{EWARS}: chap-core has no configured model of it; `varde models configs sync \
+            "{EWARS}: chap-core has no configured model of it; `chap-devops models configs sync \
              {EWARS}` creates them\n"
         )
     );

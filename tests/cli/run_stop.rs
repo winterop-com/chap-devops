@@ -1,4 +1,4 @@
-//! `varde stop` on `varde run` groups: stopping one model or a whole group,
+//! `chap-devops stop` on `chap-devops run` groups: stopping one model or a whole group,
 //! and what `--purge` takes with it. Unix only: the stand-in docker is a shell
 //! script.
 
@@ -16,16 +16,16 @@ fn ps_and_stop_before_any_run_say_so() {
         .assert()
         .success()
         .stdout(predicates::str::contains(
-            "nothing has been started with `varde run` yet",
+            "nothing has been started with `chap-devops run` yet",
         ));
     chap_with_docker(&sandbox, cwd, &bin, &["stop", "chapkit_ewars_model"])
         .assert()
         .failure()
-        .stderr(predicates::str::contains("`varde ps` lists what is"));
+        .stderr(predicates::str::contains("`chap-devops ps` lists what is"));
 }
 
 /// `ps --group` names only the group it looked for, and `-C` on a group
-/// that `--purge` removed names the `varde run` that makes it again.
+/// that `--purge` removed names the `chap-devops run` that makes it again.
 #[test]
 fn ps_and_dash_c_on_a_missing_group_name_the_group() {
     let sandbox = Sandbox::new();
@@ -47,7 +47,7 @@ fn ps_and_dash_c_on_a_missing_group_name_the_group() {
         .assert()
         .success()
         .stdout(predicates::str::contains(
-            "there is no `varde run` group nosuch; `varde ps` lists every group",
+            "there is no `chap-devops run` group nosuch; `chap-devops ps` lists every group",
         ));
 
     run_json(
@@ -60,7 +60,7 @@ fn ps_and_dash_c_on_a_missing_group_name_the_group() {
         .assert()
         .success()
         .stdout(predicates::str::contains(
-            "nothing has been started with `varde run` yet",
+            "nothing has been started with `chap-devops run` yet",
         ));
     let dir = data(&sandbox).join("run").join("dengue");
     // `ps` and `stop` give the same answer as `logs`: the `-C` names one
@@ -75,8 +75,8 @@ fn ps_and_dash_c_on_a_missing_group_name_the_group() {
             .assert()
             .failure()
             .stderr(predicates::str::contains(
-                "the `varde run` group dengue does not exist, or `varde stop --purge` removed \
-                 it; `varde run <model> --group dengue` makes it again",
+                "the `chap-devops run` group dengue does not exist, or `chap-devops stop --purge` removed \
+                 it; `chap-devops run <model> --group dengue` makes it again",
             ));
     }
     let nowhere = sandbox.home.path().join("nowhere");
@@ -88,7 +88,7 @@ fn ps_and_dash_c_on_a_missing_group_name_the_group() {
     )
     .assert()
     .failure()
-    .stderr(predicates::str::contains("is not a varde deployment"));
+    .stderr(predicates::str::contains("is not a chap-devops deployment"));
 }
 
 #[test]
@@ -165,7 +165,7 @@ fn purging_a_group_removes_the_volume_of_a_model_stopped_before() {
 }
 
 /// A volume docker will not remove keeps the group, so nothing is left that
-/// no varde command can reach, and the error says how to finish.
+/// no chap-devops command can reach, and the error says how to finish.
 #[test]
 fn a_volume_docker_will_not_remove_keeps_the_group() {
     let sandbox = Sandbox::new();
@@ -203,7 +203,7 @@ fn a_volume_docker_will_not_remove_keeps_the_group() {
         doc["hint"]
             .as_str()
             .unwrap()
-            .contains("`varde stop --group trial --purge`"),
+            .contains("`chap-devops stop --group trial --purge`"),
         "{doc}"
     );
     assert!(data(&sandbox).join("run").join("trial").exists());
@@ -250,7 +250,7 @@ fn purging_one_model_leaves_another_empty_group_and_its_data_alone() {
     );
 }
 
-/// `varde run -a --rm` ends the way `varde stop --purge` does: a group that
+/// `chap-devops run -a --rm` ends the way `chap-devops stop --purge` does: a group that
 /// holds no model any more goes, with its directory.
 #[test]
 fn run_attached_with_rm_removes_the_group_it_emptied() {

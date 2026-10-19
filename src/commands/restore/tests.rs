@@ -11,14 +11,14 @@ use std::path::PathBuf;
 fn manifest() -> Manifest {
     Manifest {
         schema_version: crate::backup::SCHEMA_VERSION,
-        created_by: "varde 0.1.0".into(),
+        created_by: "chap-devops 0.1.0".into(),
         created_at: "2026-09-23T07:10:00Z".into(),
         project: "e2e".into(),
         chap_image_tag: Some("latest".into()),
         files: vec![
             ".env".into(),
-            ".varde/models.yaml".into(),
-            ".varde/project.yaml".into(),
+            ".chap-devops/models.yaml".into(),
+            ".chap-devops/project.yaml".into(),
             "ocs/climate-service.yaml".into(),
             "compose.yml".into(),
         ],
@@ -92,8 +92,8 @@ fn members() -> BTreeSet<String> {
     [
         MANIFEST_MEMBER.to_string(),
         "files/.env".to_string(),
-        "files/.varde/models.yaml".to_string(),
-        "files/.varde/project.yaml".to_string(),
+        "files/.chap-devops/models.yaml".to_string(),
+        "files/.chap-devops/project.yaml".to_string(),
         "files/ocs/climate-service.yaml".to_string(),
         "files/compose.yml".to_string(),
         DB_MEMBER.to_string(),
@@ -249,8 +249,8 @@ fn a_file_the_manifest_lists_but_the_archive_lacks_is_not_planned() {
         plan.files,
         vec![
             ".env",
-            ".varde/models.yaml",
-            ".varde/project.yaml",
+            ".chap-devops/models.yaml",
+            ".chap-devops/project.yaml",
             "ocs/climate-service.yaml"
         ]
     );
@@ -311,7 +311,7 @@ fn the_plan_keeps_this_deployments_identity_unless_it_is_told_not_to() {
 fn report(started: bool, warnings: Vec<&str>) -> RestoreReport {
     RestoreReport {
         plan: plan_with(&running(&["chap", "worker"]), &[]),
-        files: vec![".env".into(), ".varde/models.yaml".into()],
+        files: vec![".env".into(), ".chap-devops/models.yaml".into()],
         removed_state: Vec::new(),
         env_backup: Some(ENV_BACKUP_FILE.to_string()),
         kept_credentials: Vec::new(),
@@ -333,7 +333,7 @@ fn rendered(report: &RestoreReport) -> String {
 #[test]
 fn a_loaded_dhis2_dump_names_the_analytics_run() {
     let mut restored = report(true, vec![]);
-    assert!(!rendered(&restored).contains("varde dhis2 analytics"));
+    assert!(!rendered(&restored).contains("chap-devops dhis2 analytics"));
     restored.plan.components.push(PlannedComponent {
         name: "dhis2".into(),
         service: "dhis2-db".into(),
@@ -342,12 +342,12 @@ fn a_loaded_dhis2_dump_names_the_analytics_run() {
         dump: true,
     });
     // Planned and not restored: nothing to say yet.
-    assert!(!rendered(&restored).contains("varde dhis2 analytics"));
+    assert!(!rendered(&restored).contains("chap-devops dhis2 analytics"));
     restored.components.push("dhis2-db".into());
     let text = rendered(&restored);
     assert!(
         text.contains(
-            "the DHIS2 dump has no analytics tables; when DHIS2 answers, run `varde dhis2 \
+            "the DHIS2 dump has no analytics tables; when DHIS2 answers, run `chap-devops dhis2 \
              analytics` to make them again\n"
         ),
         "{text}"
@@ -364,7 +364,7 @@ fn the_summary_is_one_line_with_the_details_as_hints() {
         "{text}"
     );
     assert!(text.contains("hint: stopped chap, worker first\n"));
-    assert!(text.contains("hint: files: .env, .varde/models.yaml\n"));
+    assert!(text.contains("hint: files: .env, .chap-devops/models.yaml\n"));
     assert!(text.contains("hint: the previous .env is in .env.before-restore\n"));
     assert!(text.contains("\nthe deployment is starting\n"));
     // This archive came from this deployment, so there is nothing to say
@@ -398,7 +398,10 @@ fn pg_restore_warnings_are_counted_not_hidden() {
         vec!["warning: errors ignored on restore: 2"],
     ));
     assert!(text.contains("hint: pg_restore gave 1 warning(s), shown above\n"));
-    assert!(text.ends_with("\nrun `varde up` to apply\n"), "{text}");
+    assert!(
+        text.ends_with("\nrun `chap-devops up` to apply\n"),
+        "{text}"
+    );
 }
 
 #[test]

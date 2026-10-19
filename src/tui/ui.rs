@@ -36,7 +36,7 @@ use table::{
 };
 use text::{fit_soft, pane, width_of};
 
-/// Draw the configured model form alone, as `varde models configs add` and
+/// Draw the configured model form alone, as `chap-devops models configs add` and
 /// `update` show it at a terminal.
 pub fn draw_form(frame: &mut Frame, model: &str, form: &crate::tui::form::Form, theme: &Theme) {
     let area = frame.area();
@@ -80,7 +80,7 @@ pub fn draw(frame: &mut Frame, app: &App, theme: &Theme) {
     }
 }
 
-/// `varde · models` on the left, where the catalogue came from and how big it
+/// `chap-devops · models` on the left, where the catalogue came from and how big it
 /// is on the right. Both halves shrink out of the way before they collide.
 fn draw_title(frame: &mut Frame, area: Rect, app: &App, theme: &Theme) {
     if area.height == 0 {
@@ -88,7 +88,7 @@ fn draw_title(frame: &mut Frame, area: Rect, app: &App, theme: &Theme) {
     }
     let counts = app.counts();
     let mut left = vec![
-        Span::styled("varde", theme.accent_style()),
+        Span::styled("chap-devops", theme.accent_style()),
         Span::styled(" · ", theme.dim_style()),
         Span::styled(app.page.title(), theme.label_style()),
     ];

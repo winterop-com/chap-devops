@@ -1,19 +1,19 @@
 # A new model of your own
 
-For starting a new forecasting model: `varde models new` makes the project,
-Docker builds its image, and a varde deployment trains it, predicts with it
+For starting a new forecasting model: `chap-devops models new` makes the project,
+Docker builds its image, and a chap-devops deployment trains it, predicts with it
 and scores it through chap-core. Python, uv, R and the chapkit CLI are not
 necessary on the machine.
 
 ## Make the project
 
 ```sh
-varde models new dengue-lags
+chap-devops models new dengue-lags
 ```
 
 ```text
 created dengue-lags in dengue-lags (fn-py template, service id dengue-lags)
-next: build the image as `dengue-lags/README.md` says, then run `varde run dengue-lags:dev`
+next: build the image as `dengue-lags/README.md` says, then run `chap-devops run dengue-lags:dev`
 ```
 
 The default type, `fn-py`, is a chapkit service with the model in Python, in
@@ -43,15 +43,15 @@ a commit with `GIT_REVISION`. The first build pulls the base image,
 ## Run it with chap-core
 
 ```sh
-varde init lab --models none
+chap-devops init lab --models none
 cd lab
-varde models add dengue-lags:dev
-varde up --wait
-varde status
+chap-devops models add dengue-lags:dev
+chap-devops up --wait
+chap-devops status
 ```
 
-`varde up --wait` returns when the model has registered, and it creates the
-configured model `default`. `varde status` then shows:
+`chap-devops up --wait` returns when the model has registered, and it creates the
+configured model `default`. `chap-devops status` then shows:
 
 ```text
 chap-core   up   http://localhost:8700   2.4.0   auth: off
@@ -65,7 +65,7 @@ dengue-lags  registered  via chap-core  3s ago
 ## Test it through chap-core
 
 ```sh
-varde models test dengue_lags --backtest --seed 7
+chap-devops models test dengue_lags --backtest --seed 7
 ```
 
 ```text
@@ -86,8 +86,8 @@ run, so two runs can be compared.
 gives it another value:
 
 ```sh
-varde models configs add dengue_lags --name long --set window=6
-varde models test dengue_lags --backtest --seed 7 --config long
+chap-devops models configs add dengue_lags --name long --set window=6
+chap-devops models test dengue_lags --backtest --seed 7 --config long
 ```
 
 ```text
@@ -116,8 +116,8 @@ an MLproject type), for example to `0.1.1`. Then commit, and build with the
 same `docker build` line. In `lab`:
 
 ```sh
-varde restart
-varde models test dengue_lags --backtest --seed 7
+chap-devops restart
+chap-devops models test dengue_lags --backtest --seed 7
 ```
 
 ```text
@@ -131,15 +131,15 @@ created configured models in chap-core for dengue_lags (default)
 In this run, the change was `window: int = 4` in `main.py`, so the score is
 different. The backtest created the configured model `default` of version 0.1.1. A configured
 model belongs to one version, so `long` is not there for 0.1.1: add it again
-with `varde models configs add`.
+with `chap-devops models configs add`.
 
-To run the model service alone, with no deployment: `varde run
+To run the model service alone, with no deployment: `chap-devops run
 dengue-lags:dev`. To publish the image, push the project to GitHub: the
 workflow in `.github/workflows/publish.yml` builds it and publishes it to GHCR.
-Then `varde models add` takes the repository URL, as in
+Then `chap-devops models add` takes the repository URL, as in
 [Models outside the marketplace](../models.md#models-outside-the-marketplace).
 
-These lines come from varde 0.101.0 with this change, chap-core 2.4.0 and
+These lines come from chap-devops 0.101.0 with this change, chap-core 2.4.0 and
 chapkit 2.3.1 on macOS (arm64, the image under amd64 emulation), on
 2026-10-08.
 

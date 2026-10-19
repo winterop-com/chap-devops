@@ -55,7 +55,7 @@ case "$tag" in
     ;;
 esac
 
-repo="${GITHUB_REPOSITORY:-winterop-com/varde}"
+repo="${GITHUB_REPOSITORY:-winterop-com/chap-devops}"
 script="https://raw.githubusercontent.com/${repo}/main/install.sh"
 base="https://github.com/${repo}/releases/download/${tag}"
 
@@ -153,25 +153,25 @@ bullets_for() {
 
     # Capitalise the first letter, the way a heading-less bullet list reads
     # best, without relying on bash 4's ${var^}. Not a name that is written in
-    # lower case: "varde chap takes ..." stays as the command is typed.
+    # lower case: "chap-devops chap takes ..." stays as the command is typed.
     # A subject that starts with a command name, "models test ..." or
-    # "ps, stop and run ...", is about that command: it gets `varde` in
+    # "ps, stop and run ...", is about that command: it gets `chap-devops` in
     # front and keeps its case.
     word="${rest%% *}"
     case "${word%,}" in
       models | components | ps | status | dhis2 | backup | init | up | down | \
         logs | jobs | api | doctor | cleanup | auth | self | completions | \
         top | ui | registry)
-        rest="varde ${rest}"
+        rest="chap-devops ${rest}"
         ;;
       # A verb that is also a command reads as the command only at the head
       # of a list: "run, ps, stop and open ...".
       run | stop | open | update | sync | restart | pull)
-        [ "${word%,}" != "$word" ] && rest="varde ${rest}"
+        [ "${word%,}" != "$word" ] && rest="chap-devops ${rest}"
         ;;
     esac
     case "${rest%% *}" in
-      varde | vg | chap | chap-core | chapkit | docker | compose) ;;
+      chap-devops | cdx | chap | chap-core | chapkit | docker | compose) ;;
       *)
         first="$(printf '%s' "${rest:0:1}" | tr '[:lower:]' '[:upper:]')"
         rest="${first}${rest:1}"
@@ -225,7 +225,7 @@ shasum -a 256 -c SHA256SUMS --ignore-missing
 On macOS, check the signature of the extracted binary:
 
 \`\`\`sh
-codesign -dv --verbose=4 varde
+codesign -dv --verbose=4 chap-devops
 \`\`\`
 TEXT
 }
@@ -248,7 +248,7 @@ Full changelog: ${compare}
 curl -fsSL ${script} | sh
 \`\`\`
 
-An installed \`varde\` updates itself with \`varde self update\`.
+An installed \`chap-devops\` updates itself with \`chap-devops self update\`.
 
 $(platforms)
 
@@ -270,7 +270,7 @@ notes_for_dev() {
     heading="What's changed"
   fi
 
-  # `varde self update` reads the commit back out of these notes, from the
+  # `chap-devops self update` reads the commit back out of these notes, from the
   # "Built from commit" line below: the word `commit` followed by the sha. Keep
   # the two together if this text is ever reworded; a unit test in
   # `src/selfupdate/tests.rs` checks that they are.
@@ -296,19 +296,19 @@ Full changelog: ${compare}
 curl -fsSL ${script} | sh -s -- --version dev
 \`\`\`
 
-Or into the current directory alone, as \`./varde\`, touching nothing else:
+Or into the current directory alone, as \`./chap-devops\`, touching nothing else:
 
 \`\`\`sh
 curl -fsSL ${script} | sh -s -- --version dev --here
 \`\`\`
 
-A dev build follows this release from then on: \`varde self update\` moves it
+A dev build follows this release from then on: \`chap-devops self update\` moves it
 to the newest build of \`main\`, comparing commits rather than version
-numbers, and \`varde self version\` says \`channel dev\`. To go back to the
+numbers, and \`chap-devops self version\` says \`channel dev\`. To go back to the
 stable release:
 
 \`\`\`sh
-varde self update --version v${version}
+chap-devops self update --version v${version}
 \`\`\`
 
 $(platforms)

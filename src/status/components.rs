@@ -21,7 +21,7 @@ pub enum ComponentState {
     Unhealthy,
     /// No container, so nothing to answer.
     NotRunning,
-    /// Its container is paused, as an interrupted `varde backup create` can
+    /// Its container is paused, as an interrupted `chap-devops backup create` can
     /// leave it: it is there and does not answer.
     Paused,
 }
@@ -42,7 +42,7 @@ impl ComponentState {
     ///
     /// A component that is not running is as much a problem as a model that is
     /// not registered, and it is read the same way - by a script polling
-    /// `varde status` for a deployment that has stopped being what it should
+    /// `chap-devops status` for a deployment that has stopped being what it should
     /// be. This is the predicate that exit code is made of, and nothing else:
     /// the STATE cell is coloured from the three states directly, because
     /// `starting` is amber and `not running` is red while both are failures.
@@ -101,7 +101,7 @@ const DHIS2_DB_SERVICE: &str = "dhis2-db";
 /// at all is `not running` rather than down: there is nothing wrong with a
 /// deployment that has not been started.
 ///
-/// Nothing is asked of a component whose container is not running. `varde
+/// Nothing is asked of a component whose container is not running. `chap-devops
 /// status` is the command run most often, and an instance that is not there
 /// would cost it a timeout to say what the container already said.
 pub(super) fn component_rows(
@@ -189,7 +189,7 @@ pub(super) fn component_rows(
         // `dhis2` is created only when `dhis2-db` is healthy, and on a seeded
         // deployment that is after the restore, which can take many minutes.
         // A running database without its DHIS2 is a DHIS2 that is starting,
-        // not one that `varde up` has to start.
+        // not one that `chap-devops up` has to start.
         let database_up = running.contains(DHIS2_DB_SERVICE);
         let state = match (&url, up) {
             (_, false) if database_up => ComponentState::Starting,
@@ -282,10 +282,10 @@ pub fn paused_line(paused: &BTreeSet<String>) -> Option<String> {
     match names.as_slice() {
         [] => None,
         [one] => Some(format!(
-            "{one} is paused, so it does not answer; run `varde up` to resume it"
+            "{one} is paused, so it does not answer; run `chap-devops up` to resume it"
         )),
         many => Some(format!(
-            "{} are paused, so they do not answer; run `varde up` to resume them",
+            "{} are paused, so they do not answer; run `chap-devops up` to resume them",
             many.join(", ")
         )),
     }

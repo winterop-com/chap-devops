@@ -1,4 +1,4 @@
-//! `varde chap`: the chap CLI in a container, against a stand-in `docker`
+//! `chap-devops chap`: the chap CLI in a container, against a stand-in `docker`
 //! that logs every call, so Unix only.
 #![cfg(unix)]
 
@@ -154,7 +154,7 @@ fn a_model_from_a_repository_runs_in_the_worker_image() {
     .assert()
     .success()
     .stderr(predicates::str::contains(
-        "`varde chap plot-backtest r.nc --output-file r.html` plots it",
+        "`chap-devops chap plot-backtest r.nc --output-file r.html` plots it",
     ));
     let args = chap_run(&log);
     assert!(args.contains(&"ghcr.io/dhis2-chap/chap-worker:v2.2.0".to_string()));
@@ -187,7 +187,7 @@ fn a_docker_env_model_is_refused_without_the_socket_and_given_it_with_docker() {
         .stderr(predicates::str::contains(
             "runs in docker (`docker_env` in its MLproject)",
         ))
-        .stderr(predicates::str::contains("varde chap --docker"));
+        .stderr(predicates::str::contains("chap-devops chap --docker"));
     let calls = std::fs::read_to_string(&log).unwrap_or_default();
     assert!(!calls.contains("run --rm -i"), "nothing ran: {calls}");
 
@@ -375,7 +375,7 @@ fn a_marketplace_id_the_deployment_does_not_have_is_refused() {
     .assert()
     .code(2)
     .stderr(predicates::str::contains(
-        "`varde models enable auto_arima_chapkit` adds it",
+        "`chap-devops models enable auto_arima_chapkit` adds it",
     ));
     let calls = std::fs::read_to_string(&log).unwrap_or_default();
     assert!(!calls.contains("run --rm -i"), "nothing ran: {calls}");
@@ -438,7 +438,7 @@ fn a_run_in_the_deployment_directory_suggests_a_subdirectory() {
 }
 
 #[test]
-fn chap_exit_status_is_the_exit_status_of_varde() {
+fn chap_exit_status_is_the_exit_status_of_chap_devops() {
     let sandbox = Sandbox::new();
     let work = workdir(&sandbox);
     let (_temp, bin, _log) = fake_docker();
@@ -506,7 +506,7 @@ fn json_and_a_missing_group_and_a_missing_image_are_refused_with_the_way_out() {
     .assert()
     .code(2)
     .stderr(predicates::str::contains(
-        "no `varde run` group called `nope`",
+        "no `chap-devops run` group called `nope`",
     ));
 
     // A docker with no chap-core image at all, offline: nothing to run.
@@ -534,14 +534,14 @@ fn the_chap_cli_answers_from_the_real_image() {
     }
     let sandbox = Sandbox::new();
     let work = workdir(&sandbox);
-    // No arguments: chap's own help, not the help of varde's options.
+    // No arguments: chap's own help, not the help of chap-devops's options.
     chap_in(&sandbox, &work, &["chap", "--tag", "v2.3.1"])
         .assert()
         .success()
         .stdout(predicates::str::contains("plot-backtest"));
 }
 
-/// `localhost` in the container is the container, so the URL `varde ps`
+/// `localhost` in the container is the container, so the URL `chap-devops ps`
 /// prints for a model reaches nothing there; the refusal names the URL that
 /// does.
 #[test]
@@ -570,7 +570,7 @@ fn a_model_url_on_localhost_is_refused_before_the_run() {
 }
 
 #[test]
-fn varde_says_first_what_chap_would_end_in_a_traceback_for() {
+fn chap_devops_says_first_what_chap_would_end_in_a_traceback_for() {
     let sandbox = Sandbox::new();
     let work = workdir(&sandbox);
     let (_temp, bin, log) = fake_docker();

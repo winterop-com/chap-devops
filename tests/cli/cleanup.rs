@@ -1,4 +1,4 @@
-//! `varde cleanup`: deleting what deployments whose directory is gone left in
+//! `chap-devops cleanup`: deleting what deployments whose directory is gone left in
 //! docker, and nothing else. Unix only: the stand-in docker is a shell script.
 
 #![cfg(unix)]
@@ -47,7 +47,7 @@ fn docker_with_leftovers() -> (TempDir, PathBuf, PathBuf) {
     (temp, bin, log)
 }
 
-/// Two deployments varde wrote, `kept` and `gone`, with `gone`'s directory
+/// Two deployments chap-devops wrote, `kept` and `gone`, with `gone`'s directory
 /// deleted afterwards. Returns their compose project names.
 fn one_kept_one_gone(sandbox: &Sandbox) -> (String, String) {
     let mut names = Vec::new();
@@ -133,7 +133,7 @@ fn under_json_cleanup_refuses_to_delete_without_yes() {
         doc["hint"]
             .as_str()
             .unwrap()
-            .contains("`varde cleanup --yes`"),
+            .contains("`chap-devops cleanup --yes`"),
         "{doc}"
     );
     assert!(!read(&log).contains("volume rm"));

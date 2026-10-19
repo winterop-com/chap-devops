@@ -1,25 +1,25 @@
 # Your model from its checkout, with Chap
 
-For developing a chapkit model: varde runs chap-core, and you run the model
+For developing a chapkit model: chap-devops runs chap-core, and you run the model
 from its own checkout on this machine (with `uv run`, a debugger, hot reload),
 registered with that chap-core like any deployed model. Nothing about the model
 has to be built into an image.
 
 ```sh
-varde init mychap --models none
+chap-devops init mychap --models none
 cd mychap
-varde up --wait
-varde status
+chap-devops up --wait
+chap-devops status
 ```
 
-`varde up --wait` returns once chap-core answers. Without `--wait`, `varde up`
-returns when the containers start, and for some seconds `varde status` says
-`starting`. Then `varde status` shows chap-core up and no models yet:
+`chap-devops up --wait` returns once chap-core answers. Without `--wait`, `chap-devops up`
+returns when the containers start, and for some seconds `chap-devops status` says
+`starting`. Then `chap-devops status` shows chap-core up and no models yet:
 
 ```text
 chap-core   up   http://localhost:8700   2.4.0   auth: off
 
-no models enabled; run `varde models enable ID` to add one
+no models enabled; run `chap-devops models enable ID` to add one
 ```
 
 ## Start the model
@@ -51,16 +51,16 @@ and installs the dependencies of the model.
 - `GIT_REVISION` is the commit the model reports as its `git_revision`.
   chap-core v2.4.0 stores the model template only for a service that reports
   a revision. Without it, the model registers, but chap-core has no template
-  for it. `varde status` warns: `` SERVICE_ID: it reports no git revision, so
+  for it. `chap-devops status` warns: `` SERVICE_ID: it reports no git revision, so
   chap-core stores no model template for it; set `GIT_REVISION` where it
-  runs, then start it again ``. `varde models configs sync` fails with
+  runs, then start it again ``. `chap-devops models configs sync` fails with
   `answered HTTP 409 Conflict` and gives the same way out. The chap-core log
-  (`varde logs chap`) says `is stored from revision None, but its source now
+  (`chap-devops logs chap`) says `is stored from revision None, but its source now
   reports revision None`.
 - `--host 0.0.0.0` makes the model listen on more than the loopback, which is
   what a call from a container arrives on.
 
-It worked when `varde status` lists the model's service id with a recent LAST
+It worked when `chap-devops status` lists the model's service id with a recent LAST
 PING. For the minimalist example in `~/dev/chap-models`, the status is:
 
 ```text
@@ -80,31 +80,31 @@ had at the first registration. Changes you do not commit keep the revision, so
 hot reload needs nothing more. If you commit and export `GIT_REVISION` again,
 the revision changes. chap-core then refuses the backtest with `is stored from
 revision '...', but its source now reports revision '...'`. The backtest row
-shows the start of that reason, and `varde jobs logs JOB_ID` shows all of it.
-`varde status` warns: `SERVICE_ID: chap-core stores its model template VERSION
+shows the start of that reason, and `chap-devops jobs logs JOB_ID` shows all of it.
+`chap-devops status` warns: `SERVICE_ID: chap-core stores its model template VERSION
 from another git revision and refuses to run it; set a new version in the
 model, then start it again`. To continue:
 
 1. Set a new `version` in the `MLServiceInfo` in `main.py`.
 2. Start the model again.
-3. Run `varde models configs sync SERVICE_ID` again.
+3. Run `chap-devops models configs sync SERVICE_ID` again.
 
 The configured model from before belongs to the old version, and chap-core
-does not run it. Without step 3, `varde status` warns: `` SERVICE_ID: chap-core
+does not run it. Without step 3, `chap-devops status` warns: `` SERVICE_ID: chap-core
 has configured models of it of other versions only, not of VERSION; run
-`varde models configs sync SERVICE_ID` ``. The backtest skips with `chap-core
+`chap-devops models configs sync SERVICE_ID` ``. The backtest skips with `chap-core
 has no configured model for SERVICE_ID VERSION`.
 
 ## Test it through chap-core
 
-The model level of `varde models test` (`chapkit test` in a container) is for
-models that varde runs. For this model, `varde models test SERVICE_ID` skips,
+The model level of `chap-devops models test` (`chapkit test` in a container) is for
+models that chap-devops runs. For this model, `chap-devops models test SERVICE_ID` skips,
 names `--backtest`, and exits with status 1:
 
 ```text
 testing 1 model (model level; add --backtest to go through chap-core)
-chapkit-minimalist-example-py    skip    0s   varde does not run it, so there is no container to test it in
-  run `varde models test chapkit-minimalist-example-py --backtest` to test it through chap-core
+chapkit-minimalist-example-py    skip    0s   chap-devops does not run it, so there is no container to test it in
+  run `chap-devops models test chapkit-minimalist-example-py --backtest` to test it through chap-core
 
 0 pass, 1 skipped
 warning: no model was tested, because every one was skipped; the line under each row says why
@@ -112,14 +112,14 @@ warning: no model was tested, because every one was skipped; the line under each
 
 A backtest uses a configured model: a template with a set of option values.
 chap-core v2.4.0 makes no configured model from a registered service, so make
-one. Replace `SERVICE_ID` with the id that `varde status` shows:
+one. Replace `SERVICE_ID` with the id that `chap-devops status` shows:
 
 ```sh
-varde models configs sync SERVICE_ID
-varde models test SERVICE_ID --backtest
+chap-devops models configs sync SERVICE_ID
+chap-devops models test SERVICE_ID --backtest
 ```
 
-`varde models configs sync` stores the template of the service and makes one
+`chap-devops models configs sync` stores the template of the service and makes one
 configured model, `default`, with the defaults of the service. chap-core names
 it `SERVICE_ID`:
 
@@ -131,8 +131,8 @@ If the model has options, or reads covariates that it does not declare, make
 the configured model through the API instead (this example uses `jq`):
 
 ```sh
-TEMPLATE_ID=$(varde api GET /v1/crud/model-templates | jq '.[] | select(.name == "SERVICE_ID") | .id')
-varde api POST /v1/crud/configured-models --data "{\"name\": \"dev\", \"modelTemplateId\": $TEMPLATE_ID, \"additionalContinuousCovariates\": [\"rainfall\", \"mean_temperature\"]}"
+TEMPLATE_ID=$(chap-devops api GET /v1/crud/model-templates | jq '.[] | select(.name == "SERVICE_ID") | .id')
+chap-devops api POST /v1/crud/configured-models --data "{\"name\": \"dev\", \"modelTemplateId\": $TEMPLATE_ID, \"additionalContinuousCovariates\": [\"rainfall\", \"mean_temperature\"]}"
 ```
 
 chap-core names that configured model `SERVICE_ID:dev`. Add the options as
@@ -156,13 +156,13 @@ The scores change from run to run, because the sample data is random. Add
 `--seed N` to get the same data each time.
 
 Without the configured model, the backtest skips with `chap-core has no
-configured model for SERVICE_ID VERSION`, and names `varde models configs
+configured model for SERVICE_ID VERSION`, and names `chap-devops models configs
 sync`. The backtest uses only a configured model of the version that the model
 registered with.
 
 ## A registration key
 
-If the deployment has a registration key (`varde auth show` says
+If the deployment has a registration key (`chap-devops auth show` says
 `Registration key    on`), export `SERVICEKIT_REGISTRATION_KEY` before you
 start the model. Its value is the line of that name in the deployment's `.env`:
 
@@ -172,7 +172,7 @@ export $(grep '^SERVICEKIT_REGISTRATION_KEY=' /path/to/mychap/.env)
 
 Without the key, chap-core answers `401 Unauthorized`. The model log shows
 `registration.attempt_failed` five times, then `registration.failed`, and the
-model does not try again until you start it again. `varde status` does not
+model does not try again until you start it again. `chap-devops status` does not
 list the model.
 
 ## Restarts

@@ -1,8 +1,8 @@
-//! `varde update [--dry-run]` — move the pins forward and pull.
+//! `chap-devops update [--dry-run]` — move the pins forward and pull.
 //!
 //! Two kinds of pin move here. A model that follows a channel is re-resolved
 //! against the marketplace, and the only other thing that moves those is
-//! `varde models enable`; exact pins (`--version`) never move. chap-core's own
+//! `chap-devops models enable`; exact pins (`--version`) never move. chap-core's own
 //! pin moves too when it is a release tag and a newer release exists, which
 //! also re-fetches the `compose.ghcr.yml` that release publishes. A moving
 //! chap-core tag (`latest`, `master`, `dev`) is only refreshed by the pull,
@@ -18,8 +18,8 @@
 //!
 //! What it does not do is touch a container. The run reads: the plan, then
 //! the pull, then the closing lines: what moved and which running services are
-//! now out of date. Applying that is `varde restart`, and starting a
-//! deployment that is down is `varde up`; an update that did either would be
+//! now out of date. Applying that is `chap-devops restart`, and starting a
+//! deployment that is down is `chap-devops up`; an update that did either would be
 //! a deployment nobody asked for.
 //!
 //! "Out of date" is two questions asked of every running container. Is the
@@ -74,7 +74,7 @@ pub struct UpdateReport {
     /// still points at the image this machine already had is not one of them.
     pub pulled_new: Vec<String>,
     /// Running services whose image or configuration no longer matches what
-    /// this project describes: what `varde restart` would recreate.
+    /// this project describes: what `chap-devops restart` would recreate.
     pub restart_needed: Vec<String>,
     /// Whether any of this project's containers was up, `null` when docker
     /// could not be asked.
@@ -123,13 +123,13 @@ fn update(ctx: &Ctx, args: &UpdateArgs, warnings: &mut Vec<String>) -> Result<()
         return list_tags(ctx, &project);
     }
     // A chap-core built from a checkout has no pin either: the checkout is
-    // the version, and `varde up` builds it as it is.
+    // the version, and `chap-devops up` builds it as it is.
     if let ComposeSource::Checkout { path } = &project.state.chap_compose_source
         && (args.chap_tag.is_some() || args.pin_chap_core)
     {
         return Err(anyhow::anyhow!(
             "this deployment builds chap-core from the checkout at {path}; check out the \
-             version you want there and run `varde up`"
+             version you want there and run `chap-devops up`"
         ));
     }
     let own_chap_core = project
@@ -144,7 +144,7 @@ fn update(ctx: &Ctx, args: &UpdateArgs, warnings: &mut Vec<String>) -> Result<()
     if !own_chap_core && (args.chap_tag.is_some() || args.pin_chap_core) {
         return Err(anyhow::anyhow!(
             "{} moves chap-core's pin, and this deployment has no chap-core; \
-             `varde components enable chap-core` adds it",
+             `chap-devops components enable chap-core` adds it",
             if args.chap_tag.is_some() {
                 "--chap-tag"
             } else {
@@ -156,8 +156,8 @@ fn update(ctx: &Ctx, args: &UpdateArgs, warnings: &mut Vec<String>) -> Result<()
     // the listing above is the one part that works without it.
     if ctx.registry.offline {
         return Err(ChapError::Usage(
-            "`varde update` refreshes the marketplace registry, which needs the network; drop \
-             --offline, or run `varde update --list-tags` to see the chap-core tags offline"
+            "`chap-devops update` refreshes the marketplace registry, which needs the network; drop \
+             --offline, or run `chap-devops update --list-tags` to see the chap-core tags offline"
                 .to_string(),
         )
         .into());
@@ -222,8 +222,8 @@ fn update(ctx: &Ctx, args: &UpdateArgs, warnings: &mut Vec<String>) -> Result<()
     {
         return Err(anyhow::anyhow!(
             "--pin-chap-core pinned nothing, because the newest chap-core release could not be \
-             looked up; try again later, or run `varde update --chap-tag <TAG>` with a release \
-             from `varde update --list-tags`"
+             looked up; try again later, or run `chap-devops update --chap-tag <TAG>` with a release \
+             from `chap-devops update --list-tags`"
         ));
     }
     // Nothing here starts or stops a container, so this answer holds for the
@@ -260,7 +260,7 @@ fn update(ctx: &Ctx, args: &UpdateArgs, warnings: &mut Vec<String>) -> Result<()
         }
     }
     // DHIS2 needs no move to be at risk: the pull alone can bring an image
-    // that migrates `dhis2_db` on the next `varde up`, and nothing in the plan
+    // that migrates `dhis2_db` on the next `chap-devops up`, and nothing in the plan
     // above would show it. In the dry run too, where it is the only thing this
     // run has to say about that.
     warnings.extend(dhis2_pull_note(&project, &report.components));

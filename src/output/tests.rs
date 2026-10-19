@@ -125,10 +125,13 @@ fn styling_helpers_are_a_no_op_without_colour() {
     assert_eq!(out.warn("slow"), "slow");
     assert_eq!(out.bad("down"), "down");
     assert_eq!(out.dim("path"), "path");
-    assert_eq!(out.cmd("varde up"), "varde up");
+    assert_eq!(out.cmd("chap-devops up"), "chap-devops up");
     assert_eq!(out.key("API"), "API");
     assert_eq!(out.value("8000"), "8000");
-    assert_eq!(out.backticks("run `varde up`"), "run `varde up`");
+    assert_eq!(
+        out.backticks("run `chap-devops up`"),
+        "run `chap-devops up`"
+    );
 }
 
 #[test]
@@ -137,11 +140,11 @@ fn styling_helpers_emit_escapes_with_colour() {
     let painted = out.ok("up");
     assert!(painted.contains('\u{1b}'), "{painted:?}");
     assert_eq!(console::strip_ansi_codes(&painted), "up");
-    let hint = out.backticks("start it with `varde up`");
+    let hint = out.backticks("start it with `chap-devops up`");
     assert!(hint.contains('\u{1b}'));
     assert_eq!(
         console::strip_ansi_codes(&hint),
-        "start it with `varde up`",
+        "start it with `chap-devops up`",
         "the backticks stay, so the plain reading never changes"
     );
 }
@@ -226,7 +229,8 @@ fn human_error_lists_causes() {
 
 #[test]
 fn an_error_on_a_terminal_is_the_same_line_with_a_coloured_label() {
-    let err = anyhow::anyhow!("compose files are out of date with .varde/; run `varde sync`");
+    let err =
+        anyhow::anyhow!("compose files are out of date with .chap-devops/; run `chap-devops sync`");
     let plain = Out {
         tty: true,
         ..Out::default()
@@ -234,7 +238,7 @@ fn an_error_on_a_terminal_is_the_same_line_with_a_coloured_label() {
     .error(&err);
     assert_eq!(
         plain,
-        "error: compose files are out of date with .varde/; run `varde sync`"
+        "error: compose files are out of date with .chap-devops/; run `chap-devops sync`"
     );
     let painted = colored().error(&err);
     assert_eq!(console::strip_ansi_codes(&painted), plain);
@@ -434,8 +438,8 @@ fn a_version_2_zone_file_is_read_from_its_second_block() {
 #[test]
 fn hint_of_takes_the_last_clause_that_names_a_command() {
     assert_eq!(
-        hint_of("unknown model `x`; run `varde models search x`").as_deref(),
-        Some("run `varde models search x`")
+        hint_of("unknown model `x`; run `chap-devops models search x`").as_deref(),
+        Some("run `chap-devops models search x`")
     );
     assert_eq!(
         hint_of("a; b; pass `--id <other>` to add it beside it").as_deref(),
@@ -448,8 +452,8 @@ fn hint_of_takes_the_last_clause_that_names_a_command() {
 #[test]
 fn a_message_of_several_lines_stays_whole_in_the_error() {
     let message = "2 host ports this deployment needs are already in use:\n  \
-                   port 8700 ...; stop it with `varde -C /a down`\n  \
-                   port 8780 ...; run `varde components enable dhis2 --port 8781`";
+                   port 8700 ...; stop it with `chap-devops -C /a down`\n  \
+                   port 8780 ...; run `chap-devops components enable dhis2 --port 8781`";
     assert_eq!(hint_of(message), None);
     assert_eq!(split_hint(message), (message.to_string(), None));
 }
@@ -483,7 +487,7 @@ fn sample_report() -> Report {
     let mut report = Report::default();
     report
         .info("updated the marketplace registry: 7 models")
-        .hint("`varde self update` updates varde itself")
+        .hint("`chap-devops self update` updates chap-devops itself")
         .warning("the cache is old");
     report
 }
@@ -501,7 +505,7 @@ fn a_report_shows_the_hints_under_verbose() {
     assert_eq!(
         stdout,
         "updated the marketplace registry: 7 models\n\
-         hint: `varde self update` updates varde itself\n"
+         hint: `chap-devops self update` updates chap-devops itself\n"
     );
 }
 
@@ -523,7 +527,7 @@ fn a_report_keeps_the_order_of_its_lines_across_the_two_streams() {
     report
         .info("external DHIS2 2.42.6 at http://localhost:8790")
         .warning("nothing answered through the route")
-        .info("run `varde dhis2 show`");
+        .info("run `chap-devops dhis2 show`");
     assert_eq!(
         report.lines(false, false),
         vec![
@@ -535,7 +539,7 @@ fn a_report_keeps_the_order_of_its_lines_across_the_two_streams() {
                 Stream::Stderr,
                 "warning: nothing answered through the route\n".to_string()
             ),
-            (Stream::Stdout, "run `varde dhis2 show`\n".to_string()),
+            (Stream::Stdout, "run `chap-devops dhis2 show`\n".to_string()),
         ]
     );
 }

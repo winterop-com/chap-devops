@@ -146,7 +146,7 @@ fn status_reports_the_version_chap_core_runs() {
 
     let out = chap_in(&sandbox, &dir, &["--json", "status", "--url", &url])
         .output()
-        .expect("varde runs")
+        .expect("chap-devops runs")
         .stdout;
     let report: Json = serde_json::from_slice(&out).expect("status --json is one document");
     assert_eq!(report["api"]["state"], "up", "{report}");
@@ -163,7 +163,7 @@ fn the_wrappers_speak_up_for_a_project_that_was_never_started() {
     let sandbox = Sandbox::new();
     // A directory of its own: compose names the project after it, and these
     // wrappers ask docker about that name.
-    let dir = sandbox.home.path().join("varde-never-started");
+    let dir = sandbox.home.path().join("chap-devops-never-started");
     // An API port of this test's own: `status` below has to find nothing
     // answering for "Chap is not running" to be the truth about it, and the
     // default 8000 is a port a developer may well be serving something on.
@@ -181,7 +181,7 @@ fn the_wrappers_speak_up_for_a_project_that_was_never_started() {
         .assert()
         .failure()
         .stdout(predicates::str::contains(
-            "nothing is running for this deployment; start Chap with `varde up`",
+            "nothing is running for this deployment; start Chap with `chap-devops up`",
         ));
 
     // The same line for `docker ps`, which is a question, not a failure.
@@ -214,7 +214,7 @@ fn the_wrappers_speak_up_for_a_project_that_was_never_started() {
         .assert()
         .failure()
         .stdout(predicates::str::contains(
-            "Chap is not running; start it with `varde up`",
+            "Chap is not running; start it with `chap-devops up`",
         ));
 }
 
@@ -238,8 +238,8 @@ fn up_offers_both_names_for_running_in_the_foreground() {
 fn the_command_reference_chapter_matches_the_help_texts() {
     // `docs-markdown` needs neither a project nor the network, so it runs
     // straight out of the repository.
-    let out = Command::cargo_bin("varde")
-        .expect("the varde binary is built")
+    let out = Command::cargo_bin("chap-devops")
+        .expect("the chap-devops binary is built")
         .arg("docs-markdown")
         .assert()
         .success()
@@ -314,7 +314,7 @@ fn status_of_a_chap_core_elsewhere_shows_no_pin_and_no_chap_service() {
     let stderr = String::from_utf8_lossy(&out.stderr);
     assert!(!stdout.contains("pinned"), "{stdout}");
     assert!(!stdout.contains("latest"), "{stdout}");
-    assert!(!stderr.contains("varde logs"), "{stderr}");
+    assert!(!stderr.contains("chap-devops logs"), "{stderr}");
     assert!(
         stderr.contains("this deployment does not run it, so start it there"),
         "{stderr}"
@@ -331,7 +331,7 @@ fn status_of_a_chap_core_elsewhere_shows_no_pin_and_no_chap_service() {
     .success();
     let out = chap_in(&sandbox, &dir, &["status", "--url", &url])
         .output()
-        .expect("varde runs")
+        .expect("chap-devops runs")
         .stdout;
     let stdout = String::from_utf8_lossy(&out);
     let line = stdout

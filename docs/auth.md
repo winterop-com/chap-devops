@@ -5,8 +5,8 @@ port can use its API. Turning authentication on is one flag at `init` time, or
 one command afterwards.
 
 ```sh
-varde init mychap --models chapkit_simple_multistep_model --api-token   # at creation
-varde auth enable                                # on a deployment that already exists
+chap-devops init mychap --models chapkit_simple_multistep_model --api-token   # at creation
+chap-devops auth enable                                # on a deployment that already exists
 ```
 
 ## What the token protects
@@ -25,9 +25,9 @@ and `/docs` included.
 
 The token is the one thing a client has to carry. For DHIS2 that is the `chap`
 route rather than the Modeling App: the app calls DHIS2, DHIS2 proxies the
-call to chap-core, and `varde dhis2 connect` writes the token into the route's
+call to chap-core, and `chap-devops dhis2 connect` writes the token into the route's
 `auth` as an `Authorization: Bearer` header, which DHIS2 stores and never lists
-back. Anything else calling the API needs it from `varde auth show --reveal`.
+back. Anything else calling the API needs it from `chap-devops auth show --reveal`.
 
 ## How the models authenticate
 
@@ -36,9 +36,9 @@ token: chap-core accepts it only under `/v2/services`, which is where a chapkit
 service registers itself and sends its keepalive pings. A model presents it as
 `X-Service-Key`, because servicekit can send no other header.
 
-`varde` writes both secrets together, and this is why: once the API is
+`chap-devops` writes both secrets together, and this is why: once the API is
 protected, an unauthenticated registration is rejected like any other request,
-so a model service that sends nothing never appears in `varde status`. The
+so a model service that sends nothing never appears in `chap-devops status`. The
 registration key is what it sends instead.
 
 Nothing has to be copied for that to work. Every model overlay carries
@@ -51,7 +51,7 @@ Nothing has to be copied for that to work. Every model overlay carries
 
 and Compose substitutes the value from the `.env` beside the compose files, the
 same file chap-core reads its own copy from. The two ends cannot disagree.
-`varde sync` writes that line when `.varde/project.yaml` says the deployment has
+`chap-devops sync` writes that line when `.chap-devops/project.yaml` says the deployment has
 a key, and comments it out again when it has none.
 
 chap-core needs the same value, and upstream's `compose.ghcr.yml` passes only
@@ -62,7 +62,7 @@ container and the API answered every registration with
 {"detail": "Missing or invalid API token"}
 ```
 
-`compose.varde.yml` is where `varde` puts that right:
+`compose.chap-devops.yml` is where `chap-devops` puts that right:
 
 ```yaml
 services:
@@ -85,7 +85,7 @@ CHAP_API_TOKEN=d1f0...
 SERVICEKIT_REGISTRATION_KEY=9a3c...
 ```
 
-`.varde/project.yaml` records two booleans and no values:
+`.chap-devops/project.yaml` records two booleans and no values:
 
 ```yaml
 auth:
@@ -93,13 +93,13 @@ auth:
   registration_key: true
 ```
 
-That split is deliberate. `.varde/` is intent, it is small, and it is the kind
+That split is deliberate. `.chap-devops/` is intent, it is small, and it is the kind
 of thing that gets committed, archived and pasted into a bug report; `.env` is
 the file Compose reads and the one to keep out of version control.
 
 A generated secret is 64 lowercase hex characters, the same thing
-`openssl rand -hex 32` produces. An explicit `--api-token VALUE` (or `varde
-auth enable --token VALUE`) is used verbatim; below 32 characters `varde`
+`openssl rand -hex 32` produces. An explicit `--api-token VALUE` (or `chap-devops
+auth enable --token VALUE`) is used verbatim; below 32 characters `chap-devops`
 warns, and so does chap-core at startup, because its API has no rate limiting
 and a short token is guessable by anyone who can reach the port.
 
@@ -110,7 +110,7 @@ string when no such variable is set, and an empty `CHAP_API_TOKEN` is
 authentication off. A quote, a backslash or a control character cannot be
 written that way, so a token containing one is refused.
 
-`varde` reads `.env` by Compose's rules as well: `CHAP_API_PORT=8701 # mine` is
+`chap-devops` reads `.env` by Compose's rules as well: `CHAP_API_PORT=8701 # mine` is
 port `8701` to both, because a `#` after a space starts a comment. A `#`
 without a space before it (`val#ue`) is part of the value.
 
@@ -118,13 +118,13 @@ without a space before it (`val#ue`) is part of the value.
 
 | Command | What it does |
 | --- | --- |
-| `varde auth show [--reveal]` | Whether each secret is set, and the token only with `--reveal`; plus whether each OCS data source is set, never its value. |
-| `varde auth enable [--token VALUE]` | Write both secrets, record them, re-render the overlays. |
-| `varde auth disable` | Comment both lines out, keeping their values, and re-render. |
-| `varde auth rotate` | Replace both secrets with new ones. |
-| `varde auth token` | Print the token alone on stdout, for a script; exit 1 when authentication is off. |
+| `chap-devops auth show [--reveal]` | Whether each secret is set, and the token only with `--reveal`; plus whether each OCS data source is set, never its value. |
+| `chap-devops auth enable [--token VALUE]` | Write both secrets, record them, re-render the overlays. |
+| `chap-devops auth disable` | Comment both lines out, keeping their values, and re-render. |
+| `chap-devops auth rotate` | Replace both secrets with new ones. |
+| `chap-devops auth token` | Print the token alone on stdout, for a script; exit 1 when authentication is off. |
 
-`varde auth show` reads both ends: `.varde/project.yaml` for what the
+`chap-devops auth show` reads both ends: `.chap-devops/project.yaml` for what the
 deployment intends and `.env` for what is actually set, and says so when the two
 disagree - a token recorded as in use but commented out in `.env`, say. The
 token itself is printed only when `--reveal` asks for it.
@@ -157,66 +157,66 @@ they report the answer Compose will act on: the **last** active assignment of a
 variable is the live one, `export KEY=` and quoted values are read as Compose
 reads them, and a write rewrites the variable's first active assignment and
 removes every later duplicate of it. So a `.env` that somehow carries two
-`CHAP_API_TOKEN=` lines comes out of `varde auth rotate` with one, holding the
+`CHAP_API_TOKEN=` lines comes out of `chap-devops auth rotate` with one, holding the
 new token - rather than with the old, lower line still deciding what chap-core
 enforces. See [the `.env` contract](./concepts.md#the-env-contract).
 
 ```sh
-varde auth enable
+chap-devops auth enable
 ```
 
 ```text
 API authentication is on
-run `varde up` to restart chap-core and the models with authentication
+run `chap-devops up` to restart chap-core and the models with authentication
 ```
 
 With `-v`, the hints say where the secrets went and which files changed:
 
 ```text
-$ varde -v auth enable
+$ chap-devops -v auth enable
 API authentication is on
-hint: wrote the API token to `.env`; `varde auth show --reveal` prints it
+hint: wrote the API token to `.env`; `chap-devops auth show --reveal` prints it
 hint: wrote the registration key to `.env`; every model overlay now sends it
 hint: wrote compose.auto-arima-chapkit.yml
 hint: wrote compose.chapkit-simple-multistep-model.yml
-run `varde up` to restart chap-core and the models with authentication
-hint: the DHIS2 `chap` route carries it once `varde dhis2 connect` has run; any other client needs it from `varde auth show --reveal`
+run `chap-devops up` to restart chap-core and the models with authentication
+hint: the DHIS2 `chap` route carries it once `chap-devops dhis2 connect` has run; any other client needs it from `chap-devops auth show --reveal`
 ```
 
-`varde up` is not optional. chap-core and the model containers read `.env` when
+`chap-devops up` is not optional. chap-core and the model containers read `.env` when
 Compose creates them, so nothing changes for a container that is already
 running until it is recreated.
 
-`varde auth disable` comments the lines out rather than deleting them:
+`chap-devops auth disable` comments the lines out rather than deleting them:
 
 ```text
 # CHAP_API_TOKEN=d1f0...
 ```
 
-so the token your clients are configured with is still recoverable. `varde auth
+so the token your clients are configured with is still recoverable. `chap-devops auth
 enable` afterwards picks those values back up rather than generating new ones,
 which makes an accidental `disable` a round trip.
 
 ## Rotation
 
 ```sh
-varde auth rotate
-varde up
+chap-devops auth rotate
+chap-devops up
 ```
 
-Rotating is two steps, and the second one matters: until `varde up` recreates
+Rotating is two steps, and the second one matters: until `chap-devops up` recreates
 the containers, chap-core is still enforcing the old token, and after it every
 client that has not been updated gets a 401. Update them in the same sitting:
-`varde dhis2 connect` rewrites the DHIS2 route with the new token, and anything
+`chap-devops dhis2 connect` rewrites the DHIS2 route with the new token, and anything
 else calling the API needs it by hand.
 
 The registration key rotates with the token, and the models pick it up from the
-same `varde up`, so there is nothing to do for them.
+same `chap-devops up`, so there is nothing to do for them.
 
 ## Reading it back
 
 ```sh
-varde status
+chap-devops status
 ```
 
 ```text
@@ -224,21 +224,21 @@ chap-core   up   http://localhost:8700   v2.3.1   auth: on
 ```
 
 
-For a script rather than a screen, `varde auth token` prints the token and
+For a script rather than a screen, `chap-devops auth token` prints the token and
 nothing else:
 
 ```sh
-TOKEN=$(varde auth token)
+TOKEN=$(chap-devops auth token)
 curl -H "Authorization: Bearer $TOKEN" http://localhost:8700/v2/services
 ```
 
 On a deployment with authentication off it prints nothing on stdout, says so on
 stderr and exits 1, so a caller that captured an empty string stops rather than
-sending an empty header. `varde api` needs none of this - it reads `.env`
-itself - and `varde auth show --reveal` is the spelling for reading the value
+sending an empty header. `chap-devops api` needs none of this - it reads `.env`
+itself - and `chap-devops auth show --reveal` is the spelling for reading the value
 rather than capturing it. See [Jobs and the API](./jobs.md).
 
-`varde status` reads the token out of `.env` and sends it on every request, so
+`chap-devops status` reads the token out of `.env` and sends it on every request, so
 it keeps working on a protected deployment, and the last cell of the chap-core
 line says which mode the deployment is in. A 401 is reported as a token problem
 rather than as "not chap-core": see
@@ -251,5 +251,5 @@ password and, if `--api-token` is passed with it, a new token and registration
 key. Without `--api-token` the new file has both secrets commented out, so the
 deployment comes back unprotected. `init` on a directory that already has a
 `.env` keeps that file, `--force` included, so `--api-token` there does nothing
-but warn and point at `varde auth enable`. See the
+but warn and point at `chap-devops auth enable`. See the
 [`.env` contract](./concepts.md#the-env-contract).

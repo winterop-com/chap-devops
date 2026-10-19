@@ -1,4 +1,4 @@
-//! The port check of `varde up`: a busy port that another deployment
+//! The port check of `chap-devops up`: a busy port that another deployment
 //! publishes names that deployment only when it runs. Unix only: the
 //! stand-in docker is a shell script.
 
@@ -51,7 +51,7 @@ fn up_names_only_a_running_deployment_as_the_holder_of_a_port() {
     let c = sandbox.home.path().join("c");
 
     // `a` is stopped: the port is held by something else, and `--replace`
-    // has nothing of varde's to stop.
+    // has nothing of chap-devops's to stop.
     let (_fake, bin) = docker_up_in("none");
     let out = chap_with_docker(&sandbox, &c, &bin, &["up"])
         .assert()
@@ -77,7 +77,7 @@ fn up_names_only_a_running_deployment_as_the_holder_of_a_port() {
             "and a ({first}) publishes it too; stop it with"
         )))
         .stderr(predicates::str::contains(
-            "or run `varde up --replace` to stop a first",
+            "or run `chap-devops up --replace` to stop a first",
         ));
     drop(listener);
 }
@@ -113,7 +113,7 @@ fn docker_publishing(api: u16, dhis2: u16) -> (TempDir, PathBuf) {
     (temp, bin)
 }
 
-/// A restore of `.varde/` files can move a running DHIS2 to another port. The
+/// A restore of `.chap-devops/` files can move a running DHIS2 to another port. The
 /// recreate publishes the new port, so the check asks about that port, and
 /// the container on the old one does not vouch for it.
 #[test]

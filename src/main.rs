@@ -1,4 +1,4 @@
-//! `varde` — deploy and manage Chap (climate-informed disease forecasting):
+//! `chap-devops` — deploy and manage Chap (climate-informed disease forecasting):
 //! chap-core and marketplace model services on Docker Compose.
 
 // Stubs owned by agents A, B and C are not called yet; remove after A/B/C land.
@@ -73,8 +73,8 @@ const PROJECT_ONLY_MODELS: &[&str] = &[
 
 /// The mirror of [`PROJECT_ONLY`]: commands that answer "there is no
 /// deployment here", hidden from `--help` inside one, where that is not the
-/// question. They still run when typed: `varde init --force` is how a
-/// deployment's settings are rewritten, and `varde init sub` nests a second
+/// question. They still run when typed: `chap-devops init --force` is how a
+/// deployment's settings are rewritten, and `chap-devops init sub` nests a second
 /// one.
 const OUTSIDE_ONLY: &[&str] = &["init"];
 
@@ -82,13 +82,13 @@ const OUTSIDE_ONLY: &[&str] = &["init"];
 /// answers the bare command with the group's help.
 ///
 /// Outside a deployment that help lists only subcommands that cannot run, so
-/// the missing project is the answer instead - the same one `varde components
+/// the missing project is the answer instead - the same one `chap-devops components
 /// list` gives. `jobs` is not here: its bare form is `list`, which already
 /// says so. `models` and `registry` are not project-only at all.
 const PROJECT_ONLY_GROUPS: &[&str] = &["auth", "backup", "components", "dhis2", "docker"];
 
 fn main() {
-    // Windows cannot rename over a running image, so `varde self update`
+    // Windows cannot rename over a running image, so `chap-devops self update`
     // parks the outgoing binary beside the new one and the next run is the
     // first moment it can be deleted.
     #[cfg(windows)]
@@ -111,7 +111,7 @@ fn main() {
     }
 }
 
-/// Report a failure the way every `varde` failure is reported, and exit.
+/// Report a failure the way every `chap-devops` failure is reported, and exit.
 fn fail(out: &Out, err: anyhow::Error) -> ! {
     let rendered = out.error(&err);
     // JSON consumers read stdout, so a --json error goes there too.
@@ -146,7 +146,7 @@ fn dispatch(ctx: &Ctx, cli: &Cli) -> error::Result<()> {
             ModelsCmd::Search(args) => commands::models::search(ctx, args),
             ModelsCmd::Info(args) => commands::models::info(ctx, args),
             ModelsCmd::Test(args) => commands::modeltest::run(ctx, args),
-            // No subcommand is `list`, as for `varde jobs`.
+            // No subcommand is `list`, as for `chap-devops jobs`.
             ModelsCmd::Configs(c) => match &c.command {
                 None => commands::configs::list(ctx, &c.list),
                 Some(ConfigsCmd::List(args)) => commands::configs::list(ctx, args),
@@ -193,7 +193,7 @@ fn dispatch(ctx: &Ctx, cli: &Cli) -> error::Result<()> {
         Command::Open(args) => commands::open::run(ctx, args),
 
         // No subcommand is `list`: "what has this deployment been doing" is
-        // the question `varde jobs` is typed to answer.
+        // the question `chap-devops jobs` is typed to answer.
         Command::Jobs(j) => match &j.command {
             None => commands::jobs::list(ctx, &j.list),
             Some(JobsCmd::List(args)) => commands::jobs::list(ctx, args),
@@ -242,7 +242,7 @@ fn dispatch(ctx: &Ctx, cli: &Cli) -> error::Result<()> {
 ///
 /// Outside a deployment directory most of the tree cannot do anything, so it is
 /// hidden rather than offered; the commands still parse and run, and fail with
-/// the error that names the missing `.varde/project.yaml`. Inside one the
+/// the error that names the missing `.chap-devops/project.yaml`. Inside one the
 /// hiding runs the other way, over the commands that are about not having a
 /// deployment yet.
 fn parse() -> Cli {
@@ -290,8 +290,8 @@ fn parse() -> Cli {
 /// terminal. It is added here instead, where the help is printed, which is
 /// also what it is: a blank line between the book's address and the prompt,
 /// not part of the address. Only the root help gets it - it is the one that
-/// ends on the docs line, however it was reached (`varde --help`, `varde -h`,
-/// `varde help`, or `varde` with nothing after it) - so a subcommand's help
+/// ends on the docs line, however it was reached (`chap-devops --help`, `chap-devops -h`,
+/// `chap-devops help`, or `chap-devops` with nothing after it) - so a subcommand's help
 /// still ends on its last line.
 ///
 /// Under `--json` a usage error is the same JSON object every other failure
@@ -319,7 +319,7 @@ fn print_and_exit(err: clap::Error, json: bool) -> ! {
             .trim_start_matches("error: ")
             .to_string();
         let causes = &lines[split..];
-        // `Usage: varde stop [OPTIONS] <ID>` names the command to ask.
+        // `Usage: chap-devops stop [OPTIONS] <ID>` names the command to ask.
         let command = causes
             .iter()
             .find_map(|l| l.strip_prefix("Usage: "))
@@ -330,7 +330,7 @@ fn print_and_exit(err: clap::Error, json: bool) -> ! {
                     .collect::<Vec<_>>()
                     .join(" ")
             })
-            .unwrap_or_else(|| "varde".to_string());
+            .unwrap_or_else(|| "chap-devops".to_string());
         let value = serde_json::json!({
             "ok": false,
             "hint": format!("`{command} --help` lists what it takes"),
@@ -457,7 +457,7 @@ fn run_ui(ctx: &Ctx, args: &cli::UiArgs) -> error::Result<()> {
 }
 
 /// Mirror docker compose's exit code when it is the thing that failed, so
-/// `varde up` is a drop-in for `docker compose up` in scripts.
+/// `chap-devops up` is a drop-in for `docker compose up` in scripts.
 fn exit_code(err: &anyhow::Error) -> i32 {
     match err.downcast_ref::<ChapError>() {
         Some(ChapError::DockerFailed(code)) if *code != 0 => *code,
@@ -467,7 +467,7 @@ fn exit_code(err: &anyhow::Error) -> i32 {
         // this is: a usage error clap could not catch.
         Some(ChapError::Usage(_)) => 2,
         // "Chap is not up" is a different answer from "Chap said no", and a
-        // script driving `varde api` has to be able to tell them apart.
+        // script driving `chap-devops api` has to be able to tell them apart.
         Some(ChapError::Unreachable { .. } | ChapError::Dhis2Unreachable { .. }) => 2,
         _ => 1,
     }

@@ -19,7 +19,7 @@ pub struct BaseSpec {
 ///
 /// The body is used verbatim - upstream is the source of truth for the base
 /// stack, and the recorded SHA-256 only means something if nothing rewrites
-/// it. `varde` adds two header lines in front and nothing else.
+/// it. `chap-devops` adds two header lines in front and nothing else.
 #[derive(Debug, Clone)]
 pub struct UpstreamCompose {
     pub tag: String,
@@ -30,9 +30,9 @@ pub struct UpstreamCompose {
 /// nothing could read the names out of.
 pub const UPSTREAM_SERVICES: [&str; 4] = ["chap", "worker", "redis", "postgres"];
 
-/// Values for `compose.varde.yml`.
+/// Values for `compose.chap-devops.yml`.
 #[derive(Debug, Clone)]
-pub struct VardeOverlaySpec {
+pub struct ChapDevopsOverlaySpec {
     /// Rendered as the `${CHAP_API_PORT:-...}` default.
     pub api_port: u16,
     /// The top-level `name:`; see [`crate::compose::render::project_name_block`].
@@ -43,14 +43,14 @@ pub struct VardeOverlaySpec {
     /// gets the chap-core labels, and none that is not there may be named,
     /// since compose would read it as a service with no image.
     pub services: Vec<String>,
-    /// The `varde run` group the deployment is.
+    /// The `chap-devops run` group the deployment is.
     pub group: Option<String>,
 }
 
-impl VardeOverlaySpec {
+impl ChapDevopsOverlaySpec {
     /// The spec for a base file with upstream's services and nothing else set.
-    pub fn new(api_port: u16) -> VardeOverlaySpec {
-        VardeOverlaySpec {
+    pub fn new(api_port: u16) -> ChapDevopsOverlaySpec {
+        ChapDevopsOverlaySpec {
             api_port,
             project_name: None,
             checkout: None,
@@ -113,7 +113,7 @@ pub struct OcsSpec {
     /// Whether `ocs/plugins/` is there to mount. A filesystem fact rather than
     /// a recorded setting: the directory is the whole declaration.
     pub plugins: bool,
-    /// The `varde run` group the deployment is, which its labels name; see
+    /// The `chap-devops run` group the deployment is, which its labels name; see
     /// [`crate::compose::render::labels_block`].
     pub group: Option<String>,
 }
@@ -140,7 +140,7 @@ pub struct S3Spec {
     /// reachable only inside the compose network, which is where OCS is.
     pub host_port: Option<u16>,
     pub image_tag: String,
-    /// The `varde run` group the deployment is, which its labels name; see
+    /// The `chap-devops run` group the deployment is, which its labels name; see
     /// [`crate::compose::render::labels_block`].
     pub group: Option<String>,
 }
@@ -206,7 +206,7 @@ pub struct Dhis2Spec {
     /// Map `host.docker.internal` to the host gateway, for a DHIS2 whose route
     /// goes to a chap-core outside the deployment.
     pub host_gateway: bool,
-    /// The `varde run` group the deployment is, which its labels name; see
+    /// The `chap-devops run` group the deployment is, which its labels name; see
     /// [`crate::compose::render::labels_block`].
     pub group: Option<String>,
 }
@@ -254,10 +254,10 @@ pub struct Dhis2ConfigSpec {
 /// DHIS2 42 and later default to `https://*` alone and refuse the `http://`
 /// target a chap-core on the compose network, on this machine or on a lab
 /// server has, so each of those shapes used to need a `dhis.conf` edit and a
-/// restart before `varde dhis2 connect` could write the route. A DHIS2 varde
+/// restart before `chap-devops dhis2 connect` could write the route. A DHIS2 chap-devops
 /// deploys is a development and evaluation instance, where any chap-core the
 /// operator points it at has to work without that step. DHIS2 logs a warning
-/// about the wildcard on every start; a production DHIS2 is not one varde
+/// about the wildcard on every start; a production DHIS2 is not one chap-devops
 /// scaffolds, and its operator narrows the line in their own file.
 pub const ROUTE_ALLOWED_ANY: &str = "http://*,https://*";
 
@@ -272,8 +272,8 @@ impl Default for Dhis2ConfigSpec {
 /// Values for the scaffolded `ocs/climate-service.yaml`.
 ///
 /// Everything but `example` comes from the `--ocs-*` flags; without them the
-/// file is the Laos example, the country of the DHIS2 demo database varde
-/// seeds, and `example` is what says so - in the file, and to `varde doctor`.
+/// file is the Laos example, the country of the DHIS2 demo database chap-devops
+/// seeds, and `example` is what says so - in the file, and to `chap-devops doctor`.
 #[derive(Debug, Clone)]
 pub struct OcsConfigSpec {
     /// STAC catalog id, derived from the name.
@@ -410,7 +410,7 @@ pub struct OverlaySpec {
     /// [`OverlaySpec::standalone`]: the service registers there and waits for
     /// nothing but its init container.
     pub external_chap_core: Option<ExternalRegistration>,
-    /// The `varde run` group the deployment is, which its labels name; see
+    /// The `chap-devops run` group the deployment is, which its labels name; see
     /// [`crate::compose::render::labels_block`].
     pub group: Option<String>,
     /// Whether the image reads its port from `PORT`, which is the one case
@@ -480,7 +480,7 @@ impl OverlaySpec {
         }
     }
 
-    /// Rebuild a spec from recorded state, as `varde sync` does.
+    /// Rebuild a spec from recorded state, as `chap-devops sync` does.
     ///
     /// Everything that affects the running service comes from the recorded
     /// entry; the marketplace only supplies the repository the header names.

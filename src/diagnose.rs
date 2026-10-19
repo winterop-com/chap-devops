@@ -56,7 +56,7 @@ const ERROR_WORDS: &[&str] = &[
 /// One service that is failing, and what its own log says about it.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct Unhealthy {
-    /// The compose service name, which is what `varde logs SERVICE` takes.
+    /// The compose service name, which is what `chap-devops logs SERVICE` takes.
     pub service: String,
     /// Whether its healthcheck is what said so.
     ///
@@ -313,8 +313,8 @@ pub fn hint_for(lines: &[String]) -> Option<String> {
     if text.contains("password authentication failed for user") {
         return Some(
             "the database volume holds a different password than .env (a previous deployment \
-             with the same name, or --fresh-env); the `volumes` line of `varde doctor` says \
-             which, and `varde down --volumes` removes the volume if this deployment's data can go"
+             with the same name, or --fresh-env); the `volumes` line of `chap-devops doctor` says \
+             which, and `chap-devops down --volumes` removes the volume if this deployment's data can go"
                 .to_string(),
         );
     }
@@ -327,8 +327,8 @@ pub fn hint_for(lines: &[String]) -> Option<String> {
     if text.contains("migration of schema") && text.contains("failed") {
         return Some(
             "DHIS2 could not migrate the database to its version; a database from an older \
-             DHIS2 must go up one version at a time, so run `varde components enable dhis2 \
-             --tag VERSION` with the next version, then `varde up`, and repeat"
+             DHIS2 must go up one version at a time, so run `chap-devops components enable dhis2 \
+             --tag VERSION` with the next version, then `chap-devops up`, and repeat"
                 .to_string(),
         );
     }
@@ -342,7 +342,7 @@ pub fn hint_for(lines: &[String]) -> Option<String> {
     {
         return Some(format!(
             "the dump is DHIS2 {version}, and DHIS2 does not run a newer database; run \
-             `varde components enable dhis2 --tag {version}`, then `varde up`"
+             `chap-devops components enable dhis2 --tag {version}`, then `chap-devops up`"
         ));
     }
     if text.contains("/docker-entrypoint-initdb.d/") {
@@ -352,7 +352,8 @@ pub fn hint_for(lines: &[String]) -> Option<String> {
         let names = ["postgres", "5432", "redis", "valkey", "6379", "database"];
         if names.iter().any(|name| text.contains(name)) {
             return Some(
-                "the database or valkey did not come up; run `varde logs postgres`".to_string(),
+                "the database or valkey did not come up; run `chap-devops logs postgres`"
+                    .to_string(),
             );
         }
     }
@@ -439,7 +440,7 @@ fn names_a_cause(line: &str) -> bool {
 ///
 /// That second half is what catches a container in a crash loop: it exits, it
 /// is restarted, and its health reads `starting` again every time, so the
-/// moment `varde status` looks is as likely as not to be one where nothing is
+/// moment `chap-devops status` looks is as likely as not to be one where nothing is
 /// marked unhealthy at all. The log says the same thing either way.
 ///
 /// Best-effort throughout: a service whose log cannot be read yields nothing,
@@ -548,10 +549,10 @@ pub fn seed_mark_verdict(comment: Option<&str>) -> Option<(String, String)> {
 }
 
 /// The way out of a seed restore that did not finish. Only the DHIS2
-/// volumes: `varde down --volumes` would also take the chap-core database.
+/// volumes: `chap-devops down --volumes` would also take the chap-core database.
 const SEED_RESTORE_HINT: &str = "the restore of the DHIS2 seed stopped before the end, so \
-     `dhis2_db` is incomplete; fix the cause above, then run `varde components disable dhis2 \
-     --purge`, `varde components enable dhis2` and `varde up`";
+     `dhis2_db` is incomplete; fix the cause above, then run `chap-devops components disable dhis2 \
+     --purge`, `chap-devops components enable dhis2` and `chap-devops up`";
 
 #[cfg(test)]
 mod tests;

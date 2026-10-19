@@ -1,4 +1,4 @@
-//! Typed errors for the parts of `varde` where the caller needs to react to the
+//! Typed errors for the parts of `chap-devops` where the caller needs to react to the
 //! kind of failure, plus the crate-wide [`Result`] alias.
 //!
 //! Everything that is merely context is an [`anyhow::Error`]; only the cases
@@ -12,16 +12,16 @@ pub enum ChapError {
     #[error("{}", not_a_deployment(.0, &crate::paths::run_groups_dir()))]
     NotAProject(PathBuf),
 
-    #[error("compose files are out of date with .varde/; run `varde sync`")]
+    #[error("compose files are out of date with .chap-devops/; run `chap-devops sync`")]
     OutOfSync,
 
     #[error(
-        "{0} already contains a varde deployment; choose another directory, or use --force to \
+        "{0} already contains a chap-devops deployment; choose another directory, or use --force to \
          overwrite it"
     )]
     AlreadyInitialized(PathBuf),
 
-    #[error("unknown model `{0}`; run `varde models list` to see the model ids")]
+    #[error("unknown model `{0}`; run `chap-devops models list` to see the model ids")]
     UnknownModel(String),
 
     #[error("unknown component `{0}`; the components are chap-core, ocs, s3 and dhis2")]
@@ -45,7 +45,7 @@ pub enum ChapError {
 
     #[error(
         "host port {port} is outside this deployment's model port range {lo}-{hi}; \
-         pick one inside it or `--port auto`, or widen `port_range` in `.varde/project.yaml`"
+         pick one inside it or `--port auto`, or widen `port_range` in `.chap-devops/project.yaml`"
     )]
     PortOutOfRange { port: u16, lo: u16, hi: u16 },
 
@@ -59,7 +59,7 @@ pub enum ChapError {
     #[error("stopped by Ctrl-C; {0}")]
     Interrupted(String),
 
-    /// A program varde ran in a one-shot container exited non-zero. Its own
+    /// A program chap-devops ran in a one-shot container exited non-zero. Its own
     /// message is already on the screen, so this names the program, the
     /// status and the way out, and keeps the status as the exit code.
     #[error("{command} exited with status {code}; {next}")]
@@ -69,8 +69,8 @@ pub enum ChapError {
         next: String,
     },
 
-    /// A mistake about `varde`'s own command line that clap cannot catch,
-    /// such as a `-v` meant for compose reaching `varde down`'s passthrough.
+    /// A mistake about `chap-devops`'s own command line that clap cannot catch,
+    /// such as a `-v` meant for compose reaching `chap-devops down`'s passthrough.
     #[error("{0}")]
     Usage(String),
 
@@ -80,7 +80,7 @@ pub enum ChapError {
     /// chap-core could not be reached at all, as opposed to answering with
     /// something the caller did not want. Its own exit code, so a script can
     /// tell "Chap is not up" from "Chap said no".
-    #[error("chap-core at {url} is not responding: {reason}; run `varde status`")]
+    #[error("chap-core at {url} is not responding: {reason}; run `chap-devops status`")]
     Unreachable { url: String, reason: String },
 
     /// The same for DHIS2, in its own words: a DHIS2 that is not answering is
@@ -89,7 +89,7 @@ pub enum ChapError {
     /// same reason [`ChapError::Unreachable`] has one.
     ///
     /// `next` is the way out: for the deployment's own DHIS2 that is its
-    /// container, and for an external one the URL `varde dhis2 use` recorded.
+    /// container, and for an external one the URL `chap-devops dhis2 use` recorded.
     #[error("DHIS2 at {url} is not responding: {reason}; {next}")]
     Dhis2Unreachable {
         url: String,
@@ -98,8 +98,8 @@ pub enum ChapError {
     },
 }
 
-/// The message of [`ChapError::NotAProject`]. A directory under the `varde
-/// run` groups is a group that is not there, and `varde init` is not the way
+/// The message of [`ChapError::NotAProject`]. A directory under the `chap-devops
+/// run` groups is a group that is not there, and `chap-devops init` is not the way
 /// to make one again.
 fn not_a_deployment(dir: &Path, groups: &Path) -> String {
     let group = dir
@@ -110,18 +110,18 @@ fn not_a_deployment(dir: &Path, groups: &Path) -> String {
     match group {
         Some(name) => {
             let again = match name.as_str() {
-                "default" => "varde run <model>".to_string(),
-                _ => format!("varde run <model> --group {name}"),
+                "default" => "chap-devops run <model>".to_string(),
+                _ => format!("chap-devops run <model> --group {name}"),
             };
             format!(
-                "{} is not a varde deployment: the `varde run` group {name} does not exist, or \
-                 `varde stop --purge` removed it; `{again}` makes it again",
+                "{} is not a chap-devops deployment: the `chap-devops run` group {name} does not exist, or \
+                 `chap-devops stop --purge` removed it; `{again}` makes it again",
                 dir.display()
             )
         }
         None => format!(
-            "{} is not a varde deployment (no .varde/project.yaml here or in a parent \
-             directory); run `varde init` first",
+            "{} is not a chap-devops deployment (no .chap-devops/project.yaml here or in a parent \
+             directory); run `chap-devops init` first",
             dir.display()
         ),
     }

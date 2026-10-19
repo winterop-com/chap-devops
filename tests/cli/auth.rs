@@ -4,7 +4,7 @@ use serde_json::Value as Json;
 
 /// Every line of a `.env` that assigns none of `vars`, commented or not.
 ///
-/// What `varde auth` must leave byte for byte as it found it.
+/// What `chap-devops auth` must leave byte for byte as it found it.
 fn env_without<'a>(env: &'a str, vars: &[&str]) -> Vec<&'a str> {
     env.lines()
         .filter(|line| {
@@ -51,7 +51,7 @@ fn init_with_an_api_token_writes_both_secrets_and_the_overlay_line() {
         "{stdout}"
     );
     assert!(
-        stdout.contains("hint: `varde auth show --reveal` prints the API token\n"),
+        stdout.contains("hint: `chap-devops auth show --reveal` prints the API token\n"),
         "{stdout}"
     );
     assert!(!stdout.contains(&token[..6]), "{stdout}");
@@ -60,11 +60,11 @@ fn init_with_an_api_token_writes_both_secrets_and_the_overlay_line() {
         "the summary leaked the token:\n{stdout}"
     );
 
-    // `.varde/` records booleans and no secret at all.
+    // `.chap-devops/` records booleans and no secret at all.
     let state = state(&dir);
     assert_eq!(state["auth"]["api_token"], true);
     assert_eq!(state["auth"]["registration_key"], true);
-    let recorded = read(&dir.join(".varde/project.yaml"));
+    let recorded = read(&dir.join(".chap-devops/project.yaml"));
     assert!(!recorded.contains(token), "the state file holds a secret");
     assert!(!recorded.contains(key), "the state file holds a secret");
 
@@ -130,7 +130,7 @@ fn an_api_token_needs_an_env_file_to_live_in() {
         .init(&["--models", "none", "--force", "--api-token"])
         .assert()
         .success()
-        .stderr(predicates::str::contains("varde auth enable"));
+        .stderr(predicates::str::contains("chap-devops auth enable"));
     assert_eq!(sandbox.env(), before, "a kept .env is never rewritten");
     assert_eq!(state(&sandbox.project())["auth"]["api_token"], false);
 }
@@ -178,7 +178,7 @@ fn auth_show_hides_the_token_until_reveal_asks_for_it() {
         .success()
         .stdout(predicates::str::contains(token.clone()))
         .stdout(predicates::str::contains(
-            "the DHIS2 `chap` route carries it once `varde dhis2 connect` has run",
+            "the DHIS2 `chap` route carries it once `chap-devops dhis2 connect` has run",
         ));
 
     // `--json` follows the same rule: the secret only appears with --reveal.
@@ -224,10 +224,10 @@ fn auth_enable_protects_a_project_that_was_created_without_a_token() {
         .success()
         .stdout(predicates::str::contains("API authentication is on"))
         .stdout(predicates::str::contains(
-            "run `varde up` to restart chap-core and the models with authentication",
+            "run `chap-devops up` to restart chap-core and the models with authentication",
         ))
         .stdout(predicates::str::contains(
-            "hint: the DHIS2 `chap` route carries it once `varde dhis2 connect` has run",
+            "hint: the DHIS2 `chap` route carries it once `chap-devops dhis2 connect` has run",
         ))
         .stdout(predicates::str::contains(
             "hint: wrote compose.chapkit-ewars-model.yml",
@@ -255,7 +255,7 @@ fn auth_enable_protects_a_project_that_was_created_without_a_token() {
         .assert()
         .success()
         .stdout(predicates::str::contains("already on"))
-        .stdout(predicates::str::contains("varde auth rotate").not());
+        .stdout(predicates::str::contains("chap-devops auth rotate").not());
     assert_eq!(env_value(&sandbox.env(), "CHAP_API_TOKEN"), Some(token));
 
     // An explicit token is taken at the point authentication is turned on.
@@ -293,7 +293,7 @@ fn auth_disable_keeps_the_values_so_enable_recovers_them() {
         .stdout(predicates::str::contains(
             "hint: both values are kept as comments",
         ))
-        .stdout(predicates::str::contains("run `varde up`"));
+        .stdout(predicates::str::contains("run `chap-devops up`"));
 
     let off = sandbox.env();
     assert_eq!(env_value(&off, "CHAP_API_TOKEN"), None);
@@ -352,7 +352,7 @@ fn auth_rotate_replaces_both_secrets_and_leaves_the_rest_of_env_alone() {
             "replaced the API token and the registration key",
         ))
         .stdout(predicates::str::contains(
-            "run `varde up` to restart chap-core and the models with authentication",
+            "run `chap-devops up` to restart chap-core and the models with authentication",
         ))
         .stdout(predicates::str::contains(
             "every client keeps sending the old token until it is updated",
@@ -402,7 +402,7 @@ fn auth_outside_a_project_says_so() {
         chap_in(&sandbox, sandbox.home.path(), argv)
             .assert()
             .failure()
-            .stderr(predicates::str::contains("not a varde deployment"));
+            .stderr(predicates::str::contains("not a chap-devops deployment"));
     }
 
     // A project written with --no-env has no file to keep a secret in, and
@@ -526,8 +526,9 @@ fn auth_token_prints_the_token_and_nothing_else() {
     let out = assert.get_output();
     assert!(out.stdout.is_empty(), "stdout has to stay empty");
     assert!(
-        String::from_utf8_lossy(&out.stderr)
-            .contains("API authentication is off in this deployment; run `varde auth enable`"),
+        String::from_utf8_lossy(&out.stderr).contains(
+            "API authentication is off in this deployment; run `chap-devops auth enable`"
+        ),
         "{:?}",
         String::from_utf8_lossy(&out.stderr)
     );
@@ -567,10 +568,10 @@ fn auth_token_prints_the_token_and_nothing_else() {
     chap_in(&sandbox, sandbox.home.path(), &["auth", "token"])
         .assert()
         .failure()
-        .stderr(predicates::str::contains("not a varde deployment"));
+        .stderr(predicates::str::contains("not a chap-devops deployment"));
 }
 
-/// A chap-core elsewhere is not one `varde up` restarts: the lines name only
+/// A chap-core elsewhere is not one `chap-devops up` restarts: the lines name only
 /// the models, and say what that chap-core needs.
 #[test]
 fn auth_enable_with_a_chap_core_elsewhere_restarts_only_the_models() {
@@ -590,12 +591,12 @@ fn auth_enable_with_a_chap_core_elsewhere_restarts_only_the_models() {
     let text = String::from_utf8_lossy(&out.stdout);
     assert!(!text.contains("restart chap-core"), "{text}");
     assert!(
-        text.contains("run `varde up` to restart the models with authentication"),
+        text.contains("run `chap-devops up` to restart the models with authentication"),
         "{text}"
     );
     assert!(
         text.contains(&format!(
-            "varde does not change the chap-core at {url}; set `SERVICEKIT_REGISTRATION_KEY`"
+            "chap-devops does not change the chap-core at {url}; set `SERVICEKIT_REGISTRATION_KEY`"
         )),
         "{text}"
     );
@@ -605,7 +606,7 @@ fn auth_enable_with_a_chap_core_elsewhere_restarts_only_the_models() {
         .assert()
         .success()
         .stdout(predicates::str::contains(
-            "run `varde up` to restart the models without authentication",
+            "run `chap-devops up` to restart the models without authentication",
         ));
 }
 
@@ -636,7 +637,7 @@ fn auth_enable_refuses_another_token_while_authentication_is_on() {
         .failure()
         .stderr(predicates::str::contains(
             "--token was not used: API authentication is already on with another token; run \
-             `varde auth disable`, then `varde auth enable --token TOKEN`",
+             `chap-devops auth disable`, then `chap-devops auth enable --token TOKEN`",
         ));
     assert_eq!(sandbox.env(), before);
 }

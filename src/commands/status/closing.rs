@@ -1,4 +1,4 @@
-//! The lines under the rows of `varde status`: the one line they add up to,
+//! The lines under the rows of `chap-devops status`: the one line they add up to,
 //! a line per row that needs a fix, and the hints.
 
 use super::{INTERNAL, NOT_RUNNING};
@@ -25,7 +25,7 @@ pub(super) fn nothing_running_line(report: &StatusReport) -> &'static str {
 pub(super) fn not_running_lines(report: &StatusReport, lines: &mut Report) {
     // The port answering anyway replaces the plain line: it says why a
     // browser on it shows a Chap while none of this deployment runs, and a
-    // plain `varde up` cannot start one there while the port is held.
+    // plain `chap-devops up` cannot start one there while the port is held.
     match report.api_elsewhere.as_deref() {
         Some(why) => lines.info(why),
         None => lines.info(nothing_running_line(report)),
@@ -40,8 +40,8 @@ pub(super) fn not_running_lines(report: &StatusReport, lines: &mut Report) {
 pub(super) fn closing(report: &StatusReport, external: bool, lines: &mut Report) {
     // A deployment chap-core is not a component of has no API to be down and
     // no models to register, so its components are its verdict. Without this
-    // it would be the one deployment shape `varde status` said nothing about
-    // at the end, and `closing_line` would name `varde models enable`, which
+    // it would be the one deployment shape `chap-devops status` said nothing about
+    // at the end, and `closing_line` would name `chap-devops models enable`, which
     // is refused there.
     if matches!(report.api, ApiHealth::Off) {
         for line in crate::status::standalone_closing_lines(&report.models, &report.components) {
@@ -104,13 +104,13 @@ pub(super) fn closing(report: &StatusReport, external: bool, lines: &mut Report)
 /// for a run where it is worth acting on.
 ///
 /// Two conditions, and the second is the one worth arguing about. The first is
-/// [`StatusReport::dhis2_needs_connecting`], which is `.varde/components.yaml`
+/// [`StatusReport::dhis2_needs_connecting`], which is `.chap-devops/components.yaml`
 /// and no request at all. The second is that the `dhis2` row says `up`: telling
 /// someone to connect to a DHIS2 that is not running is advice they cannot
-/// take, and `varde status` has just asked `/api/ping` and knows the answer, so
+/// take, and `chap-devops status` has just asked `/api/ping` and knows the answer, so
 /// the line waits for the run where the command it names would work. A DHIS2
 /// that is `starting` is one whose API is not answering yet, which is exactly
-/// the wait `varde dhis2 connect` would sit in.
+/// the wait `chap-devops dhis2 connect` would sit in.
 ///
 /// It sits with the model fixes, under the verdict, because it is the same kind
 /// of thing: one line per row that still needs something done about it.

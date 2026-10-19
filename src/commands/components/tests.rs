@@ -198,7 +198,7 @@ fn a_kept_volume_is_named_with_the_command_that_would_remove_it() {
     let line = &notes[0];
     assert!(line.starts_with("kept volume hello1-abc123_"), "{line}");
     assert!(
-        line.contains("`varde components disable ocs --purge`"),
+        line.contains("`chap-devops components disable ocs --purge`"),
         "{line}"
     );
     assert!(line.contains("docker volume rm"), "{line}");
@@ -223,14 +223,14 @@ fn a_kept_volume_is_named_with_the_command_that_would_remove_it() {
     );
     for note in &notes {
         assert!(
-            note.contains("`varde components disable dhis2 --purge`"),
+            note.contains("`chap-devops components disable dhis2 --purge`"),
             "{note}"
         );
         assert!(note.contains("docker volume rm"), "{note}");
     }
 
     // chap-core's volumes are upstream's own, so there is nothing here to
-    // name; `varde down --volumes` is what removes them.
+    // name; `chap-devops down --volumes` is what removes them.
     assert!(kept_volume_notes(&project, Component::ChapCore, &all).is_empty());
 
     // A volume docker does not have was never created, so it was not kept
@@ -366,7 +366,7 @@ fn the_deployed_dhis2_tag_is_read_out_of_the_rendered_compose_file() {
     off.dhis2.image_tag = "2.41".to_string();
     assert_eq!(dhis2_tag_moved(&project, &off), None);
 
-    // A file from some other varde, or a hand-edited one, still reads.
+    // A file from some other chap-devops, or a hand-edited one, still reads.
     std::fs::write(
         dir.path().join(DHIS2_COMPOSE),
         "services:\n  dhis2:\n    image: dhis2/core:${DHIS2_IMAGE_TAG:-2.41.7}\n",
@@ -404,7 +404,7 @@ fn the_scaffold_request_follows_the_flags() {
 }
 
 /// Only an OCS that was on, with nothing but its read mode changed, gets the
-/// `varde restart ocs` closing line instead of `varde up`.
+/// `chap-devops restart ocs` closing line instead of `chap-devops up`.
 #[test]
 fn only_a_changed_read_mode_of_a_running_ocs_is_a_restart() {
     let mut before = Components::default();
@@ -477,13 +477,13 @@ fn a_changed_read_mode_says_what_changed_and_names_the_restart() {
         text(ReadMode::Changed { read_only: true }),
         "ocs is now read-only\n\
          hint: set read_only: true in ocs/climate-service.yaml\n\
-         run `varde restart ocs` to apply\n"
+         run `chap-devops restart ocs` to apply\n"
     );
     assert_eq!(
         text(ReadMode::Unchanged { read_only: false }),
         "ocs is already read-write\n\
          hint: set read_only: true in ocs/climate-service.yaml\n\
-         hint: `varde status` shows what runs now\n"
+         hint: `chap-devops status` shows what runs now\n"
     );
 }
 
@@ -518,17 +518,17 @@ fn an_enable_that_changes_nothing_says_so() {
     assert_eq!(
         text(&report),
         "ocs was already enabled on http://localhost:8791; nothing changed\n\
-         hint: if it is not running, `varde up` starts it\n"
+         hint: if it is not running, `chap-devops up` starts it\n"
     );
 
-    // A file the sync wrote is a change for `varde up` to apply.
+    // A file the sync wrote is a change for `chap-devops up` to apply.
     let written = ChangeReport {
         written: vec![dir.path().join("compose.ocs.yml")],
         ..report
     };
     let text = text(&written);
     assert!(text.starts_with("ocs was already enabled on http://localhost:8791\n"));
-    assert!(text.ends_with("run `varde up` to apply\n"), "{text}");
+    assert!(text.ends_with("run `chap-devops up` to apply\n"), "{text}");
 }
 
 #[test]

@@ -20,25 +20,25 @@ fn a_taken_port_says_who_has_it() {
     );
 }
 
-/// A directory under the `varde run` groups is a group that is not there,
-/// with the `varde run` that makes it again; anywhere else is `varde init`.
+/// A directory under the `chap-devops run` groups is a group that is not there,
+/// with the `chap-devops run` that makes it again; anywhere else is `chap-devops init`.
 #[test]
 fn a_missing_group_is_not_told_to_run_init() {
-    let groups = Path::new("/data/varde/run");
+    let groups = Path::new("/data/chap-devops/run");
     let line = not_a_deployment(&groups.join("dengue"), groups);
     assert!(
         line.ends_with(
-            "is not a varde deployment: the `varde run` group dengue does not exist, or \
-             `varde stop --purge` removed it; `varde run <model> --group dengue` makes it again"
+            "is not a chap-devops deployment: the `chap-devops run` group dengue does not exist, or \
+             `chap-devops stop --purge` removed it; `chap-devops run <model> --group dengue` makes it again"
         ),
         "{line}"
     );
     let line = not_a_deployment(&groups.join("default").join("x"), groups);
     assert!(
-        line.contains("`varde run <model>` makes it again"),
+        line.contains("`chap-devops run <model>` makes it again"),
         "{line}"
     );
     let line = not_a_deployment(Path::new("/srv/lab"), groups);
-    assert!(line.ends_with("run `varde init` first"), "{line}");
+    assert!(line.ends_with("run `chap-devops init` first"), "{line}");
     assert!(!not_a_deployment(groups, groups).contains("group"));
 }

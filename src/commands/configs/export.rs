@@ -1,4 +1,4 @@
-//! `varde models configs export [ID] [--out FILE]`: the configured models of
+//! `chap-devops models configs export [ID] [--out FILE]`: the configured models of
 //! one model as the `configurations:` block of a marketplace entry.
 //!
 //! One model per export: the block goes under one entry, and `configs add
@@ -12,7 +12,7 @@ use crate::configs::{self, export, sync::Source};
 use crate::error::{ChapError, Result};
 use std::collections::BTreeSet;
 
-/// `varde models configs export`.
+/// `chap-devops models configs export`.
 pub fn export(ctx: &Ctx, args: &ConfigsExportArgs) -> Result<()> {
     let project = project_of(ctx)?;
     let ids: Vec<String> = args.id.iter().cloned().collect();
@@ -21,7 +21,7 @@ pub fn export(ctx: &Ctx, args: &ConfigsExportArgs) -> Result<()> {
         [one] => one.clone(),
         [] => {
             return Err(ChapError::Usage(
-                "this deployment enables no models; enable one with `varde models enable ID`"
+                "this deployment enables no models; enable one with `chap-devops models enable ID`"
                     .to_string(),
             )
             .into());
@@ -44,7 +44,7 @@ pub fn export(ctx: &Ctx, args: &ConfigsExportArgs) -> Result<()> {
         .collect();
     if live.is_empty() {
         return Err(anyhow::anyhow!(
-            "chap-core has no configured model of {id} to export; `varde models configs sync \
+            "chap-core has no configured model of {id} to export; `chap-devops models configs sync \
              {id}` creates them"
         ));
     }

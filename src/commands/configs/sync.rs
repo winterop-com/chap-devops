@@ -1,4 +1,4 @@
-//! `varde models configs sync`, and the same step inside `up --wait`,
+//! `chap-devops models configs sync`, and the same step inside `up --wait`,
 //! `dhis2 connect` and `models test --backtest`.
 //!
 //! The rules are in [`crate::configs::sync`]; this module picks the models, loads
@@ -16,17 +16,20 @@ use crate::registry::Registry;
 /// warning lines have said why, so there is no `error:` line on top.
 const EXIT_FAILED: i32 = 1;
 
-/// `varde models configs sync [ID...]`.
+/// `chap-devops models configs sync [ID...]`.
 pub fn run(ctx: &Ctx, args: &ConfigsSyncArgs) -> Result<()> {
     let project = ctx.project()?;
-    crate::components::require_chap_core(&project.state.components, "`varde models configs sync`")?;
+    crate::components::require_chap_core(
+        &project.state.components,
+        "`chap-devops models configs sync`",
+    )?;
     let targets = targets(ctx, &project, &args.ids)?;
     if targets.is_empty() {
         return ctx
             .out
             .report(&serde_json::json!({ "ok": true, "models": [] }), |lines| {
                 lines.info(
-                    "this deployment enables no models; enable one with `varde models enable ID`",
+                    "this deployment enables no models; enable one with `chap-devops models enable ID`",
                 );
             });
     }
@@ -75,7 +78,7 @@ pub fn fold(folded: &Option<Folded>, not_registered: bool, lines: &mut crate::ou
     rules::folded_lines(&folded.models, not_registered, lines);
     if let Some(error) = &folded.error {
         lines.warning(format!(
-            "could not check the configured models in chap-core: {error}; run `varde models \
+            "could not check the configured models in chap-core: {error}; run `chap-devops models \
              configs sync`"
         ));
     }
@@ -96,7 +99,7 @@ pub fn step(ctx: &Ctx, project: &Project, targets: &[Target]) -> Result<Vec<Mode
         }
         let registry = registry.as_ref().expect("loaded above");
         // A model registered from outside runs no image of a marketplace
-        // entry that varde knows of, so it gets the one `default`.
+        // entry that chap-devops knows of, so it gets the one `default`.
         if !project.state.models.contains_key(&target.id) {
             return Ok(Source::Custom);
         }
@@ -169,7 +172,7 @@ pub(super) fn targets(ctx: &Ctx, project: &Project, ids: &[String]) -> Result<Ve
             .ok_or_else(|| ChapError::UnknownModel(given.clone()))?;
         let enabled = project.state.models.get(&model.id).ok_or_else(|| {
             anyhow::anyhow!(
-                "{} is not enabled in this deployment; enable it with `varde models enable {}`",
+                "{} is not enabled in this deployment; enable it with `chap-devops models enable {}`",
                 model.id,
                 model.id
             )

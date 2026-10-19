@@ -1,8 +1,8 @@
-//! `varde dhis2 apps`: the Modeling App and the Climate App from the App Hub.
+//! `chap-devops dhis2 apps`: the Modeling App and the Climate App from the App Hub.
 
 use super::*;
 
-/// `varde dhis2 apps` — install the Modeling App and the Climate App.
+/// `chap-devops dhis2 apps` — install the Modeling App and the Climate App.
 pub fn apps(ctx: &Ctx, args: &Dhis2AppsArgs) -> Result<()> {
     if ctx.registry.offline {
         return Err(anyhow::anyhow!(dhis2::OFFLINE_APPS));
@@ -12,7 +12,7 @@ pub fn apps(ctx: &Ctx, args: &Dhis2AppsArgs) -> Result<()> {
     let failed = failed_apps(&apps);
     let report = Dhis2Report {
         instance: session.instance(),
-        next: "open DHIS2 with `varde open dhis2`; the Modeling App is in its apps menu"
+        next: "open DHIS2 with `chap-devops open dhis2`; the Modeling App is in its apps menu"
             .to_string(),
         route: None,
         apps: Some(apps),

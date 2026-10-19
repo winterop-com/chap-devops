@@ -35,7 +35,7 @@ pub(super) enum Choice {
 /// id is what goes out, with the covariates the backtest will hand the model.
 ///
 /// `version` is the version the service registered with; only a live row of
-/// it counts. `wanted` is `--config`: a variant name, as `varde models
+/// it counts. `wanted` is `--config`: a variant name, as `chap-devops models
 /// configs` shows it.
 ///
 /// Without `--config`, a chap-core that could not be asked at all is no

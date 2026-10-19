@@ -10,7 +10,7 @@
 /// The archive member that holds the dump.
 pub const DHIS2_DB_DUMP_MEMBER: &str = "components/dhis2-db.dump";
 
-/// What `varde backup create -v` says the dump holds.
+/// What `chap-devops backup create -v` says the dump holds.
 pub const DHIS2_DB_DUMP_SOURCE: &str =
     "pg_dump without analytics_*, aggregated_*, completeness_*, _* and the data of audit";
 
@@ -24,7 +24,7 @@ pub const DHIS2_EXCLUDED_DATA: &[&str] = &["audit"];
 
 /// Where the restore puts the dump inside `dhis2-db`, so that `pg_restore`
 /// can read it with several jobs: a dump on stdin allows one job only.
-pub const DHIS2_RESTORE_PATH: &str = "/tmp/varde-dhis2-db.dump";
+pub const DHIS2_RESTORE_PATH: &str = "/tmp/chap-devops-dhis2-db.dump";
 
 /// How many jobs `pg_restore` runs at once.
 pub const DHIS2_RESTORE_JOBS: u32 = 4;

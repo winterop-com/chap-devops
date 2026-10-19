@@ -346,7 +346,7 @@ fn the_closing_line_counts_what_happened_and_only_a_failure_is_a_failure() {
     );
     assert_eq!(
         closing(&one_bad),
-        "4 of 5 models pass; run `varde models test ewars -vv` for the full output"
+        "4 of 5 models pass; run `chap-devops models test ewars -vv` for the full output"
     );
     assert!(any_failed(&one_bad));
 
@@ -354,7 +354,7 @@ fn the_closing_line_counts_what_happened_and_only_a_failure_is_a_failure() {
     let mut two_bad = one_bad.clone();
     two_bad[3] = run("ghr", "chapkit-ghr-model", Verdict::Fail, 9, "train: boom");
     assert!(
-        closing(&two_bad).contains("varde models test <id> -v"),
+        closing(&two_bad).contains("chap-devops models test <id> -v"),
         "{}",
         closing(&two_bad)
     );
@@ -372,7 +372,7 @@ fn the_closing_line_counts_what_happened_and_only_a_failure_is_a_failure() {
     );
     assert_eq!(
         closing(&skipped),
-        "3 pass, 1 fail, 1 skipped; run `varde models test ghr -vv` for the full output"
+        "3 pass, 1 fail, 1 skipped; run `chap-devops models test ghr -vv` for the full output"
     );
     // A skip on its own is not a failure and the run still exits zero.
     let only_skip = vec![run(
@@ -422,7 +422,7 @@ fn the_json_shape_is_the_documented_one() {
     model.job_id = Some("f424cbe3".to_string());
     model.backtest_id = Some(5);
     model.metrics = Some(serde_json::json!({"crps": 4.83, "mae": 6.68}));
-    model.detail = Some("run `varde jobs logs f424cbe3`".to_string());
+    model.detail = Some("run `chap-devops jobs logs f424cbe3`".to_string());
     let value = serde_json::to_value(&model).expect("JSON");
     assert_eq!(value["level"], serde_json::json!("backtest"));
     assert_eq!(value["job_id"], serde_json::json!("f424cbe3"));
@@ -430,7 +430,7 @@ fn the_json_shape_is_the_documented_one() {
     assert_eq!(value["metrics"]["crps"], serde_json::json!(4.83));
     assert_eq!(
         value["detail"],
-        serde_json::json!("run `varde jobs logs f424cbe3`")
+        serde_json::json!("run `chap-devops jobs logs f424cbe3`")
     );
 }
 

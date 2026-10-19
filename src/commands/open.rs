@@ -1,6 +1,6 @@
-//! `varde open [NAME]` — a component's web interface in a browser.
+//! `chap-devops open [NAME]` — a component's web interface in a browser.
 //!
-//! The command exists because `varde components list` and `varde status` both
+//! The command exists because `chap-devops components list` and `chap-devops status` both
 //! print an address and then leave you to copy it into a browser. What is worth
 //! opening differs per component, and [`crate::open::resolve`] is the one place
 //! that decides it, so the browser's `o` key lands on the same page.
@@ -23,7 +23,7 @@ use serde::{Serialize, Serializer};
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "kebab-case")]
 pub enum Running {
-    /// Its container is up. Not "it is answering": that is what `varde status`
+    /// Its container is up. Not "it is answering": that is what `chap-devops status`
     /// asks, and it costs a request per component.
     Yes,
     /// Docker answered and this component has no running container.
@@ -32,11 +32,11 @@ pub enum Running {
     /// way.
     Unknown,
     /// It is not a container of this deployment: an external DHIS2 recorded
-    /// by `varde dhis2 use`, which no docker here can say anything about.
+    /// by `chap-devops dhis2 use`, which no docker here can say anything about.
     External,
 }
 
-/// What `varde open NAME` did.
+/// What `chap-devops open NAME` did.
 ///
 /// Only built for a run that had an address: the three answers that open
 /// nothing are failures, so there is no shape here with a `null` URL in it.
@@ -92,18 +92,18 @@ impl Serialize for Note {
     }
 }
 
-/// One row of the listing a bare `varde open` prints.
+/// One row of the listing a bare `chap-devops open` prints.
 #[derive(Debug, Serialize)]
 pub struct OpenRow {
     pub name: String,
-    /// The address `varde open NAME` would open, `null` when it would open
+    /// The address `chap-devops open NAME` would open, `null` when it would open
     /// nothing.
     pub url: Option<String>,
     /// What that address is, or why there is none.
     pub what: String,
 }
 
-/// What a bare `varde open` prints.
+/// What a bare `chap-devops open` prints.
 #[derive(Debug, Serialize)]
 pub struct OpenListReport {
     pub components: Vec<OpenRow>,
@@ -113,7 +113,7 @@ pub struct OpenListReport {
     /// The ids of the enabled models that publish no host port.
     pub unpublished: Vec<String>,
     /// Whether this deployment has a chap-core API, through which
-    /// `varde open ID` reaches a model that publishes no host port.
+    /// `chap-devops open ID` reaches a model that publishes no host port.
     #[serde(skip)]
     pub proxy: bool,
 }
@@ -194,7 +194,7 @@ fn model_docs_url(
         }
         None => Err(anyhow::anyhow!(
             "{id} publishes no host port and there is no chap-core to reach it through; \
-             run `varde models expose {id}` to publish one"
+             run `chap-devops models expose {id}` to publish one"
         )),
     }
 }
@@ -221,7 +221,7 @@ fn open_model(
         notes.push(Note::new(
             Weight::Warning,
             format!(
-                "no {} container is running, so the page will not load yet; run `varde up` to \
+                "no {} container is running, so the page will not load yet; run `chap-devops up` to \
                  start this deployment",
                 model.service_id
             ),
@@ -249,8 +249,8 @@ fn browserless(ctx: &Ctx, no_browser: bool) -> bool {
     no_browser || ctx.out.json
 }
 
-/// Whether this component's container is up, judged exactly as `varde status`
-/// and `varde doctor` judge it: by the container, not by a request.
+/// Whether this component's container is up, judged exactly as `chap-devops status`
+/// and `chap-devops doctor` judge it: by the container, not by a request.
 ///
 /// A missing docker CLI is [`Running::Unknown`] rather than "not running",
 /// because a probe that could not be made has said nothing - and a command that
@@ -274,7 +274,7 @@ fn proxy_note(proxied: bool, component: Component) -> Option<String> {
     proxied.then(|| {
         format!(
             "{} publishes no host port, so this is the public origin it records; \
-             `varde components enable {} --port N` publishes one on this machine instead",
+             `chap-devops components enable {} --port N` publishes one on this machine instead",
             component.name(),
             component.name()
         )
@@ -284,19 +284,19 @@ fn proxy_note(proxied: bool, component: Component) -> Option<String> {
 /// The note about the container, which is the half of the answer the address
 /// cannot carry.
 ///
-/// A dead port gives the browser a connection error rather than varde one, so
+/// A dead port gives the browser a connection error rather than chap-devops one, so
 /// the reason is said here, before the browser has a chance to be blamed for it.
 fn running_note(running: Running, component: Component) -> Option<String> {
     match running {
         Running::Yes | Running::External => None,
         Running::No => Some(format!(
             "no {} container is running, so the page will not load yet; \
-             run `varde up` to start this deployment",
+             run `chap-devops up` to start this deployment",
             component.service()
         )),
         Running::Unknown => Some(format!(
             "docker could not be asked whether {} is running, so this is the address and not a \
-             promise; run `varde doctor` to see what docker says",
+             promise; run `chap-devops doctor` to see what docker says",
             component.name()
         )),
     }
@@ -309,13 +309,13 @@ fn running_note(running: Running, component: Component) -> Option<String> {
 /// that looks like a broken deployment rather than a closed door.
 fn auth_note(project: &Project, component: Component) -> Option<String> {
     (component == Component::ChapCore && project.state.auth.api_token).then(|| {
-        "this API needs a token, and `/docs` is behind it: `varde auth show --reveal` prints the \
+        "this API needs a token, and `/docs` is behind it: `chap-devops auth show --reveal` prints the \
          token to paste into the page's Authorize button"
             .to_string()
     })
 }
 
-/// Every component and what `varde open NAME` would do with it.
+/// Every component and what `chap-devops open NAME` would do with it.
 fn list(ctx: &Ctx, project: &Project) -> Result<()> {
     let base = project.api_base();
     let components = Component::ALL
@@ -328,7 +328,7 @@ fn list(ctx: &Ctx, project: &Project) -> Result<()> {
                         true if *component == Component::Dhis2
                             && project.state.components.dhis2_external.is_some() =>
                         {
-                            format!("{what}, external, recorded by `varde dhis2 use`")
+                            format!("{what}, external, recorded by `chap-devops dhis2 use`")
                         }
                         true => format!("{what}, at the origin it records"),
                         false => what.to_string(),
@@ -375,7 +375,7 @@ fn list(ctx: &Ctx, project: &Project) -> Result<()> {
     ctx.out.report(&report, |lines| say_list(&report, lines))
 }
 
-/// The closing lines of `varde open NAME`.
+/// The closing lines of `chap-devops open NAME`.
 fn say(report: &OpenReport, lines: &mut Report) {
     let url = &report.url;
     match (report.no_browser, report.opened) {
@@ -402,27 +402,27 @@ fn say(report: &OpenReport, lines: &mut Report) {
     }
     match (report.running, report.answering) {
         (Running::Yes, Some(true)) => lines.hint(format!(
-            "{} answered at that address; `varde status` reports the rest of this deployment",
+            "{} answered at that address; `chap-devops status` reports the rest of this deployment",
             report.name
         )),
         (Running::Yes, _) => lines.warning(format!(
-            "the {} container is running and did not answer yet; run `varde status` in a moment \
+            "the {} container is running and did not answer yet; run `chap-devops status` in a moment \
              to see when it does",
             report.name
         )),
         (Running::External, Some(true)) => lines.hint(
-            "the external DHIS2 recorded by `varde dhis2 use` answered at that address; \
-             `varde dhis2 show` says whether Chap is connected to it",
+            "the external DHIS2 recorded by `chap-devops dhis2 use` answered at that address; \
+             `chap-devops dhis2 show` says whether Chap is connected to it",
         ),
         (Running::External, _) => lines.warning(
-            "the external DHIS2 recorded by `varde dhis2 use` did not answer at that address; \
-             make sure that it is up, or record its URL again with `varde dhis2 use URL`",
+            "the external DHIS2 recorded by `chap-devops dhis2 use` did not answer at that address; \
+             make sure that it is up, or record its URL again with `chap-devops dhis2 use URL`",
         ),
         (Running::No | Running::Unknown, _) => lines,
     };
 }
 
-/// The table of a bare `varde open`, which the closing lines follow.
+/// The table of a bare `chap-devops open`, which the closing lines follow.
 fn human_list(report: &OpenListReport, out: &Out) -> String {
     let cells = |rows: &[OpenRow]| -> Vec<Vec<String>> {
         rows.iter()
@@ -450,7 +450,7 @@ fn human_list(report: &OpenListReport, out: &Out) -> String {
     text
 }
 
-/// The closing lines of a bare `varde open`.
+/// The closing lines of a bare `chap-devops open`.
 fn say_list(report: &OpenListReport, lines: &mut Report) {
     let openable = report
         .components
@@ -461,20 +461,20 @@ fn say_list(report: &OpenListReport, lines: &mut Report) {
     match openable {
         0 => lines
             .info("nothing in this deployment has a web interface on this machine")
-            .hint("`varde components list` says what it is made of"),
+            .hint("`chap-devops components list` says what it is made of"),
         _ => lines
             .info(format!(
-                "{openable} of them can be opened: run `varde open NAME`"
+                "{openable} of them can be opened: run `chap-devops open NAME`"
             ))
-            .hint("`varde status` shows what is running"),
+            .hint("`chap-devops status` shows what is running"),
     };
     for id in &report.unpublished {
         match report.proxy {
             true => lines.hint(format!(
-                "{id} publishes no host port; `varde open {id}` opens it through chap-core"
+                "{id} publishes no host port; `chap-devops open {id}` opens it through chap-core"
             )),
             false => lines.hint(format!(
-                "{id} publishes no host port; run `varde models expose {id}` to publish one"
+                "{id} publishes no host port; run `chap-devops models expose {id}` to publish one"
             )),
         };
     }

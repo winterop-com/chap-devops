@@ -1,4 +1,4 @@
-//! `varde models list|search|info` — read-only views of the catalogue.
+//! `chap-devops models list|search|info` — read-only views of the catalogue.
 //!
 //! `enable` and `disable` live in [`crate::commands::enable`] because they
 //! share the write path with `init`.
@@ -117,7 +117,7 @@ fn list_lines(rows: &[ModelRow], only_enabled: bool, in_project: bool, lines: &m
         match only_enabled {
             true => lines
                 .info("no models enabled")
-                .hint("`varde models enable ID` enables one"),
+                .hint("`chap-devops models enable ID` enables one"),
             false => lines.info("no models match"),
         };
         return;
@@ -187,7 +187,7 @@ fn enabled_clause(rows: &[ModelRow], in_project: bool) -> String {
 /// the rows.
 fn enable_hint(rows: &[ModelRow], in_project: bool, lines: &mut Report) {
     if in_project && !rows.iter().any(|r| r.enabled) {
-        lines.hint("`varde models enable ID` enables one");
+        lines.hint("`chap-devops models enable ID` enables one");
     }
 }
 
@@ -235,10 +235,10 @@ fn info_lines(detail: &ModelDetail, lines: &mut Report) {
         // The absence of the project block is easy to miss.
         true => lines
             .info(format!("{id} is not enabled in this deployment"))
-            .hint(format!("`varde models enable {id}` enables it")),
+            .hint(format!("`chap-devops models enable {id}` enables it")),
         false => lines.hint(format!(
-            "this is not a deployment directory; `varde init` creates one, then \
-             `varde models enable {id}` enables the model"
+            "this is not a deployment directory; `chap-devops init` creates one, then \
+             `chap-devops models enable {id}` enables the model"
         )),
     };
 }
@@ -372,7 +372,7 @@ fn render_info(out: &Out, detail: &ModelDetail) -> String {
     // What it does have is where it came from and what it follows.
     let (source, follows) = match detail.manual {
         Some(manual) => (
-            format!("{MANUAL_KIND} (`varde models add`, {})", manual.added),
+            format!("{MANUAL_KIND} (`chap-devops models add`, {})", manual.added),
             match &manual.follow {
                 Some(branch) => branch.clone(),
                 None => "nothing (pinned)".to_string(),

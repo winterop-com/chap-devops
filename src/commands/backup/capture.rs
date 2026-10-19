@@ -26,7 +26,7 @@ pub(super) fn dump_database(
     if !running.has("postgres") {
         return Err(anyhow::anyhow!(
             "the postgres container is not running, so the database cannot be dumped; \
-             start it with `varde up`, or pass --no-db"
+             start it with `chap-devops up`, or pass --no-db"
         ));
     }
     let env_body = std::fs::read_to_string(project.dir.join(ENV_FILE)).unwrap_or_default();
@@ -296,7 +296,7 @@ fn dump_dhis2_db(
     if !running {
         entry.skipped = Some(
             "dhis2-db is not running, so its database cannot be dumped; start it with \
-             `varde up`, or pass --no-components"
+             `chap-devops up`, or pass --no-components"
                 .to_string(),
         );
         entry.failed = true;
@@ -358,7 +358,7 @@ pub(super) fn pause_warning_for(
 ) -> Option<String> {
     (bytes >= LONG_PAUSE_BYTES).then(|| {
         format!(
-            "{service} is paused while varde copies {} of `{volume}`, and it does not answer \
+            "{service} is paused while chap-devops copies {} of `{volume}`, and it does not answer \
              until the copy is done; this can take minutes, so run the backup when nobody \
              uses it, or {}",
             backup::human_size(bytes),

@@ -6,28 +6,28 @@ of it waiting for the model. It starts where
 [Chap with a local DHIS2](./use-cases/chap-with-local-dhis2.md) ends:
 
 ```sh
-varde init mychap --models chapkit_simple_multistep_model --with dhis2
+chap-devops init mychap --models chapkit_simple_multistep_model --with dhis2
 cd mychap
-varde up
-varde status          # until the dhis2 line says up
-varde dhis2 connect
-varde open dhis2
+chap-devops up
+chap-devops status          # until the dhis2 line says up
+chap-devops dhis2 connect
+chap-devops open dhis2
 ```
 
-`varde dhis2 connect` points the DHIS2 route `chap` at chap-core, installs the
+`chap-devops dhis2 connect` points the DHIS2 route `chap` at chap-core, installs the
 Modeling App and the DHIS2 Climate App, and runs the DHIS2 analytics tables.
 It also makes the configured models that the Modeling App lists. It took about
 40 seconds. Its last line is
-`` the Modeling App can reach Chap; open DHIS2 with `varde open dhis2` ``.
+`` the Modeling App can reach Chap; open DHIS2 with `chap-devops open dhis2` ``.
 
 Tested on 2026-10-12 with Modeling App 7.2.0, DHIS2 2.42.6 with the Laos demo
 database, chap-core v2.4.0 and Simple Multistep (chapkit) 0.1.2. Other versions of the Modeling
-App may name a button differently; the steps stay the same. `varde dhis2 show`
+App may name a button differently; the steps stay the same. `chap-devops dhis2 show`
 says which Modeling App version a deployment has.
 
 ## What the demo data holds
 
-The DHIS2 that `varde` starts is seeded with a demo database from Laos:
+The DHIS2 that `chap-devops` starts is seeded with a demo database from Laos:
 
 | Data | Where it is in DHIS2 | Range |
 | --- | --- | --- |
@@ -77,25 +77,25 @@ climatology*.
 
 ![Selecting the model](images/modeling-app/02-select-model.png)
 
-**Simple Multistep Model (chapkit)** is the model `varde` started with
+**Simple Multistep Model (chapkit)** is the model `chap-devops` started with
 `--models chapkit_simple_multistep_model`. It has two entries, one for each
 configuration in its marketplace entry: *Monthly climate* uses rainfall,
 temperature and relative humidity, and *Monthly selfhistory* uses only the
 case history. The list shows one entry for each configured model, as
-`<model name> [<variant name>]`. Each model enabled with `varde models
+`<model name> [<variant name>]`. Each model enabled with `chap-devops models
 enable` adds its own entries. chap-core 2.4 and later does not make these
-entries itself: `varde up --wait`, `varde dhis2 connect` and `varde models
-configs sync` make them. If a model is not in the list, run `varde status`. If it
-shows the model as `registered, not configured`, run `varde models configs sync`.
-To add an entry of your own with other option values, run `varde models
+entries itself: `chap-devops up --wait`, `chap-devops dhis2 connect` and `chap-devops models
+configs sync` make them. If a model is not in the list, run `chap-devops status`. If it
+shows the model as `registered, not configured`, run `chap-devops models configs sync`.
+To add an entry of your own with other option values, run `chap-devops models
 configs add`. See [Adding](./models.md#adding).
-`varde models test --all` makes each model train and predict. See
+`chap-devops models test --all` makes each model train and predict. See
 [Configured models](./models.md#configured-models).
 
 The list also holds models that chap-core ships configured on its own and runs
 inside its worker, such as **CHAP-EWARS Model** and **Monthly CHAP-EWARS
 model**. Some of them have the status *Deprecated*. They are not models that
-`varde` started. The two `(chapkit)` entries have the status *Limited*.
+`chap-devops` started. The two `(chapkit)` entries have the status *Limited*.
 
 ![Organisation units: Lao PDR at the Province level](images/modeling-app/03-org-units.png)
 
@@ -125,7 +125,7 @@ anything, and should say *All 18 locations can be successfully imported*.
 
 Close it and choose **Start import**. The app moves to **Jobs**, where the
 evaluation runs. With Simple Multistep it took about 25 seconds on an Apple
-Silicon Mac (M2 Max), where the model runs under emulation. `varde jobs` in the
+Silicon Mac (M2 Max), where the model runs under emulation. `chap-devops jobs` in the
 terminal shows the same job; its type is `create_backtest_from_data`.
 
 ## 4. Read the result
@@ -158,8 +158,8 @@ To compare two models, run a second evaluation on the same data:
 
 The evaluation of *Monthly selfhistory* took about 20 seconds. The comparison shows the two side by side, province
 by province; the box **Location(s)** starts with ten provinces selected. More
-marketplace models come with `varde models enable ID` and `varde up`
-(`varde models list` shows the ids).
+marketplace models come with `chap-devops models enable ID` and `chap-devops up`
+(`chap-devops models list` shows the ids).
 
 ![Two evaluations side by side](images/modeling-app/08-compare.png)
 
@@ -180,7 +180,7 @@ prediction** again. The app goes back to the setup, where the run shows as
 
 ![Running a prediction](images/modeling-app/10-run-prediction.png)
 
-The job took about 6 seconds in `varde jobs`. The row in the app said
+The job took about 6 seconds in `chap-devops jobs`. The row in the app said
 *Success* within a minute, without a reload.
 **Go to last run** shows one chart per province:
 the real cases up to December 2024 and the forecast for January to March 2025.
@@ -201,10 +201,10 @@ elements in DHIS2's Maintenance app and pick those.
 
 | What you see | What to do |
 | --- | --- |
-| Typing `Modeling` in the app menu finds nothing | `varde dhis2 connect` has not run, or failed; run it and read its last line. |
-| The model list does not have the model `varde` enabled | `varde status`: the model must be `registered`. If it says `registered, not configured`, run `varde models configs sync`. Otherwise the line under the table says why. |
+| Typing `Modeling` in the app menu finds nothing | `chap-devops dhis2 connect` has not run, or failed; run it and read its last line. |
+| The model list does not have the model `chap-devops` enabled | `chap-devops status`: the model must be `registered`. If it says `registered, not configured`, run `chap-devops models configs sync`. Otherwise the line under the table says why. |
 | `Oops! Sorry, an unexpected error`, or `Unnamed evaluation` rows, after the deployment was recreated | The browser holds a login to the DHIS2 that was removed: open DHIS2 again and log in. See [Troubleshooting](./troubleshooting.md#oops-sorry-an-unexpected-error-or-unnamed-evaluation-in-the-modeling-app). |
-| A job in **Jobs** says it failed | `varde jobs`, then `varde jobs logs ID` with the id it prints: the model's own error is at the end. |
+| A job in **Jobs** says it failed | `chap-devops jobs`, then `chap-devops jobs logs ID` with the id it prints: the model's own error is at the end. |
 
 More on connecting DHIS2 and Chap: [DHIS2](./dhis2.md). The Modeling App's own
 guide is at

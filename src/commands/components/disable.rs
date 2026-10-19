@@ -1,4 +1,4 @@
-//! `varde components disable`, and stopping the containers of a component
+//! `chap-devops components disable`, and stopping the containers of a component
 //! that is going, for every caller that turns one off.
 
 use super::{ChangeReport, Note, NoteLevel, change_summary, notes_of};
@@ -13,7 +13,7 @@ use crate::project::Project;
 ///
 /// The component's data volumes are kept, exactly as a disabled model's volume
 /// is, and each of them named: once the compose file is gone nothing else
-/// declares them, so `varde down --volumes` no longer reaches them. `--purge`
+/// declares them, so `chap-devops down --volumes` no longer reaches them. `--purge`
 /// removes them with the component.
 pub fn disable(ctx: &Ctx, args: &ComponentsDisableArgs) -> Result<()> {
     let component = Component::from_name(&args.name)?;
@@ -23,7 +23,7 @@ pub fn disable(ctx: &Ctx, args: &ComponentsDisableArgs) -> Result<()> {
     // Said before anything is stopped: a `--purge` that cannot do the one
     // thing it was asked for is a refusal, not a disable with a note.
     if args.purge && component.volumes().is_empty() {
-        return Err(anyhow::anyhow!(CORE_HAS_NO_VARDE_VOLUME));
+        return Err(anyhow::anyhow!(CORE_HAS_NO_CHAP_DEVOPS_VOLUME));
     }
 
     let mut after = before.clone();
@@ -98,7 +98,7 @@ pub fn disable(ctx: &Ctx, args: &ComponentsDisableArgs) -> Result<()> {
         };
     notes.extend(notes_of(NoteLevel::Info, stopped));
     // Its volumes are declared in `compose.yml`, which is gone from the file
-    // list now, so `varde down --volumes` does not reach them any more.
+    // list now, so `chap-devops down --volumes` does not reach them any more.
     if component == Component::ChapCore && before.chap_core.enabled {
         notes.push(Note::hint(CORE_VOLUMES_KEPT));
     }
@@ -143,7 +143,7 @@ pub fn disable(ctx: &Ctx, args: &ComponentsDisableArgs) -> Result<()> {
 
 /// What a disable of this deployment's own chap-core says about its volumes.
 pub(super) const CORE_VOLUMES_KEPT: &str = "kept the volumes of chap-core; to remove them, run \
-     `varde components enable chap-core`, then `varde down --volumes`, which removes every \
+     `chap-devops components enable chap-core`, then `chap-devops down --volumes`, which removes every \
      volume of this deployment";
 
 /// Why `components disable chap-core --purge` is refused.
@@ -153,8 +153,8 @@ pub(super) const CORE_VOLUMES_KEPT: &str = "kept the volumes of chap-core; to re
 /// there is no one volume `--purge` could mean. The compose command that
 /// removes them names the whole deployment's volumes and is the honest way to
 /// ask for that.
-const CORE_HAS_NO_VARDE_VOLUME: &str = "chap-core keeps no volume of its own that varde names, so --purge has nothing to remove; \
-     `varde down --volumes` removes every volume of this deployment";
+const CORE_HAS_NO_CHAP_DEVOPS_VOLUME: &str = "chap-core keeps no volume of its own that chap-devops names, so --purge has nothing to remove; \
+     `chap-devops down --volumes` removes every volume of this deployment";
 
 /// Whether a compose service belongs to a component, for the purpose of
 /// stopping its containers when that component is disabled.
@@ -183,11 +183,11 @@ pub fn disabled_between(before: &Components, after: &Components) -> Vec<Componen
 /// disk: a service whose definition has just been removed cannot be stopped by
 /// name any more, and one left running keeps its host port published long after
 /// the component was switched off. So every caller - `components disable`, the
-/// components page of `varde ui`, `init --force` - calls this before it removes
+/// components page of `chap-devops ui`, `init --force` - calls this before it removes
 /// or re-renders anything.
 ///
 /// Volumes are named, never removed: `--purge` is a `components disable` flag,
-/// and nothing else in varde deletes a deployment's data unasked. Best-effort
+/// and nothing else in chap-devops deletes a deployment's data unasked. Best-effort
 /// about docker like every other step that needs it, so no CLI, no daemon or a
 /// compose that refuses is a line in the report rather than a failure.
 pub fn stop_disabled_components(
@@ -210,7 +210,7 @@ pub fn stop_disabled_components(
 /// round trip and one line.
 ///
 /// Nothing at all for an empty list, so a caller with nothing going asks docker
-/// nothing - which is what keeps `varde init` over a fresh directory free of
+/// nothing - which is what keeps `chap-devops init` over a fresh directory free of
 /// docker.
 fn stop_components(project: &Project, going: &[Component]) -> Vec<String> {
     if going.is_empty() {
@@ -253,7 +253,10 @@ pub(super) fn kept_volume_notes(
         .map(|name| {
             crate::commands::docker::kept_volume_line(
                 name,
-                Some(&format!("varde components disable {}", component.name())),
+                Some(&format!(
+                    "chap-devops components disable {}",
+                    component.name()
+                )),
             )
         })
         .collect()

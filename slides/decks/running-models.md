@@ -1,9 +1,9 @@
 ---
 marp: true
-theme: varde
+theme: chap-devops
 paginate: true
-footer: varde - running models with varde run
-title: Running models with varde run
+footer: chap-devops - running models with chap-devops run
+title: Running models with chap-devops run
 description: Start a forecasting model with one command, with no deployment directory, and use its URL
 ---
 
@@ -13,23 +13,23 @@ description: Start a forecasting model with one command, with no deployment dire
 
 # Running models
 
-## `varde run`: one command starts a model and gives you its URL
+## `chap-devops run`: one command starts a model and gives you its URL
 
 No deployment directory, no compose file, no chap-core
 
 ---
 
-## Why `varde run`
+## Why `chap-devops run`
 
 A forecasting model is a service: a container with an HTTP API. Often you
 want only that service:
 
 - to call the model's API from a notebook or a script
-- to evaluate it with `varde chap eval`
+- to evaluate it with `chap-devops chap eval`
 - to try a model before you add it to a deployment
 - to run two or three models side by side and compare them
 
-`varde init` and `varde up` make a full deployment. `varde run` makes nothing
+`chap-devops init` and `chap-devops up` make a full deployment. `chap-devops run` makes nothing
 that you must keep.
 
 ---
@@ -37,15 +37,15 @@ that you must keep.
 ## The first model
 
 ```sh
-varde -v run chapkit_simple_multistep_model
+chap-devops -v run chapkit_simple_multistep_model
 ```
 
 ```text
 starting chapkit-simple-multistep-model
-  (chapkit_simple_multistep_model in /home/me/.local/share/varde/run/default)
+  (chapkit_simple_multistep_model in /home/me/.local/share/chap-devops/run/default)
 running chapkit_simple_multistep_model on http://localhost:5001 (answered in 4s)
-hint: `varde stop chapkit_simple_multistep_model` stops it
-hint: `varde -C /home/me/.local/share/varde/run/default
+hint: `chap-devops stop chapkit_simple_multistep_model` stops it
+hint: `chap-devops -C /home/me/.local/share/chap-devops/run/default
   logs chapkit-simple-multistep-model` shows its log
 ```
 
@@ -56,17 +56,17 @@ hint: `varde -C /home/me/.local/share/varde/run/default
 
 ## In the foreground: `-a`
 
-`-a` (also `--attach` or `--foreground`, as on `varde up`) stays in the
+`-a` (also `--attach` or `--foreground`, as on `chap-devops up`) stays in the
 foreground with the model's log. Ctrl-C stops the model:
 
 ```text
 following the log of chapkit-simple-multistep-model; Ctrl-C stops it
 ...
 stopped chapkit_simple_multistep_model; its data stays,
-  and `varde run chapkit_simple_multistep_model` starts it again with it
+  and `chap-devops run chapkit_simple_multistep_model` starts it again with it
 ```
 
-- The model goes out of its group, as with `varde stop`. Its data stays.
+- The model goes out of its group, as with `chap-devops stop`. Its data stays.
 - `--rm`: Ctrl-C removes the data volume too.
 - A model that ran before the command keeps running. Ctrl-C stops only the log.
 
@@ -78,7 +78,7 @@ Ctrl-C during the pull or the wait takes back out what the start put in:
 
 ```text
 error: stopped by Ctrl-C; chapkit_simple_multistep_model is taken back out of
-  /home/me/.local/share/varde/run/default
+  /home/me/.local/share/chap-devops/run/default
 ```
 
 - The model that this run enabled goes back out of the group, as after a
@@ -89,7 +89,7 @@ error: stopped by Ctrl-C; chapkit_simple_multistep_model is taken back out of
 
 ## What the model can be
 
-| `MODEL` | What `varde run` does |
+| `MODEL` | What `chap-devops run` does |
 | --- | --- |
 | a marketplace id: `chapkit_simple_multistep_model` | enables it at the catalogue's stable version |
 | a GitHub repository the marketplace lists | the same: the catalogue's reviewed pin |
@@ -104,26 +104,26 @@ A word with no `:`, `/` or `@` is a marketplace id, never a local image.
 ## Four ways to start a model
 
 ```sh
-varde run chapkit_simple_multistep_model
-varde run https://github.com/chap-models/chapkit_ghr_model
-varde run ghcr.io/my-org/chapkit_dengue_model:sha-1eb8cf1
-varde run my-dengue-model:dev
+chap-devops run chapkit_simple_multistep_model
+chap-devops run https://github.com/chap-models/chapkit_ghr_model
+chap-devops run ghcr.io/my-org/chapkit_dengue_model:sha-1eb8cf1
+chap-devops run my-dengue-model:dev
 ```
 
 - A first run downloads the model's image: 1 GB for a Python model, 6 to 7 GB
   for an R model.
-- A second `varde run` of the same model starts it as it is. It does not move
+- A second `chap-devops run` of the same model starts it as it is. It does not move
   its version or its port.
 
 ---
 
-## An MLproject directory: `varde chapkit mlproject run`
+## An MLproject directory: `chap-devops chapkit mlproject run`
 
 A model in the MLproject format is a directory, not an image. Serve it with
 no build:
 
 ```sh
-varde chapkit mlproject run rain-model
+chap-devops chapkit mlproject run rain-model
 ```
 
 ```text
@@ -140,11 +140,11 @@ the MLproject service answers at http://localhost:5001
 
 ## Where the model runs: groups
 
-Outside a deployment, `varde run` keeps its models in a **group**:
+Outside a deployment, `chap-devops run` keeps its models in a **group**:
 
-- a deployment that varde owns, in `~/.local/share/varde/run/<group>/`
+- a deployment that chap-devops owns, in `~/.local/share/chap-devops/run/<group>/`
 - with no chap-core and no component: only model services
-- the first `varde run` into a group creates it
+- the first `chap-devops run` into a group creates it
 - `--group NAME` selects a group; the default group is `default`
 
 Each group is a compose project of its own. Its containers, volumes and
@@ -155,10 +155,10 @@ network carry its name, so a stop in one group touches nothing else.
 ## Two groups side by side
 
 ```sh
-varde run chapkit_simple_multistep_model   # group default
-varde run auto_arima_chapkit --group trial
-varde run chapkit_ghr_model --group trial
-varde ps
+chap-devops run chapkit_simple_multistep_model   # group default
+chap-devops run auto_arima_chapkit --group trial
+chap-devops run chapkit_ghr_model --group trial
+chap-devops ps
 ```
 
 ```text
@@ -166,7 +166,7 @@ GROUP    ID                              SERVICE                         STATE  
 default  chapkit_simple_multistep_model  chapkit-simple-multistep-model  up           http://localhost:5001
 trial    auto_arima_chapkit              auto-arima-chapkit              up           http://localhost:5002
 trial    chapkit_ghr_model               chapkit-ghr-model               not running  http://localhost:5003
-hint: groups live in /home/me/.local/share/varde/run
+hint: groups live in /home/me/.local/share/chap-devops/run
 ```
 
 ---
@@ -179,7 +179,7 @@ hint: groups live in /home/me/.local/share/varde/run
 - `--port 5050` asks for one port. A port that is in use is refused, with
   the fix.
 
-Two `varde run` commands at the same time wait for each other, and get
+Two `chap-devops run` commands at the same time wait for each other, and get
 different ports.
 
 ---
@@ -187,12 +187,12 @@ different ports.
 ## Only this machine
 
 - A group publishes every model port on **127.0.0.1**.
-- So a model that `varde run` started is reachable from this machine, not
+- So a model that `chap-devops run` started is reachable from this machine, not
   from the network. A model has no login.
 - `--bind 0.0.0.0` publishes one model on every address of the machine.
 
 ```sh
-varde run chapkit_simple_multistep_model --bind 0.0.0.0
+chap-devops run chapkit_simple_multistep_model --bind 0.0.0.0
 ```
 
 Do that only on a network that you trust.
@@ -201,7 +201,7 @@ Do that only on a network that you trust.
 
 ## The states of a model
 
-`varde ps` gives each model the state that `varde status` gives:
+`chap-devops ps` gives each model the state that `chap-devops status` gives:
 
 | State | What it means |
 | --- | --- |
@@ -209,46 +209,46 @@ Do that only on a network that you trust.
 | `running, not answering` | the container runs, and `/health` does not answer yet, or never will |
 | `not running` | the container is gone |
 
-`varde ps --group trial` lists one group.
+`chap-devops ps --group trial` lists one group.
 
 ---
 
 ## Waiting, and when a start fails
 
-- `varde run` waits up to **300 seconds** for the model to answer.
+- `chap-devops run` waits up to **300 seconds** for the model to answer.
   `--timeout SECONDS` changes that. A first R model can take some minutes.
 - `--no-wait` returns as soon as the container started.
-- When the container does not start, varde says what compose said:
+- When the container does not start, chap-devops says what compose said:
 
 ```text
 error: chapkit-simple-multistep-model did not start (Error response from daemon:
   pull access denied ...); fix that, then
-  `varde run chapkit_simple_multistep_model` tries again
+  `chap-devops run chapkit_simple_multistep_model` tries again
 ```
 
-- varde then takes the model out again, so `varde ps` does not list it.
+- chap-devops then takes the model out again, so `chap-devops ps` does not list it.
 
 ---
 
 ## Stopping
 
 ```sh
-varde stop chapkit_simple_multistep_model   # in whichever group has it
-varde stop --group trial                    # every model in one group
-varde stop --all                            # every model in every group
+chap-devops stop chapkit_simple_multistep_model   # in whichever group has it
+chap-devops stop --group trial                    # every model in one group
+chap-devops stop --all                            # every model in every group
 ```
 
-- The model's data volume stays. `varde run ID` starts it again.
-- When two groups have the same model, `varde stop` asks for `--group`.
+- The model's data volume stays. `chap-devops run ID` starts it again.
+- When two groups have the same model, `chap-devops stop` asks for `--group`.
 
 ---
 
 ## Stopping, and removing the data
 
 ```sh
-varde stop chapkit_simple_multistep_model --purge
-varde stop --group trial --purge
-varde stop --all --purge
+chap-devops stop chapkit_simple_multistep_model --purge
+chap-devops stop --group trial --purge
+chap-devops stop --all --purge
 ```
 
 - `--purge` also removes the data volume.
@@ -264,7 +264,7 @@ varde stop --all --purge
 A group has no chap-core, so its models register nowhere. Give it yours:
 
 ```sh
-varde run -a --rm --chap-core http://localhost:8000 \
+chap-devops run -a --rm --chap-core http://localhost:8000 \
   https://github.com/chap-models/chapkit_ghr_model
 ```
 
@@ -274,19 +274,19 @@ registered with http://localhost:8000
 ```
 
 - Every model of the group registers there. `--group NAME` keeps them apart.
-- varde finds out whether chap-core is a container or a process, and where
+- chap-devops finds out whether chap-core is a container or a process, and where
   it must call the models back. `--models-host` sets it.
 
 ---
 
 ## A group is a deployment
 
-Every other varde command works on a group with `-C`:
+Every other chap-devops command works on a group with `-C`:
 
 ```sh
-varde -C ~/.local/share/varde/run/default logs chapkit-simple-multistep-model
-varde -C ~/.local/share/varde/run/default status
-varde -C ~/.local/share/varde/run/default models test chapkit_simple_multistep_model
+chap-devops -C ~/.local/share/chap-devops/run/default logs chapkit-simple-multistep-model
+chap-devops -C ~/.local/share/chap-devops/run/default status
+chap-devops -C ~/.local/share/chap-devops/run/default models test chapkit_simple_multistep_model
 ```
 
 The messages from a group name their commands in that way, so you can copy
@@ -296,22 +296,22 @@ them.
 
 ## In a deployment of your own
 
-- In a deployment directory (or with `-C DIR`), `varde run`, `varde ps` and
-  `varde stop` work on that deployment.
+- In a deployment directory (or with `-C DIR`), `chap-devops run`, `chap-devops ps` and
+  `chap-devops stop` work on that deployment.
 - `--group` is then refused: the deployment is the group.
-- `varde run` publishes the model as the deployment does.
-- With chap-core in the deployment, `varde models configs` lists what
+- `chap-devops run` publishes the model as the deployment does.
+- With chap-core in the deployment, `chap-devops models configs` lists what
   chap-core can run.
 
 So a tool that only wants "start this model and give me its URL" has one
-code path, with or without `varde init`.
+code path, with or without `chap-devops init`.
 
 ---
 
-## Watching everything: `varde top`
+## Watching everything: `chap-devops top`
 
 ```text
- varde top   3 deployments  7/9 running  at 14:02:41 (every 2s)
+ chap-devops top   3 deployments  7/9 running  at 14:02:41 (every 2s)
 │▾ mychap  init                     5/6 running
 │  ├─ chap                          running (healthy)   1.20%   612MiB / 15.6GiB
 │  └─ auto-arima-chapkit            exited
@@ -328,11 +328,11 @@ Every deployment and every group on the machine, live. `l` shows a log, and
 
 ## Evaluate a model that runs
 
-A model that `varde run` started is on its group's network. `varde chap` joins
+A model that `chap-devops run` started is on its group's network. `chap-devops chap` joins
 that network:
 
 ```sh
-varde chap eval --model-name auto_arima_chapkit \
+chap-devops chap eval --model-name auto_arima_chapkit \
   --dataset-csv laos_subset.csv --output-file arima.nc
 ```
 
@@ -342,17 +342,17 @@ varde chap eval --model-name auto_arima_chapkit \
 
 ---
 
-## Or let `varde chap` start it
+## Or let `chap-devops chap` start it
 
-Give `varde chap` a marketplace id of a model that does not run. varde
-starts it in a group, as `varde run` does:
+Give `chap-devops chap` a marketplace id of a model that does not run. chap-devops
+starts it in a group, as `chap-devops run` does:
 
 ```text
-starting auto-arima-chapkit (auto_arima_chapkit in /home/me/.local/share/varde/run/default)
+starting auto-arima-chapkit (auto_arima_chapkit in /home/me/.local/share/chap-devops/run/default)
 running `chap eval` in ghcr.io/dhis2-chap/chap-core:v2.5.0
 model: auto_arima_chapkit at http://auto-arima-chapkit:8000 answers
 chap finished; it wrote arima.nc
-auto_arima_chapkit keeps running for the next run; `varde stop auto_arima_chapkit`
+auto_arima_chapkit keeps running for the next run; `chap-devops stop auto_arima_chapkit`
 stops it, and `--stop` stops it after a run
 ```
 
@@ -360,7 +360,7 @@ stops it, and `--stop` stops it after a run
 
 ## Call the model's API yourself
 
-The URL from `varde run` is the model's own API:
+The URL from `chap-devops run` is the model's own API:
 
 ```sh
 curl -s http://localhost:5001/health
@@ -377,7 +377,7 @@ curl -s http://localhost:5001/api/v1/info
 ## For tools: `--json`
 
 ```sh
-varde --json run chapkit_simple_multistep_model
+chap-devops --json run chapkit_simple_multistep_model
 ```
 
 ```json
@@ -389,7 +389,7 @@ varde --json run chapkit_simple_multistep_model
   "messages": [...],
   "ok": true,
   "port": 5001,
-  "project_dir": "/home/me/.local/share/varde/run/default",
+  "project_dir": "/home/me/.local/share/chap-devops/run/default",
   "service_id": "chapkit-simple-multistep-model",
   "url": "http://localhost:5001",
   "wait": {"ready": true, "waited_s": 4, "models": [...]}
@@ -400,9 +400,9 @@ varde --json run chapkit_simple_multistep_model
 
 ## `--json` for `ps` and `stop`
 
-- `varde ps --json`: `{"models": [...]}`, with the same fields for each model,
+- `chap-devops ps --json`: `{"models": [...]}`, with the same fields for each model,
   plus `state`.
-- `varde stop --json`: the models it `stopped`, the groups it `removed`, and
+- `chap-devops stop --json`: the models it `stopped`, the groups it `removed`, and
   the volumes that went with them, `removed_volumes`.
 - A failure: `{"ok": false, "error": ..., "hint": ...}`.
 - docker's own progress, such as a pull, goes to stderr. stdout is the one
@@ -413,16 +413,16 @@ varde --json run chapkit_simple_multistep_model
 ## Where the files are
 
 ```text
-~/.local/share/varde/
+~/.local/share/chap-devops/
   run/
-    default/          the default group: a varde deployment
-      .varde/         its state: project.yaml, models.yaml
-      compose.*.yml   its compose files, rendered by varde
+    default/          the default group: a chap-devops deployment
+      .chap-devops/         its state: project.yaml, models.yaml
+      compose.*.yml   its compose files, rendered by chap-devops
     trial/            the group `trial`
-  chap/               the caches of `varde chap`
+  chap/               the caches of `chap-devops chap`
 ```
 
-`$VARDE_DATA_DIR`, else `$XDG_DATA_HOME/varde`, else `~/.local/share/varde`.
+`$CHAP_DEVOPS_DATA_DIR`, else `$XDG_DATA_HOME/chap-devops`, else `~/.local/share/chap-devops`.
 
 ---
 
@@ -430,14 +430,14 @@ varde --json run chapkit_simple_multistep_model
 
 | You want | Command |
 | --- | --- |
-| a model and its URL | `varde run ID` |
-| a model in the foreground, with its log | `varde run ID -a` |
-| the models that run, or a live view | `varde ps`, or `varde top` |
-| its log | `varde -C ~/.local/share/varde/run/default logs SERVICE` |
-| to evaluate it | `varde chap eval --model-name ID ...` |
-| an MLproject directory as a service | `varde chapkit mlproject run DIR` |
-| to register it with your chap-core | `varde run ID --chap-core URL` |
-| to stop it | `varde stop ID`, or Ctrl-C with `-a` |
-| to remove it and its data | `varde stop ID --purge` |
+| a model and its URL | `chap-devops run ID` |
+| a model in the foreground, with its log | `chap-devops run ID -a` |
+| the models that run, or a live view | `chap-devops ps`, or `chap-devops top` |
+| its log | `chap-devops -C ~/.local/share/chap-devops/run/default logs SERVICE` |
+| to evaluate it | `chap-devops chap eval --model-name ID ...` |
+| an MLproject directory as a service | `chap-devops chapkit mlproject run DIR` |
+| to register it with your chap-core | `chap-devops run ID --chap-core URL` |
+| to stop it | `chap-devops stop ID`, or Ctrl-C with `-a` |
+| to remove it and its data | `chap-devops stop ID --purge` |
 
-The chapter: **https://winterop-com.github.io/varde/run.html**
+The chapter: **https://winterop-com.github.io/chap-devops/run.html**

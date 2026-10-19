@@ -42,7 +42,7 @@ use std::path::PathBuf;
 /// this deployment defines itself.
 ///
 /// Every command that resolves a model goes through here rather than through
-/// [`crate::registry::load`], which is what lets `varde models add` be a
+/// [`crate::registry::load`], which is what lets `chap-devops models add` be a
 /// change to one file and nothing else. `project` is `None` for a command
 /// that ran outside a deployment, where there are no local definitions to
 /// add.
@@ -52,7 +52,7 @@ pub fn registry_for(ctx: &Ctx, project: Option<&Project>) -> Result<Registry> {
     Ok(registry)
 }
 
-/// [`registry_for`] with the network refresh `varde update` needs: no
+/// [`registry_for`] with the network refresh `chap-devops update` needs: no
 /// fallback to a cached catalogue, because an update from a stale one is not
 /// an update.
 pub fn refreshed_registry_for(ctx: &Ctx, project: Option<&Project>) -> Result<Registry> {
@@ -122,7 +122,7 @@ impl Ctx {
             project.dir.display(),
             project
                 .dir
-                .join(crate::project::VARDE_DIR)
+                .join(crate::project::CHAP_DEVOPS_DIR)
                 .join(crate::project::PROJECT_FILE)
                 .display()
         ));

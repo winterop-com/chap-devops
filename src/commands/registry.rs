@@ -1,4 +1,4 @@
-//! `varde registry update|show`.
+//! `chap-devops registry update|show`.
 
 use crate::cli::RegistryCmd;
 use crate::commands::Ctx;
@@ -87,11 +87,11 @@ fn shown(report: &RegistryReport, lines: &mut output::Report) {
     match report.models {
         0 => lines.info(format!(
             "the catalogue ({source}) holds no models; \
-             run `varde registry update` to fetch it again"
+             run `chap-devops registry update` to fetch it again"
         )),
         count => lines
             .info(format!("{} in the catalogue ({source})", models(count)))
-            .hint("`varde models info ID` describes one"),
+            .hint("`chap-devops models info ID` describes one"),
     };
 }
 

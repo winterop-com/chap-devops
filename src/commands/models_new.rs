@@ -1,4 +1,4 @@
-//! `varde models new`: create a model project from a template.
+//! `chap-devops models new`: create a model project from a template.
 //!
 //! The project is a directory of its own, outside any deployment, so the
 //! command does not read `-C`. What the templates hold is in
@@ -64,11 +64,11 @@ pub fn run(ctx: &Ctx, args: &ModelsNewArgs) -> Result<()> {
         ));
         r.info(match args.template.is_mlproject() {
             true => format!(
-                "next: run `varde chapkit mlproject run {shown}` to serve it with no build, or \
+                "next: run `chap-devops chapkit mlproject run {shown}` to serve it with no build, or \
                  build the image as `{shown}/README.md` says"
             ),
             false => format!(
-                "next: build the image as `{shown}/README.md` says, then run `varde run {}:dev`",
+                "next: build the image as `{shown}/README.md` says, then run `chap-devops run {}:dev`",
                 report.names.service_id
             ),
         });

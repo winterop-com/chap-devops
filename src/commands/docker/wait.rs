@@ -1,4 +1,4 @@
-//! `varde up --wait`: hold the command until chap-core, every model and every
+//! `chap-devops up --wait`: hold the command until chap-core, every model and every
 //! component with a health check answer.
 
 use crate::commands::Ctx;
@@ -37,7 +37,7 @@ pub struct Readiness {
 pub struct ComponentReadiness {
     /// The component name, which is also its compose service.
     pub name: String,
-    /// The `varde status` STATE word.
+    /// The `chap-devops status` STATE word.
     pub state: &'static str,
     pub ready: bool,
     /// Where it answers from this machine.
@@ -65,7 +65,7 @@ pub struct ModelReadiness {
     /// Marketplace id.
     pub id: String,
     pub service_id: String,
-    /// The `varde status` STATE word.
+    /// The `chap-devops status` STATE word.
     pub state: &'static str,
     pub ready: bool,
     /// Where the model answers from this machine.
@@ -172,7 +172,7 @@ fn readiness_of(
 }
 
 /// Show the models the configure step just gave configured models to as
-/// registered, which is what `varde status` now says of them.
+/// registered, which is what `chap-devops status` now says of them.
 pub fn mark_configured(readiness: &mut Readiness, outcomes: &[crate::configs::sync::ModelOutcome]) {
     for model in readiness.models.iter_mut() {
         let created = outcomes.iter().any(|outcome| {

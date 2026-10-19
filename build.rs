@@ -12,14 +12,14 @@
 //!    `tests/fixtures/marketplace/`, the frozen copy the unit tests read, so
 //!    a model the marketplace drops does not break a test.
 //! 2. `TARGET` is the triple this binary is being built for, which
-//!    `varde self update` needs to pick its release asset.
+//!    `chap-devops self update` needs to pick its release asset.
 //! 3. `GIT_REVISION` is the short commit of the checkout, empty when there is
-//!    no git or no repository, which `varde self version` reports.
-//! 4. `VARDE_BUILD_CHANNEL` is `stable` or `dev`, taken from the environment
-//!    variable of the same name, which `varde self version` reports and
-//!    `varde self update` uses to decide which release it follows.
-//! 5. `VARDE_RELEASE_BUILD` is `1` when the release workflow built this
-//!    binary and empty otherwise, which `varde self version` reports as
+//!    no git or no repository, which `chap-devops self version` reports.
+//! 4. `CHAP_DEVOPS_BUILD_CHANNEL` is `stable` or `dev`, taken from the environment
+//!    variable of the same name, which `chap-devops self version` reports and
+//!    `chap-devops self update` uses to decide which release it follows.
+//! 5. `CHAP_DEVOPS_RELEASE_BUILD` is `1` when the release workflow built this
+//!    binary and empty otherwise, which `chap-devops self version` reports as
 //!    `installed by`.
 
 use std::path::{Path, PathBuf};
@@ -31,9 +31,9 @@ const FIXTURE_DIR: &str = "tests/fixtures/marketplace";
 /// The index inside it, which names every model file to embed.
 const INDEX_FILE: &str = "registry.yaml";
 /// The environment variable the release workflow sets for a rolling build.
-const CHANNEL_ENV: &str = "VARDE_BUILD_CHANNEL";
+const CHANNEL_ENV: &str = "CHAP_DEVOPS_BUILD_CHANNEL";
 /// The environment variable the release workflow sets for every build.
-const RELEASE_ENV: &str = "VARDE_RELEASE_BUILD";
+const RELEASE_ENV: &str = "CHAP_DEVOPS_RELEASE_BUILD";
 
 fn main() {
     let root = PathBuf::from(std::env::var_os("CARGO_MANIFEST_DIR").expect("CARGO_MANIFEST_DIR"));
@@ -49,7 +49,7 @@ fn main() {
 
 /// Which release series this build follows.
 ///
-/// `VARDE_BUILD_CHANNEL=dev` is set by `.github/workflows/release.yml` for the
+/// `CHAP_DEVOPS_BUILD_CHANNEL=dev` is set by `.github/workflows/release.yml` for the
 /// rolling build of `main`, which is published as the `dev` pre-release and
 /// carries the same Cargo version as the last tag. Everything else, a local
 /// build included, is `stable`. Only the one spelling is honoured, so nothing
@@ -65,9 +65,9 @@ fn emit_build_channel() {
 
 /// Whether the release workflow built this binary.
 ///
-/// `.github/workflows/release.yml` sets `VARDE_RELEASE_BUILD=1` for every
+/// `.github/workflows/release.yml` sets `CHAP_DEVOPS_RELEASE_BUILD=1` for every
 /// archive it publishes. A local build, `cargo install` and `make install`
-/// included, does not, so `varde self version` does not claim a release
+/// included, does not, so `chap-devops self version` does not claim a release
 /// archive for them. Only the value `1` counts.
 fn emit_release_build() {
     println!("cargo:rerun-if-env-changed={RELEASE_ENV}");

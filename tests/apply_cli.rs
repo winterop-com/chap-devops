@@ -58,18 +58,18 @@ impl Sandbox {
         }
     }
 
-    /// The directory `varde init DIR` is pointed at.
+    /// The directory `chap-devops init DIR` is pointed at.
     fn project(&self) -> PathBuf {
         self.home.path().join("chapx")
     }
 
     fn chap(&self) -> Command {
-        let mut cmd = Command::cargo_bin("varde").expect("the varde binary is built");
-        cmd.env("VARDE_CACHE_DIR", self.cache.path())
+        let mut cmd = Command::cargo_bin("chap-devops").expect("the chap-devops binary is built");
+        cmd.env("CHAP_DEVOPS_CACHE_DIR", self.cache.path())
             // The data directory too: `init` records the deployment there, and
             // a test must not write the developer's own record.
-            .env("VARDE_DATA_DIR", self.cache.path().join("data"))
-            .env("VARDE_NO_DOCKER_PROBE", "1")
+            .env("CHAP_DEVOPS_DATA_DIR", self.cache.path().join("data"))
+            .env("CHAP_DEVOPS_NO_DOCKER_PROBE", "1")
             .env_remove("GITHUB_TOKEN")
             .env_remove("GH_TOKEN")
             .current_dir(self.home.path())
@@ -77,21 +77,21 @@ impl Sandbox {
         cmd
     }
 
-    /// `varde init <project> ...`, with the arguments appended.
+    /// `chap-devops init <project> ...`, with the arguments appended.
     fn init(&self, args: &[&str]) -> Command {
         let mut cmd = self.chap();
         cmd.arg("init").arg(self.project()).args(args);
         cmd
     }
 
-    /// `varde -C <project> models ...`.
+    /// `chap-devops -C <project> models ...`.
     fn models(&self, args: &[&str]) -> Command {
         let mut cmd = self.chap();
         cmd.arg("-C").arg(self.project()).arg("models").args(args);
         cmd
     }
 
-    /// `varde -C <project> components ...`.
+    /// `chap-devops -C <project> components ...`.
     fn components(&self, args: &[&str]) -> Command {
         let mut cmd = self.chap();
         cmd.arg("-C")
@@ -109,14 +109,14 @@ fn read(path: &Path) -> String {
 /// The compose project name `init` recorded, which is what docker prefixes
 /// every named volume of the deployment with.
 fn compose_project(dir: &Path) -> String {
-    read(&dir.join(".varde").join("project.yaml"))
+    read(&dir.join(".chap-devops").join("project.yaml"))
         .lines()
         .find_map(|line| line.strip_prefix("compose_project:"))
         .map(|value| value.trim().to_string())
         .expect("init records a compose project name")
 }
 
-/// `varde init --force` re-renders the whole deployment, which means deleting
+/// `chap-devops init --force` re-renders the whole deployment, which means deleting
 /// the overlays the previous one owned. A selection that was never going to
 /// apply must not take them with it: the directory is a running deployment,
 /// and a typo in `--models` is not a reason to take its model offline.
@@ -131,7 +131,7 @@ fn a_forced_init_that_cannot_apply_leaves_the_deployment_it_found_alone() {
 
     let overlay = dir.join("compose.chapkit-ewars-model.yml");
     let before = read(&overlay);
-    let state_before = read(&dir.join(".varde").join("models.yaml"));
+    let state_before = read(&dir.join(".chap-devops").join("models.yaml"));
     let umbrella_before = read(&dir.join("compose.marketplace.yml"));
 
     // A template is scaffolding to copy, not something to deploy.
@@ -147,7 +147,7 @@ fn a_forced_init_that_cannot_apply_leaves_the_deployment_it_found_alone() {
     );
     assert_eq!(read(&overlay), before, "the overlay was rewritten");
     assert_eq!(
-        read(&dir.join(".varde").join("models.yaml")),
+        read(&dir.join(".chap-devops").join("models.yaml")),
         state_before,
         "the model set changed"
     );
@@ -338,13 +338,13 @@ fn models_register_with_a_chap_core_elsewhere() {
         .assert()
         .failure()
         .stderr(predicates::str::contains(
-            "`varde components disable chap-core`",
+            "`chap-devops components disable chap-core`",
         ));
 }
 
 /// A DHIS2 in this deployment next to a chap-core elsewhere: its container
 /// maps the host gateway and its `dhis.conf` allows any http target, so the
-/// route `varde dhis2 connect` writes can reach it.
+/// route `chap-devops dhis2 connect` writes can reach it.
 #[test]
 fn a_dhis2_here_can_route_to_a_chap_core_elsewhere() {
     let sandbox = Sandbox::new();
@@ -411,7 +411,7 @@ fn disabling_chap_core_publishes_the_models_left_behind() {
 
 /// Disabling a model keeps its data, and the only thing that still knows
 /// where that data is is this line: the overlay that declared the volume has
-/// just been removed, so `varde down --volumes` no longer reaches it.
+/// just been removed, so `chap-devops down --volumes` no longer reaches it.
 #[test]
 fn disabling_a_model_names_the_data_volume_it_keeps() {
     let sandbox = Sandbox::new();
@@ -429,7 +429,7 @@ fn disabling_a_model_names_the_data_volume_it_keeps() {
         .success()
         .stdout(predicates::str::contains("kept volume").not());
 
-    // With the volume a `varde up` would have created, the service id is
+    // With the volume a `chap-devops up` would have created, the service id is
     // accepted, and the line is about the volume's real name and the
     // marketplace id that names it again.
     let Some(_created) = TestVolume::create(&volume) else {
@@ -444,7 +444,7 @@ fn disabling_a_model_names_the_data_volume_it_keeps() {
         .assert()
         .success()
         .stdout(predicates::str::contains(format!(
-            "kept volume {volume}; remove it with `varde models disable chapkit_ewars_model \
+            "kept volume {volume}; remove it with `chap-devops models disable chapkit_ewars_model \
              --purge` or `docker volume rm {volume}`"
         )));
 
@@ -471,7 +471,7 @@ fn disabling_a_model_names_the_data_volume_it_keeps() {
 }
 
 /// `--purge` on a deployment that was never started has nothing to remove,
-/// and says so rather than pretending: the volume is created by `varde up`,
+/// and says so rather than pretending: the volume is created by `chap-devops up`,
 /// not by enabling the model.
 ///
 /// It also has to work on a model that is no longer enabled, because that is
@@ -553,7 +553,7 @@ fn disabling_a_component_names_its_volume_and_chap_core_has_none_to_purge() {
             .success()
             .stdout(predicates::str::contains(format!(
                 "kept volume {project}_s3_data; remove it with \
-                 `varde components disable s3 --purge` or `docker volume rm {project}_s3_data`"
+                 `chap-devops components disable s3 --purge` or `docker volume rm {project}_s3_data`"
             )));
     }
 
@@ -587,9 +587,9 @@ fn disabling_a_component_names_its_volume_and_chap_core_has_none_to_purge() {
         .assert()
         .failure()
         .stderr(predicates::str::contains(
-            "chap-core keeps no volume of its own that varde names",
+            "chap-core keeps no volume of its own that chap-devops names",
         ))
-        .stderr(predicates::str::contains("varde down --volumes"));
+        .stderr(predicates::str::contains("chap-devops down --volumes"));
     // Refused before anything was written: chap-core is still on.
     assert!(dir.join("compose.yml").is_file());
 }

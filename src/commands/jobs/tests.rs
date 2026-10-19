@@ -53,7 +53,7 @@ fn the_table_is_followed_by_the_line_it_adds_up_to() {
     let text = said(|lines| say_list(&jobs, lines));
     assert_eq!(
         text,
-        "2 jobs: 1 done, 1 failed\nrun `varde jobs logs bbbbbbbb-2222` to see why\n"
+        "2 jobs: 1 done, 1 failed\nrun `chap-devops jobs logs bbbbbbbb-2222` to see why\n"
     );
 }
 
@@ -98,10 +98,10 @@ fn the_next_step_follows_the_status() {
     // Only a failure is a step to take now; the rest are hints.
     assert_eq!(
         step(&job, "FAILURE", None),
-        "run `varde jobs logs abc` to see why\n"
+        "run `chap-devops jobs logs abc` to see why\n"
     );
     assert!(step(&job, "STARTED", None).starts_with("hint: "));
-    assert!(step(&job, "STARTED", None).contains("varde jobs cancel abc"));
+    assert!(step(&job, "STARTED", None).contains("chap-devops jobs cancel abc"));
     assert!(step(&job, "REVOKED", None).contains("shows how far it got"));
     assert!(step(&job, "SUCCESS", Some(9)).contains("/v1/crud/backtests/9"));
     assert!(step(&job, "SUCCESS", None).contains("shows what it did"));

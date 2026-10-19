@@ -14,9 +14,9 @@ fn init_with_no_models_option_enables_no_model() {
         .assert()
         .success()
         .stdout(predicates::str::contains(
-            "no models are enabled; run `varde models enable ID` to add one",
+            "no models are enabled; run `chap-devops models enable ID` to add one",
         ));
-    let models = read(&sandbox.project().join(".varde/models.yaml"));
+    let models = read(&sandbox.project().join(".chap-devops/models.yaml"));
     assert!(!models.contains("chapkit_"), "{models}");
 }
 
@@ -31,23 +31,24 @@ fn init_writes_every_file_of_a_deployment() {
 
     for name in [
         "compose.yml",
-        "compose.varde.yml",
+        "compose.chap-devops.yml",
         ".env",
         "compose.marketplace.yml",
         "compose.chapkit-ewars-model.yml",
-        ".varde/project.yaml",
-        ".varde/models.yaml",
+        ".chap-devops/project.yaml",
+        ".chap-devops/models.yaml",
     ] {
         assert!(dir.join(name).is_file(), "{name} was not written");
     }
     assert!(
-        !dir.join("varde.json").exists(),
+        !dir.join("chap-devops.json").exists(),
         "the JSON state file is gone"
     );
     // Both state files open with the one line that says who manages them.
-    const MANAGED: &str = "# Managed by varde; change it with the varde commands, not by hand.\n";
-    assert!(read(&dir.join(".varde/project.yaml")).starts_with(MANAGED));
-    assert!(read(&dir.join(".varde/models.yaml")).starts_with(MANAGED));
+    const MANAGED: &str =
+        "# Managed by chap-devops; change it with the chap-devops commands, not by hand.\n";
+    assert!(read(&dir.join(".chap-devops/project.yaml")).starts_with(MANAGED));
+    assert!(read(&dir.join(".chap-devops/models.yaml")).starts_with(MANAGED));
 
     let state = state(&dir);
     assert_eq!(state["schema_version"], 1);
@@ -56,16 +57,16 @@ fn init_writes_every_file_of_a_deployment() {
         state["compose_files"],
         serde_json::json!([
             "compose.yml",
-            "compose.varde.yml",
+            "compose.chap-devops.yml",
             "compose.marketplace.yml"
         ]),
-        "the varde overrides need their own -f entry, after the base file"
+        "the chap-devops overrides need their own -f entry, after the base file"
     );
     assert_eq!(
         state["rendered_files"],
         serde_json::json!([
             "compose.yml",
-            "compose.varde.yml",
+            "compose.chap-devops.yml",
             "compose.chapkit-ewars-model.yml",
             "compose.marketplace.yml"
         ]),
@@ -99,11 +100,11 @@ fn init_writes_every_file_of_a_deployment() {
         "a model service publishes nothing by default"
     );
 
-    // chap's port is the only published one, and it comes from a varde-owned
+    // chap's port is the only published one, and it comes from a chap-devops-owned
     // override rather than an edit of the upstream base file.
-    let varde_overlay = read(&dir.join("compose.varde.yml"));
-    assert!(varde_overlay.contains("ports: !override"));
-    assert!(varde_overlay.contains("\"${CHAP_API_PORT:-8700}:8000\""));
+    let chap_devops_overlay = read(&dir.join("compose.chap-devops.yml"));
+    assert!(chap_devops_overlay.contains("ports: !override"));
+    assert!(chap_devops_overlay.contains("\"${CHAP_API_PORT:-8700}:8000\""));
 
     // The generated .env carries a fresh password and the model's pin.
     let env = read(&dir.join(".env"));
@@ -159,9 +160,9 @@ fn init_gives_the_deployment_a_compose_project_name_of_its_own() {
     assert!(shape.is_match(&name), "unexpected project name {name:?}");
     assert!(name.starts_with("chapx-"), "{name}");
 
-    // Both varde-owned files carry it: the umbrella is the one always in the
+    // Both chap-devops-owned files carry it: the umbrella is the one always in the
     // `-f` list, and compose takes the `name:` of the last file that sets one.
-    assert_eq!(compose_name(&dir.join("compose.varde.yml")), name);
+    assert_eq!(compose_name(&dir.join("compose.chap-devops.yml")), name);
     assert_eq!(compose_name(&dir.join("compose.marketplace.yml")), name);
 
     // A second deployment of the same directory name gets a different one.
@@ -174,7 +175,7 @@ fn init_gives_the_deployment_a_compose_project_name_of_its_own() {
     assert!(shape.is_match(&second), "{second}");
     assert_ne!(name, second, "two `chapx` directories, two project names");
 
-    // `varde status --json` and `varde doctor` both report it.
+    // `chap-devops status --json` and `chap-devops doctor` both report it.
     let out = sandbox
         .chap()
         .arg("-C")
@@ -219,11 +220,11 @@ fn force_keeps_the_compose_project_name_it_found() {
         .assert()
         .success();
     assert_eq!(state(&dir)["compose_project"].as_str(), Some(name.as_str()));
-    assert_eq!(compose_name(&dir.join("compose.varde.yml")), name);
+    assert_eq!(compose_name(&dir.join("compose.chap-devops.yml")), name);
 }
 
 #[test]
-fn docker_accepts_the_stack_with_the_varde_override() {
+fn docker_accepts_the_stack_with_the_chap_devops_override() {
     if !docker_ready() {
         return;
     }
@@ -237,7 +238,13 @@ fn docker_accepts_the_stack_with_the_varde_override() {
     // `!override` needs Compose 2.24+; this is what says the rendered stack is
     // a document the installed Docker actually accepts.
     let out = std::process::Command::new("docker")
-        .args(["compose", "-f", "compose.yml", "-f", "compose.varde.yml"])
+        .args([
+            "compose",
+            "-f",
+            "compose.yml",
+            "-f",
+            "compose.chap-devops.yml",
+        ])
         .args(["-f", "compose.marketplace.yml", "config"])
         .current_dir(&dir)
         .output()
@@ -337,7 +344,7 @@ fn enabling_a_second_model_publishes_nothing_and_sorts_the_umbrella() {
         .models(&["enable", "auto_arima_chapkit"])
         .assert()
         .success()
-        .stdout(predicates::str::contains("varde up"))
+        .stdout(predicates::str::contains("chap-devops up"))
         // The proxy URL is how a model with no host port is reached.
         .stdout(predicates::str::contains(
             "http://localhost:8700/v2/services/auto-arima-chapkit/run/",
@@ -531,7 +538,7 @@ fn fresh_env_rewrites_the_env_file_and_warns() {
         .assert()
         .success()
         .stderr(predicates::str::contains("POSTGRES_PASSWORD"))
-        .stderr(predicates::str::contains("varde down --volumes"))
+        .stderr(predicates::str::contains("chap-devops down --volumes"))
         .get_output()
         .stdout
         .clone();
@@ -588,9 +595,9 @@ fn the_chap_tag_reaches_the_env_file_and_the_state() {
     assert!(!env.contains("# CHAP_IMAGE_TAG"));
     // The base file still reads the variable with `latest` as its default.
     assert!(read(&dir.join("compose.yml")).contains("${CHAP_IMAGE_TAG:-latest}"));
-    // Nothing was cached, so nothing but the three state files is in .varde/
+    // Nothing was cached, so nothing but the three state files is in .chap-devops/
     // - and the lock every command that writes them takes.
-    let mut names: Vec<String> = std::fs::read_dir(dir.join(".varde"))
+    let mut names: Vec<String> = std::fs::read_dir(dir.join(".chap-devops"))
         .unwrap()
         .map(|e| e.unwrap().file_name().to_string_lossy().into_owned())
         .filter(|name| name != "lock")
@@ -639,7 +646,7 @@ fn init_reuses_a_cached_compose_file_and_sync_renders_from_it() {
 
     // Seed the cache the way an online `init --chap-tag v9.9.9` would have,
     // then re-init at that tag: offline, the copy on disk is used.
-    let cached = dir.join(".varde/compose.chap-core.v9.9.9.yml");
+    let cached = dir.join(".chap-devops/compose.chap-core.v9.9.9.yml");
     let body = "services:\n  chap:\n    image: ghcr.io/x/chap-core:${CHAP_IMAGE_TAG:-latest}\n";
     std::fs::write(&cached, body).unwrap();
     sandbox
@@ -671,7 +678,7 @@ fn init_reuses_a_cached_compose_file_and_sync_renders_from_it() {
     // compose.yml is the cached body behind two header lines.
     let base = read(&dir.join("compose.yml"));
     assert!(
-        base.starts_with("# Generated by varde from .varde/; edit there and run `varde sync`.\n"),
+        base.starts_with("# Generated by chap-devops from .chap-devops/; edit there and run `chap-devops sync`.\n"),
         "{base}"
     );
     assert!(base.contains("# chap-core compose.ghcr.yml at v9.9.9\n"));
@@ -704,7 +711,7 @@ fn sync_restores_a_hand_edited_compose_yml() {
         .assert()
         .failure()
         .stdout(predicates::str::contains("would write compose.yml\n"))
-        .stderr(predicates::str::contains("varde sync"));
+        .stderr(predicates::str::contains("chap-devops sync"));
     assert_eq!(read(&base), "services: {}\n", "--check writes nothing");
 
     let mut sync = sandbox.chap();
@@ -724,7 +731,7 @@ fn a_cached_compose_file_that_goes_missing_leaves_compose_yml_alone() {
     let sandbox = Sandbox::new();
     let dir = sandbox.project();
     sandbox.init(&["--models", "none"]).assert().success();
-    let cached = dir.join(".varde/compose.chap-core.v9.9.9.yml");
+    let cached = dir.join(".chap-devops/compose.chap-core.v9.9.9.yml");
     std::fs::write(
         &cached,
         "services:\n  chap:\n    image: x:${CHAP_IMAGE_TAG:-latest}\n",
@@ -743,7 +750,7 @@ fn a_cached_compose_file_that_goes_missing_leaves_compose_yml_alone() {
         .assert()
         .success()
         .stderr(predicates::str::contains(
-            "warning: .varde/compose.chap-core.v9.9.9.yml is missing",
+            "warning: .chap-devops/compose.chap-core.v9.9.9.yml is missing",
         ))
         .get_output()
         .stdout
@@ -802,7 +809,8 @@ fn the_api_port_reaches_the_env_file_the_state_and_status() {
     let env = read(&dir.join(".env"));
     assert!(env.contains(&format!("\nCHAP_API_PORT={port}\n")), "{env}");
     assert!(
-        read(&dir.join("compose.varde.yml")).contains(&format!("${{CHAP_API_PORT:-{port}}}:8000"))
+        read(&dir.join("compose.chap-devops.yml"))
+            .contains(&format!("${{CHAP_API_PORT:-{port}}}:8000"))
     );
 
     // `status --url` defaults to the port the project records. The API is not
@@ -853,7 +861,10 @@ fn a_kept_env_file_that_pins_another_api_port_is_reported() {
         )));
     // The recorded intent did move, and so did the rendered override.
     assert_eq!(state(&dir)["api_port"], moved);
-    assert!(read(&dir.join("compose.varde.yml")).contains(&format!("${{CHAP_API_PORT:-{moved}}}")));
+    assert!(
+        read(&dir.join("compose.chap-devops.yml"))
+            .contains(&format!("${{CHAP_API_PORT:-{moved}}}"))
+    );
     assert!(read(&dir.join(".env")).contains(&format!("\nCHAP_API_PORT={pinned}\n")));
 
     // Re-initialising at the port .env already holds says nothing.
@@ -915,9 +926,9 @@ fn init_warns_when_something_is_already_listening_on_the_api_port() {
     drop(listener);
 }
 
-/// The gap the live probe cannot see: `varde init a && varde init b` with
+/// The gap the live probe cannot see: `chap-devops init a && chap-devops init b` with
 /// nothing running gives two deployments on one port, and nothing says so
-/// until the second `varde up`.
+/// until the second `chap-devops up`.
 #[test]
 fn init_warns_when_a_deployment_beside_it_already_uses_the_port() {
     let sandbox = Sandbox::new();
@@ -1051,8 +1062,8 @@ fn commands_find_the_project_from_a_subdirectory() {
     chap_in(&sandbox, sandbox.home.path(), &["sync", "--check"])
         .assert()
         .failure()
-        .stderr(predicates::str::contains("not a varde deployment"))
-        .stderr(predicates::str::contains(".varde/project.yaml"));
+        .stderr(predicates::str::contains("not a chap-devops deployment"))
+        .stderr(predicates::str::contains(".chap-devops/project.yaml"));
 }
 
 #[test]
@@ -1086,7 +1097,7 @@ fn sync_check_is_clean_after_init_and_reports_drift_after_a_deletion() {
         .stdout(predicates::str::contains(
             "would write compose.chapkit-ewars-model.yml\n",
         ))
-        .stderr(predicates::str::contains("varde sync"));
+        .stderr(predicates::str::contains("chap-devops sync"));
     assert!(!overlay.exists(), "--check writes nothing");
 
     // --json exits non-zero too, with the report as the only stdout document.
@@ -1153,7 +1164,7 @@ fn sync_never_removes_a_hand_written_overlay() {
     assert!(custom.is_file());
 
     // A hand edit of models.yaml is picked up by sync the same way.
-    let models = dir.join(".varde/models.yaml");
+    let models = dir.join(".chap-devops/models.yaml");
     std::fs::write(&models, "# emptied by hand\n").unwrap();
     let mut sync = sandbox.chap();
     sync.arg("-C").arg(&dir).args(["-v", "sync"]);
@@ -1172,7 +1183,7 @@ fn restart_outside_a_project_says_so() {
     chap_in(&sandbox, sandbox.home.path(), &["restart"])
         .assert()
         .failure()
-        .stderr(predicates::str::contains("not a varde deployment"));
+        .stderr(predicates::str::contains("not a chap-devops deployment"));
 }
 
 #[test]
@@ -1210,7 +1221,7 @@ fn restart_on_a_deployment_that_was_never_started_says_to_start_it() {
     let sandbox = Sandbox::new();
     // Its own directory: compose names the project after it, and this asks
     // docker about that name.
-    let dir = sandbox.home.path().join("varde-never-restarted");
+    let dir = sandbox.home.path().join("chap-devops-never-restarted");
     let mut init = sandbox.chap();
     init.arg("init").arg(&dir).args(["--models", "none"]);
     init.assert().success();
@@ -1219,7 +1230,7 @@ fn restart_on_a_deployment_that_was_never_started_says_to_start_it() {
         .assert()
         .failure()
         .stdout(predicates::str::contains(
-            "Chap is not running; start it with `varde up`",
+            "Chap is not running; start it with `chap-devops up`",
         ));
 
     // And the same before it has any opinion about the service names it was
@@ -1267,7 +1278,7 @@ fn the_help_lists_only_the_commands_that_can_work_here() {
     assert!(
         outside
             .trim_end()
-            .ends_with("Docs: https://winterop-com.github.io/varde/"),
+            .ends_with("Docs: https://winterop-com.github.io/chap-devops/"),
         "{outside}"
     );
 
@@ -1298,7 +1309,7 @@ fn the_help_lists_only_the_commands_that_can_work_here() {
     assert!(
         inside
             .trim_end()
-            .ends_with("Docs: https://winterop-com.github.io/varde/"),
+            .ends_with("Docs: https://winterop-com.github.io/chap-devops/"),
         "{inside}"
     );
 
@@ -1316,7 +1327,7 @@ fn the_help_lists_only_the_commands_that_can_work_here() {
     chap_in(&sandbox, sandbox.home.path(), &["docker", "ps"])
         .assert()
         .failure()
-        .stderr(predicates::str::contains("not a varde deployment"));
+        .stderr(predicates::str::contains("not a chap-devops deployment"));
 }
 
 /// A deployment with nothing in it: `up` says so and names the ways to add
@@ -1330,8 +1341,10 @@ fn up_with_nothing_in_the_deployment_says_what_to_add() {
         .assert()
         .success()
         .stdout(predicates::str::contains("nothing to start"))
-        .stdout(predicates::str::contains("`varde models add URL`"))
-        .stdout(predicates::str::contains("`varde components enable NAME`"))
+        .stdout(predicates::str::contains("`chap-devops models add URL`"))
+        .stdout(predicates::str::contains(
+            "`chap-devops components enable NAME`",
+        ))
         .stderr(predicates::str::contains("no service selected").not());
 }
 
@@ -1345,7 +1358,7 @@ fn init_of_an_empty_deployment_names_adding_a_model_next() {
         .assert()
         .success()
         .stdout(predicates::str::contains(
-            "&& varde models add URL` to add a model\n",
+            "&& chap-devops models add URL` to add a model\n",
         ));
     let other = Sandbox::new();
     other
@@ -1353,7 +1366,7 @@ fn init_of_an_empty_deployment_names_adding_a_model_next() {
         .assert()
         .success()
         .stdout(predicates::str::contains(
-            "&& varde up` to start the deployment\n",
+            "&& chap-devops up` to start the deployment\n",
         ));
 }
 
@@ -1370,7 +1383,7 @@ fn init_force_over_broken_state_keeps_the_compose_project_name() {
     let dir = sandbox.project();
     let before = state(&dir)["compose_project"].as_str().unwrap().to_string();
     std::fs::write(
-        dir.join(".varde").join("components.yaml"),
+        dir.join(".chap-devops").join("components.yaml"),
         "chap_core: [oops",
     )
     .unwrap();
@@ -1392,7 +1405,7 @@ fn init_force_refuses_when_the_compose_project_name_cannot_be_read() {
         .assert()
         .success();
     let dir = sandbox.project();
-    let project = dir.join(".varde").join("project.yaml");
+    let project = dir.join(".chap-devops").join("project.yaml");
     std::fs::write(&project, "compose_project: [oops").unwrap();
 
     sandbox
@@ -1495,7 +1508,7 @@ fn init_reads_the_dump_version_only_from_the_deployment_directory() {
         .stderr(predicates::str::contains("is DHIS2 2.43").not())
         .stderr(predicates::str::contains("laos.sql.gz is not in "))
         .stderr(predicates::str::contains(
-            "so varde did not read its DHIS2 version, and DHIS2 runs 2.42",
+            "so chap-devops did not read its DHIS2 version, and DHIS2 runs 2.42",
         ));
 
     let sandbox = Sandbox::new();

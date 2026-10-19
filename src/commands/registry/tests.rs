@@ -85,7 +85,7 @@ fn show_ends_on_the_catalogue_and_hints_the_next_command() {
         lines.text(),
         format!(
             "{} models in the catalogue (embedded)\n\
-             hint: `varde models info ID` describes one\n",
+             hint: `chap-devops models info ID` describes one\n",
             registry.models.len()
         )
     );
@@ -94,7 +94,7 @@ fn show_ends_on_the_catalogue_and_hints_the_next_command() {
     let mut lines = output::Report::default();
     shown(&report, &mut lines);
     assert!(
-        lines.text().contains("run `varde registry update`"),
+        lines.text().contains("run `chap-devops registry update`"),
         "an empty catalogue names the way out at info level"
     );
 }

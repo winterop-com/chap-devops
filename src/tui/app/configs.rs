@@ -12,7 +12,7 @@ use crate::tui::form::{self, Event, Form, draft_of, form_for, form_for_update};
 
 /// The footer note for `m` on a model this deployment does not run.
 pub const CONFIGS_NEED_ENABLED: &str =
-    "enable the model, save with s and start it with `varde up`; then press m";
+    "enable the model, save with s and start it with `chap-devops up`; then press m";
 
 /// The footer note for `m` in a deployment without chap-core.
 pub const CONFIGS_NEED_CHAP_CORE: &str =
@@ -171,7 +171,7 @@ impl App<'_> {
                 }
                 (Load::Ready { .. }, None) => {
                     self.message = Some(format!(
-                        "chap-core has no template of {} yet; when `varde status` shows it \
+                        "chap-core has no template of {} yet; when `chap-devops status` shows it \
                          registered, press r",
                         view.model
                     ));
@@ -189,7 +189,7 @@ impl App<'_> {
                 }
                 (None, Some(_)) => {
                     self.message = Some(format!(
-                        "chap-core has no template of {} yet; when `varde status` shows it \
+                        "chap-core has no template of {} yet; when `chap-devops status` shows it \
                          registered, press r",
                         view.model
                     ));

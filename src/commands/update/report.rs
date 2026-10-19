@@ -74,7 +74,7 @@ pub fn closing(
                 "{head}; restart needed: {}",
                 restart_needed.join(", ")
             ))
-            .info("run `varde restart` to apply");
+            .info("run `chap-devops restart` to apply");
         return;
     }
     lines.info(head);
@@ -82,10 +82,10 @@ pub fn closing(
         return;
     }
     match running {
-        Some(false) => lines.hint("Chap is not running; `varde up` starts the new versions"),
+        Some(false) => lines.hint("Chap is not running; `chap-devops up` starts the new versions"),
         Some(true) => lines.hint("nothing running needs a restart"),
         // Docker would not say what is running, so neither will we.
-        None => lines.info("run `varde restart` to apply it to what is running"),
+        None => lines.info("run `chap-devops restart` to apply it to what is running"),
     };
 }
 
@@ -98,7 +98,7 @@ pub fn dry_run(lines: &mut Report, what: Option<&str>) {
     match what {
         Some(what) => lines
             .info(format!("would update {what}"))
-            .hint("`varde update` does it"),
+            .hint("`chap-devops update` does it"),
         None => lines.info("already up to date"),
     };
 }

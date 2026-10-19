@@ -11,7 +11,7 @@ fn models_new_writes_a_project_and_says_what_to_do_next() {
             "created dengue-lags in dengue-lags (fn-py template, service id dengue-lags)",
         ))
         .stdout(predicate::str::contains(
-            "next: build the image as `dengue-lags/README.md` says, then run `varde run dengue-lags:dev`",
+            "next: build the image as `dengue-lags/README.md` says, then run `chap-devops run dengue-lags:dev`",
         ))
         .stdout(predicate::str::contains("hint:").not());
     let dir = sandbox.home.path().join("dengue-lags");
@@ -64,7 +64,7 @@ fn models_new_json_names_the_files_and_the_ids() {
     assert!(!files.contains(&"main.py"));
     assert_eq!(
         report["messages"][1]["text"],
-        "next: run `varde chapkit mlproject run Rain Model` to serve it with no build, or build \
+        "next: run `chap-devops chapkit mlproject run Rain Model` to serve it with no build, or build \
          the image as `Rain Model/README.md` says"
     );
     let mlproject = yaml(&sandbox.home.path().join("Rain Model/MLproject"));

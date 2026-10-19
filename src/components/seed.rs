@@ -1,4 +1,4 @@
-//! The seed a `dhis2` component's database is restored from, and the dumps varde knows of.
+//! The seed a `dhis2` component's database is restored from, and the dumps chap-devops knows of.
 
 use super::*;
 
@@ -16,7 +16,7 @@ pub fn dhis2_minor(tag: &str) -> &str {
     }
 }
 
-/// The dump a pinned tag is seeded from, or `None` when varde knows of none for
+/// The dump a pinned tag is seeded from, or `None` when chap-devops knows of none for
 /// that minor line.
 pub fn dhis2_seed_dump(tag: &str) -> Option<&'static str> {
     let minor = dhis2_minor(tag);

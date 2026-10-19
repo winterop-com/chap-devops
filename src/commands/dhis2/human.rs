@@ -1,4 +1,4 @@
-//! The human rendering of every `varde dhis2` report.
+//! The human rendering of every `chap-devops dhis2` report.
 
 use super::*;
 use crate::commands::components::{Note, NoteLevel};
@@ -79,7 +79,7 @@ pub(super) fn use_summary(report: &UseReport, lines: &mut Report) {
         }
         (UseOutcome::Unchanged, None, _) => "no external DHIS2 is recorded".to_string(),
         (UseOutcome::Recorded, Some(external), _) => format!(
-            "recorded the external DHIS2 at {} in `.varde/components.yaml`",
+            "recorded the external DHIS2 at {} in `.chap-devops/components.yaml`",
             external.url
         ),
         (UseOutcome::Changed, Some(external), previous) => {
@@ -88,12 +88,12 @@ pub(super) fn use_summary(report: &UseReport, lines: &mut Report) {
                 .is_none_or(|previous| previous.url != external.url);
             match url_moved {
                 true => format!(
-                    "changed the external DHIS2 to {} in `.varde/components.yaml`",
+                    "changed the external DHIS2 to {} in `.chap-devops/components.yaml`",
                     external.url
                 ),
                 false => format!(
                     "changed the chap-url of the external DHIS2 at {} to {} in \
-                     `.varde/components.yaml`",
+                     `.chap-devops/components.yaml`",
                     external.url, external.chap_url
                 ),
             }
@@ -103,13 +103,15 @@ pub(super) fn use_summary(report: &UseReport, lines: &mut Report) {
         }
         (_, Some(external), _) => {
             format!(
-                "`varde dhis2` talks to the external DHIS2 at {}",
+                "`chap-devops dhis2` talks to the external DHIS2 at {}",
                 external.url
             )
         }
         (_, None, _) => match report.component {
-            true => "no external DHIS2 is recorded; `varde dhis2` talks to the `dhis2` component"
-                .to_string(),
+            true => {
+                "no external DHIS2 is recorded; `chap-devops dhis2` talks to the `dhis2` component"
+                    .to_string()
+            }
             false => "no external DHIS2 is recorded, and the `dhis2` component is off".to_string(),
         },
     };
@@ -181,25 +183,25 @@ pub(super) fn report_summary(report: &Dhis2Report, lines: &mut Report) {
 ///
 /// The caveat is said where the record is, because this is the one moment a
 /// reader could take it for a verdict. It is a note that this command ran;
-/// `varde dhis2 show` is what asks DHIS2.
+/// `chap-devops dhis2 show` is what asks DHIS2.
 pub(super) fn record_lines(record: ConnectRecord, lines: &mut Report) {
     match record {
         ConnectRecord::Unchanged => {}
         ConnectRecord::Recorded => {
             lines
                 .hint(
-                    "recorded the connect in `.varde/components.yaml`, so `varde up` and \
-                     `varde status` stop asking for it",
+                    "recorded the connect in `.chap-devops/components.yaml`, so `chap-devops up` and \
+                     `chap-devops status` stop asking for it",
                 )
                 .hint(
                     "the record says that this ran, not that the route is still right; \
-                     `varde dhis2 show` asks DHIS2",
+                     `chap-devops dhis2 show` asks DHIS2",
                 );
         }
         ConnectRecord::Cleared => {
             lines.hint(
-                "cleared the earlier `varde dhis2 connect` from `.varde/components.yaml`; \
-                 `varde up` and `varde status` ask for it again",
+                "cleared the earlier `chap-devops dhis2 connect` from `.chap-devops/components.yaml`; \
+                 `chap-devops up` and `chap-devops status` ask for it again",
             );
         }
     }
@@ -220,13 +222,13 @@ pub(super) fn route_lines(route: &RouteReport, lines: &mut Report) {
         lines.hint(format!("the route was rewritten because {reason}"));
     }
     // The route is correct whatever chap-core did, so a chap-core that is not
-    // answering is a warning rather than an error: it is `varde up`'s
+    // answering is a warning rather than an error: it is `chap-devops up`'s
     // problem, and `verified: false` says it to a script.
     match (route.verified, route.token_refused) {
         (true, _) => lines.hint(format!("chap-core said: {}", route.answered)),
         (false, true) => lines.warning(format!(
             "the `{code}` route carries this deployment's API token and chap-core refused it: \
-             {}; `varde auth show` says which token varde has, and chap-core has to be \
+             {}; `chap-devops auth show` says which token chap-devops has, and chap-core has to be \
              running with the same one",
             route.answered
         )),
@@ -363,11 +365,11 @@ fn app_cell(app: &ShownApp, out: &Out) -> String {
     }
 }
 
-/// The `analytics` row: what DHIS2 records, and what varde knows it is worth.
+/// The `analytics` row: what DHIS2 records, and what chap-devops knows it is worth.
 ///
 /// A timestamp on its own reads as "analytics is done", and on a seeded
 /// deployment it is not that at all - it is the dump's. So the row says which
-/// of the two it is, and never claims more than varde checked: a run that
+/// of the two it is, and never claims more than chap-devops checked: a run that
 /// finished is a run that finished, which is not the same as tables with rows
 /// in them. Nothing here can see a row count; `lastYears` is the reason that
 /// distinction is worth keeping, and `docs/dhis2.md` carries it.

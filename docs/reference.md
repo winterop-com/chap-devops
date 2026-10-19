@@ -3,18 +3,18 @@
 Generated from the `--help` texts by `make docs-reference`; edit
 `src/cli.rs` and run that target rather than editing this file.
 
-Every command accepts the options listed under [varde](#varde), `--json`
+Every command accepts the options listed under [chap-devops](#chap-devops), `--json`
 included. The registry options (`--registry-url`, `--offline`, `--cache-dir`)
 show only in the help of the commands that use them, and each such command
 names them below. Commands that need a deployment directory are hidden from
-`varde --help` outside one, but they are all listed here.
+`chap-devops --help` outside one, but they are all listed here.
 
-## varde
+## chap-devops
 
 deploy Chap (climate-informed disease forecasting) and its services.
 
 ```text
-Usage: varde [OPTIONS] <COMMAND>
+Usage: chap-devops [OPTIONS] <COMMAND>
 ```
 
 | Global option | Description |
@@ -28,14 +28,14 @@ Usage: varde [OPTIONS] <COMMAND>
 | `--offline` | Never touch the network; use what is cached or on this machine. |
 | `--cache-dir <DIR>` | Cache directory: the registry snapshot and the self-update downloads. |
 
-Subcommands: [`varde init`](#varde-init), [`varde components`](#varde-components), [`varde models`](#varde-models), [`varde registry`](#varde-registry), [`varde sync`](#varde-sync), [`varde update`](#varde-update), [`varde auth`](#varde-auth), [`varde dhis2`](#varde-dhis2), [`varde up`](#varde-up), [`varde down`](#varde-down), [`varde restart`](#varde-restart), [`varde status`](#varde-status), [`varde logs`](#varde-logs), [`varde open`](#varde-open), [`varde ui`](#varde-ui), [`varde run`](#varde-run), [`varde ps`](#varde-ps), [`varde stop`](#varde-stop), [`varde jobs`](#varde-jobs), [`varde api`](#varde-api), [`varde chap`](#varde-chap), [`varde chapkit`](#varde-chapkit), [`varde backup`](#varde-backup), [`varde doctor`](#varde-doctor), [`varde docker`](#varde-docker), [`varde top`](#varde-top), [`varde cleanup`](#varde-cleanup), [`varde self`](#varde-self), [`varde completions`](#varde-completions)
+Subcommands: [`chap-devops init`](#chap-devops-init), [`chap-devops components`](#chap-devops-components), [`chap-devops models`](#chap-devops-models), [`chap-devops registry`](#chap-devops-registry), [`chap-devops sync`](#chap-devops-sync), [`chap-devops update`](#chap-devops-update), [`chap-devops auth`](#chap-devops-auth), [`chap-devops dhis2`](#chap-devops-dhis2), [`chap-devops up`](#chap-devops-up), [`chap-devops down`](#chap-devops-down), [`chap-devops restart`](#chap-devops-restart), [`chap-devops status`](#chap-devops-status), [`chap-devops logs`](#chap-devops-logs), [`chap-devops open`](#chap-devops-open), [`chap-devops ui`](#chap-devops-ui), [`chap-devops run`](#chap-devops-run), [`chap-devops ps`](#chap-devops-ps), [`chap-devops stop`](#chap-devops-stop), [`chap-devops jobs`](#chap-devops-jobs), [`chap-devops api`](#chap-devops-api), [`chap-devops chap`](#chap-devops-chap), [`chap-devops chapkit`](#chap-devops-chapkit), [`chap-devops backup`](#chap-devops-backup), [`chap-devops doctor`](#chap-devops-doctor), [`chap-devops docker`](#chap-devops-docker), [`chap-devops top`](#chap-devops-top), [`chap-devops cleanup`](#chap-devops-cleanup), [`chap-devops self`](#chap-devops-self), [`chap-devops completions`](#chap-devops-completions)
 
-## varde init
+## chap-devops init
 
-Create a deployment directory: compose files, .env and .varde/.
+Create a deployment directory: compose files, .env and .chap-devops/.
 
 ```text
-Usage: varde init [OPTIONS] [DIR]
+Usage: chap-devops init [OPTIONS] [DIR]
 ```
 
 | Argument | Description |
@@ -68,32 +68,32 @@ Usage: varde init [OPTIONS] [DIR]
 | `--ocs-country <CODE>` | ISO 3166-1 alpha-3 country code for the OCS extent. |
 | `--ocs-bbox <BBOX>` | OCS extent as xmin,ymin,xmax,ymax in degrees. |
 
-Registry options: `--registry-url <URL>`, `--offline`, `--cache-dir <DIR>` (see [varde](#varde)).
+Registry options: `--registry-url <URL>`, `--offline`, `--cache-dir <DIR>` (see [chap-devops](#chap-devops)).
 
-## varde components
+## chap-devops components
 
 Show and change what this deployment is made of.
 
 ```text
-Usage: varde components [OPTIONS] <COMMAND>
+Usage: chap-devops components [OPTIONS] <COMMAND>
 ```
 
-Subcommands: [`varde components list`](#varde-components-list), [`varde components enable`](#varde-components-enable), [`varde components disable`](#varde-components-disable)
+Subcommands: [`chap-devops components list`](#chap-devops-components-list), [`chap-devops components enable`](#chap-devops-components-enable), [`chap-devops components disable`](#chap-devops-components-disable)
 
-## varde components list
+## chap-devops components list
 
 List every component and whether this deployment has it.
 
 ```text
-Usage: varde components list [OPTIONS]
+Usage: chap-devops components list [OPTIONS]
 ```
 
-## varde components enable
+## chap-devops components enable
 
 Enable a component, or change the settings of an enabled one.
 
 ```text
-Usage: varde components enable [OPTIONS] <NAME>
+Usage: chap-devops components enable [OPTIONS] <NAME>
 ```
 
 | Argument | Description |
@@ -112,14 +112,14 @@ Usage: varde components enable [OPTIONS] <NAME>
 | `--ocs-country <CODE>` | ISO 3166-1 alpha-3 country code for the OCS extent. |
 | `--ocs-bbox <BBOX>` | OCS extent as xmin,ymin,xmax,ymax in degrees. |
 
-Registry options: `--registry-url <URL>`, `--offline`, `--cache-dir <DIR>` (see [varde](#varde)).
+Registry options: `--registry-url <URL>`, `--offline`, `--cache-dir <DIR>` (see [chap-devops](#chap-devops)).
 
-## varde components disable
+## chap-devops components disable
 
 Disable a component and remove its compose file.
 
 ```text
-Usage: varde components disable [OPTIONS] <NAME>
+Usage: chap-devops components disable [OPTIONS] <NAME>
 ```
 
 | Argument | Description |
@@ -127,26 +127,26 @@ Usage: varde components disable [OPTIONS] <NAME>
 | `<NAME>` | Component name: ocs, s3, dhis2 or chap-core. |
 | `--purge` | Delete the component's data volume as well. |
 
-Registry options: `--registry-url <URL>`, `--offline`, `--cache-dir <DIR>` (see [varde](#varde)).
+Registry options: `--registry-url <URL>`, `--offline`, `--cache-dir <DIR>` (see [chap-devops](#chap-devops)).
 
-## varde models
+## chap-devops models
 
 Browse and manage marketplace models.
 
 ```text
-Usage: varde models [OPTIONS] <COMMAND>
+Usage: chap-devops models [OPTIONS] <COMMAND>
 ```
 
-Registry options: `--registry-url <URL>`, `--offline`, `--cache-dir <DIR>` (see [varde](#varde)).
+Registry options: `--registry-url <URL>`, `--offline`, `--cache-dir <DIR>` (see [chap-devops](#chap-devops)).
 
-Subcommands: [`varde models list`](#varde-models-list), [`varde models search`](#varde-models-search), [`varde models info`](#varde-models-info), [`varde models test`](#varde-models-test), [`varde models configs`](#varde-models-configs), [`varde models new`](#varde-models-new), [`varde models add`](#varde-models-add), [`varde models remove`](#varde-models-remove), [`varde models enable`](#varde-models-enable), [`varde models disable`](#varde-models-disable), [`varde models expose`](#varde-models-expose), [`varde models unexpose`](#varde-models-unexpose)
+Subcommands: [`chap-devops models list`](#chap-devops-models-list), [`chap-devops models search`](#chap-devops-models-search), [`chap-devops models info`](#chap-devops-models-info), [`chap-devops models test`](#chap-devops-models-test), [`chap-devops models configs`](#chap-devops-models-configs), [`chap-devops models new`](#chap-devops-models-new), [`chap-devops models add`](#chap-devops-models-add), [`chap-devops models remove`](#chap-devops-models-remove), [`chap-devops models enable`](#chap-devops-models-enable), [`chap-devops models disable`](#chap-devops-models-disable), [`chap-devops models expose`](#chap-devops-models-expose), [`chap-devops models unexpose`](#chap-devops-models-unexpose)
 
-## varde models list
+## chap-devops models list
 
 List marketplace models.
 
 ```text
-Usage: varde models list [OPTIONS]
+Usage: chap-devops models list [OPTIONS]
 ```
 
 | Argument | Description |
@@ -155,42 +155,42 @@ Usage: varde models list [OPTIONS]
 | `--templates` | List only templates. |
 | `--enabled` | List only the models enabled in this deployment. |
 
-Registry options: `--registry-url <URL>`, `--offline`, `--cache-dir <DIR>` (see [varde](#varde)).
+Registry options: `--registry-url <URL>`, `--offline`, `--cache-dir <DIR>` (see [chap-devops](#chap-devops)).
 
-## varde models search
+## chap-devops models search
 
 Search the marketplace by id, name or summary.
 
 ```text
-Usage: varde models search [OPTIONS] <QUERY>
+Usage: chap-devops models search [OPTIONS] <QUERY>
 ```
 
 | Argument | Description |
 | --- | --- |
 | `<QUERY>` | Text to look for; matching is case-insensitive. |
 
-Registry options: `--registry-url <URL>`, `--offline`, `--cache-dir <DIR>` (see [varde](#varde)).
+Registry options: `--registry-url <URL>`, `--offline`, `--cache-dir <DIR>` (see [chap-devops](#chap-devops)).
 
-## varde models info
+## chap-devops models info
 
 Show everything known about one model.
 
 ```text
-Usage: varde models info [OPTIONS] <ID>
+Usage: chap-devops models info [OPTIONS] <ID>
 ```
 
 | Argument | Description |
 | --- | --- |
 | `<ID>` | Marketplace id or service id. |
 
-Registry options: `--registry-url <URL>`, `--offline`, `--cache-dir <DIR>` (see [varde](#varde)).
+Registry options: `--registry-url <URL>`, `--offline`, `--cache-dir <DIR>` (see [chap-devops](#chap-devops)).
 
-## varde models test
+## chap-devops models test
 
 Make a model train and predict, and say whether it could.
 
 ```text
-Usage: varde models test [OPTIONS] [ID]...
+Usage: chap-devops models test [OPTIONS] [ID]...
 ```
 
 | Argument | Description |
@@ -208,15 +208,15 @@ Usage: varde models test [OPTIONS] [ID]...
 | `--predict-rows <N>` | Rows of the history and of the future data for each prediction. |
 | `--keep` | Keep what the test created instead of deleting it. |
 
-Registry options: `--registry-url <URL>`, `--offline`, `--cache-dir <DIR>` (see [varde](#varde)).
+Registry options: `--registry-url <URL>`, `--offline`, `--cache-dir <DIR>` (see [chap-devops](#chap-devops)).
 
-## varde models configs
+## chap-devops models configs
 
 List, add, archive and sync the configured models of each model.
 
 ```text
-Usage: varde models configs [OPTIONS] [ID]
-       varde models configs <COMMAND>
+Usage: chap-devops models configs [OPTIONS] [ID]
+       chap-devops models configs <COMMAND>
 ```
 
 | Argument | Description |
@@ -224,14 +224,14 @@ Usage: varde models configs [OPTIONS] [ID]
 | `<ID>` | Marketplace id or service id; all enabled models when none is given. |
 | `--all` | Show the archived configured models too. |
 
-Subcommands: [`varde models configs list`](#varde-models-configs-list), [`varde models configs add`](#varde-models-configs-add), [`varde models configs update`](#varde-models-configs-update), [`varde models configs archive`](#varde-models-configs-archive), [`varde models configs export`](#varde-models-configs-export), [`varde models configs sync`](#varde-models-configs-sync)
+Subcommands: [`chap-devops models configs list`](#chap-devops-models-configs-list), [`chap-devops models configs add`](#chap-devops-models-configs-add), [`chap-devops models configs update`](#chap-devops-models-configs-update), [`chap-devops models configs archive`](#chap-devops-models-configs-archive), [`chap-devops models configs export`](#chap-devops-models-configs-export), [`chap-devops models configs sync`](#chap-devops-models-configs-sync)
 
-## varde models configs list
+## chap-devops models configs list
 
 List the configured models chap-core has of each enabled model.
 
 ```text
-Usage: varde models configs list [OPTIONS] [ID]
+Usage: chap-devops models configs list [OPTIONS] [ID]
 ```
 
 | Argument | Description |
@@ -239,14 +239,14 @@ Usage: varde models configs list [OPTIONS] [ID]
 | `<ID>` | Marketplace id or service id; all enabled models when none is given. |
 | `--all` | Show the archived configured models too. |
 
-Registry options: `--registry-url <URL>`, `--offline`, `--cache-dir <DIR>` (see [varde](#varde)).
+Registry options: `--registry-url <URL>`, `--offline`, `--cache-dir <DIR>` (see [chap-devops](#chap-devops)).
 
-## varde models configs add
+## chap-devops models configs add
 
 Add a configured model of a model to chap-core.
 
 ```text
-Usage: varde models configs add [OPTIONS] <ID>
+Usage: chap-devops models configs add [OPTIONS] <ID>
 ```
 
 | Argument | Description |
@@ -257,14 +257,14 @@ Usage: varde models configs add [OPTIONS] <ID>
 | `--covariates <A,B>` | Additional covariates, separated by commas. |
 | `--from <FILE>` | Add every configuration in a file of the marketplace format. |
 
-Registry options: `--registry-url <URL>`, `--offline`, `--cache-dir <DIR>` (see [varde](#varde)).
+Registry options: `--registry-url <URL>`, `--offline`, `--cache-dir <DIR>` (see [chap-devops](#chap-devops)).
 
-## varde models configs update
+## chap-devops models configs update
 
 Change the values of a configured model of a model.
 
 ```text
-Usage: varde models configs update [OPTIONS] <ID> <NAME>
+Usage: chap-devops models configs update [OPTIONS] <ID> <NAME>
 ```
 
 | Argument | Description |
@@ -275,14 +275,14 @@ Usage: varde models configs update [OPTIONS] <ID> <NAME>
 | `--unset <KEY>` | Remove the value of one option, so the model default applies. |
 | `--covariates <A,B>` | Additional covariates, separated by commas, in place of the old ones. |
 
-Registry options: `--registry-url <URL>`, `--offline`, `--cache-dir <DIR>` (see [varde](#varde)).
+Registry options: `--registry-url <URL>`, `--offline`, `--cache-dir <DIR>` (see [chap-devops](#chap-devops)).
 
-## varde models configs archive
+## chap-devops models configs archive
 
 Archive a configured model of a model.
 
 ```text
-Usage: varde models configs archive [OPTIONS] <ID> <NAME>
+Usage: chap-devops models configs archive [OPTIONS] <ID> <NAME>
 ```
 
 | Argument | Description |
@@ -290,14 +290,14 @@ Usage: varde models configs archive [OPTIONS] <ID> <NAME>
 | `<ID>` | Marketplace id or service id. |
 | `<NAME>` | Variant name of the configured model. |
 
-Registry options: `--registry-url <URL>`, `--offline`, `--cache-dir <DIR>` (see [varde](#varde)).
+Registry options: `--registry-url <URL>`, `--offline`, `--cache-dir <DIR>` (see [chap-devops](#chap-devops)).
 
-## varde models configs export
+## chap-devops models configs export
 
 Write the configured models of a model in the marketplace format.
 
 ```text
-Usage: varde models configs export [OPTIONS] [ID]
+Usage: chap-devops models configs export [OPTIONS] [ID]
 ```
 
 | Argument | Description |
@@ -305,28 +305,28 @@ Usage: varde models configs export [OPTIONS] [ID]
 | `<ID>` | Marketplace id or service id; may be left out with one enabled model. |
 | `--out <FILE>` | File to write instead of standard output. |
 
-Registry options: `--registry-url <URL>`, `--offline`, `--cache-dir <DIR>` (see [varde](#varde)).
+Registry options: `--registry-url <URL>`, `--offline`, `--cache-dir <DIR>` (see [chap-devops](#chap-devops)).
 
-## varde models configs sync
+## chap-devops models configs sync
 
 Create the configured models that chap-core needs to run each model.
 
 ```text
-Usage: varde models configs sync [OPTIONS] [ID]...
+Usage: chap-devops models configs sync [OPTIONS] [ID]...
 ```
 
 | Argument | Description |
 | --- | --- |
 | `<ID>...` | Marketplace ids or service ids; all enabled models when none is given. |
 
-Registry options: `--registry-url <URL>`, `--offline`, `--cache-dir <DIR>` (see [varde](#varde)).
+Registry options: `--registry-url <URL>`, `--offline`, `--cache-dir <DIR>` (see [chap-devops](#chap-devops)).
 
-## varde models new
+## chap-devops models new
 
 Create a model project from a template.
 
 ```text
-Usage: varde models new [OPTIONS] <DIR>
+Usage: chap-devops models new [OPTIONS] <DIR>
 ```
 
 | Argument | Description |
@@ -335,12 +335,12 @@ Usage: varde models new [OPTIONS] <DIR>
 | `--template <TYPE>` | The kind of project and its base image. Values: `fn-py`, `shell-py`, `shell-r`, `shell-r-tidyverse`, `shell-r-inla`, `mlproject-py`, `mlproject-r`, `mlproject-r-tidyverse`, `mlproject-r-inla`. Default: `fn-py`. |
 | `--with-validation` | Add $validate hooks to main.py (chapkit service types only). |
 
-## varde models add
+## chap-devops models add
 
 Add a model the marketplace does not list.
 
 ```text
-Usage: varde models add [OPTIONS] <SOURCE>
+Usage: chap-devops models add [OPTIONS] <SOURCE>
 ```
 
 | Argument | Description |
@@ -355,14 +355,14 @@ Usage: varde models add [OPTIONS] <SOURCE>
 | `--user <USER>` | User the container runs as, as user:group. |
 | `--runtime-amd64` | Record the image as published for amd64 only. |
 
-Registry options: `--registry-url <URL>`, `--offline`, `--cache-dir <DIR>` (see [varde](#varde)).
+Registry options: `--registry-url <URL>`, `--offline`, `--cache-dir <DIR>` (see [chap-devops](#chap-devops)).
 
-## varde models remove
+## chap-devops models remove
 
 Remove a model that was added with models add.
 
 ```text
-Usage: varde models remove [OPTIONS] <ID>
+Usage: chap-devops models remove [OPTIONS] <ID>
 ```
 
 | Argument | Description |
@@ -370,14 +370,14 @@ Usage: varde models remove [OPTIONS] <ID>
 | `<ID>` | Id of a model added with models add. |
 | `--purge` | Delete the model's data volume as well. |
 
-Registry options: `--registry-url <URL>`, `--offline`, `--cache-dir <DIR>` (see [varde](#varde)).
+Registry options: `--registry-url <URL>`, `--offline`, `--cache-dir <DIR>` (see [chap-devops](#chap-devops)).
 
-## varde models enable
+## chap-devops models enable
 
 Enable a model and write its compose overlay.
 
 ```text
-Usage: varde models enable [OPTIONS] <ID>
+Usage: chap-devops models enable [OPTIONS] <ID>
 ```
 
 | Argument | Description |
@@ -391,14 +391,14 @@ Usage: varde models enable [OPTIONS] <ID>
 | `--user <USER>` | User the container runs as, as user:group. |
 | `--allow-template` | Enable a template even though it is not a model. |
 
-Registry options: `--registry-url <URL>`, `--offline`, `--cache-dir <DIR>` (see [varde](#varde)).
+Registry options: `--registry-url <URL>`, `--offline`, `--cache-dir <DIR>` (see [chap-devops](#chap-devops)).
 
-## varde models disable
+## chap-devops models disable
 
 Disable a model and remove its compose overlay.
 
 ```text
-Usage: varde models disable [OPTIONS] <ID>
+Usage: chap-devops models disable [OPTIONS] <ID>
 ```
 
 | Argument | Description |
@@ -406,14 +406,14 @@ Usage: varde models disable [OPTIONS] <ID>
 | `<ID>` | Marketplace id or service id. |
 | `--purge` | Delete the model's data volume as well. |
 
-Registry options: `--registry-url <URL>`, `--offline`, `--cache-dir <DIR>` (see [varde](#varde)).
+Registry options: `--registry-url <URL>`, `--offline`, `--cache-dir <DIR>` (see [chap-devops](#chap-devops)).
 
-## varde models expose
+## chap-devops models expose
 
 Publish a host port for an enabled model.
 
 ```text
-Usage: varde models expose [OPTIONS] <ID>
+Usage: chap-devops models expose [OPTIONS] <ID>
 ```
 
 | Argument | Description |
@@ -422,74 +422,74 @@ Usage: varde models expose [OPTIONS] <ID>
 | `--port <PORT\|auto>` | Host port to publish on, or auto for the lowest free one. |
 | `--bind <ADDR>` | Host address to publish the port on, e.g. 127.0.0.1 for this machine. |
 
-Registry options: `--registry-url <URL>`, `--offline`, `--cache-dir <DIR>` (see [varde](#varde)).
+Registry options: `--registry-url <URL>`, `--offline`, `--cache-dir <DIR>` (see [chap-devops](#chap-devops)).
 
-## varde models unexpose
+## chap-devops models unexpose
 
 Remove the host port of an enabled model.
 
 ```text
-Usage: varde models unexpose [OPTIONS] <ID>
+Usage: chap-devops models unexpose [OPTIONS] <ID>
 ```
 
 | Argument | Description |
 | --- | --- |
 | `<ID>` | Marketplace id or service id. |
 
-Registry options: `--registry-url <URL>`, `--offline`, `--cache-dir <DIR>` (see [varde](#varde)).
+Registry options: `--registry-url <URL>`, `--offline`, `--cache-dir <DIR>` (see [chap-devops](#chap-devops)).
 
-## varde registry
+## chap-devops registry
 
 Inspect and refresh the marketplace registry.
 
 ```text
-Usage: varde registry [OPTIONS] <COMMAND>
+Usage: chap-devops registry [OPTIONS] <COMMAND>
 ```
 
-Registry options: `--registry-url <URL>`, `--offline`, `--cache-dir <DIR>` (see [varde](#varde)).
+Registry options: `--registry-url <URL>`, `--offline`, `--cache-dir <DIR>` (see [chap-devops](#chap-devops)).
 
-Subcommands: [`varde registry update`](#varde-registry-update), [`varde registry show`](#varde-registry-show)
+Subcommands: [`chap-devops registry update`](#chap-devops-registry-update), [`chap-devops registry show`](#chap-devops-registry-show)
 
-## varde registry update
+## chap-devops registry update
 
 Fetch the registry from the network and refresh the cache.
 
 ```text
-Usage: varde registry update [OPTIONS]
+Usage: chap-devops registry update [OPTIONS]
 ```
 
-Registry options: `--registry-url <URL>`, `--offline`, `--cache-dir <DIR>` (see [varde](#varde)).
+Registry options: `--registry-url <URL>`, `--offline`, `--cache-dir <DIR>` (see [chap-devops](#chap-devops)).
 
-## varde registry show
+## chap-devops registry show
 
 Show where the registry was loaded from and what it holds.
 
 ```text
-Usage: varde registry show [OPTIONS]
+Usage: chap-devops registry show [OPTIONS]
 ```
 
-Registry options: `--registry-url <URL>`, `--offline`, `--cache-dir <DIR>` (see [varde](#varde)).
+Registry options: `--registry-url <URL>`, `--offline`, `--cache-dir <DIR>` (see [chap-devops](#chap-devops)).
 
-## varde sync
+## chap-devops sync
 
-Render the compose files from .varde/.
+Render the compose files from .chap-devops/.
 
 ```text
-Usage: varde sync [OPTIONS]
+Usage: chap-devops sync [OPTIONS]
 ```
 
 | Argument | Description |
 | --- | --- |
 | `--check` | Write nothing; exit non-zero if anything would change. |
 
-Registry options: `--registry-url <URL>`, `--offline`, `--cache-dir <DIR>` (see [varde](#varde)).
+Registry options: `--registry-url <URL>`, `--offline`, `--cache-dir <DIR>` (see [chap-devops](#chap-devops)).
 
-## varde update
+## chap-devops update
 
 Move the pins to what upstream publishes now, and pull.
 
 ```text
-Usage: varde update [OPTIONS]
+Usage: chap-devops update [OPTIONS]
 ```
 
 | Argument | Description |
@@ -500,88 +500,88 @@ Usage: varde update [OPTIONS]
 | `--list-tags` | List the chap-core tags you can move to, newest first. |
 | `--yes` | Answer yes to the confirmation a backwards move asks for. |
 
-Registry options: `--registry-url <URL>`, `--offline`, `--cache-dir <DIR>` (see [varde](#varde)).
+Registry options: `--registry-url <URL>`, `--offline`, `--cache-dir <DIR>` (see [chap-devops](#chap-devops)).
 
-## varde auth
+## chap-devops auth
 
 Enable or disable API authentication, and show the token.
 
 ```text
-Usage: varde auth [OPTIONS] <COMMAND>
+Usage: chap-devops auth [OPTIONS] <COMMAND>
 ```
 
-Subcommands: [`varde auth show`](#varde-auth-show), [`varde auth token`](#varde-auth-token), [`varde auth enable`](#varde-auth-enable), [`varde auth disable`](#varde-auth-disable), [`varde auth rotate`](#varde-auth-rotate)
+Subcommands: [`chap-devops auth show`](#chap-devops-auth-show), [`chap-devops auth token`](#chap-devops-auth-token), [`chap-devops auth enable`](#chap-devops-auth-enable), [`chap-devops auth disable`](#chap-devops-auth-disable), [`chap-devops auth rotate`](#chap-devops-auth-rotate)
 
-## varde auth show
+## chap-devops auth show
 
 Say whether the API is protected, and by which token.
 
 ```text
-Usage: varde auth show [OPTIONS]
+Usage: chap-devops auth show [OPTIONS]
 ```
 
 | Argument | Description |
 | --- | --- |
 | `--reveal` | Print the API token. |
 
-## varde auth token
+## chap-devops auth token
 
 Print the API token alone, for a script to capture.
 
 ```text
-Usage: varde auth token [OPTIONS]
+Usage: chap-devops auth token [OPTIONS]
 ```
 
-## varde auth enable
+## chap-devops auth enable
 
 Enable authentication: write both secrets and sync.
 
 ```text
-Usage: varde auth enable [OPTIONS]
+Usage: chap-devops auth enable [OPTIONS]
 ```
 
 | Argument | Description |
 | --- | --- |
 | `--token <TOKEN>` | Use this API token instead of generating one. |
 
-Registry options: `--registry-url <URL>`, `--offline`, `--cache-dir <DIR>` (see [varde](#varde)).
+Registry options: `--registry-url <URL>`, `--offline`, `--cache-dir <DIR>` (see [chap-devops](#chap-devops)).
 
-## varde auth disable
+## chap-devops auth disable
 
 Disable authentication; keep both values as comments.
 
 ```text
-Usage: varde auth disable [OPTIONS]
+Usage: chap-devops auth disable [OPTIONS]
 ```
 
-Registry options: `--registry-url <URL>`, `--offline`, `--cache-dir <DIR>` (see [varde](#varde)).
+Registry options: `--registry-url <URL>`, `--offline`, `--cache-dir <DIR>` (see [chap-devops](#chap-devops)).
 
-## varde auth rotate
+## chap-devops auth rotate
 
 Replace both secrets with new generated ones.
 
 ```text
-Usage: varde auth rotate [OPTIONS]
+Usage: chap-devops auth rotate [OPTIONS]
 ```
 
-Registry options: `--registry-url <URL>`, `--offline`, `--cache-dir <DIR>` (see [varde](#varde)).
+Registry options: `--registry-url <URL>`, `--offline`, `--cache-dir <DIR>` (see [chap-devops](#chap-devops)).
 
-## varde dhis2
+## chap-devops dhis2
 
 Let the DHIS2 Modeling App reach this deployment's Chap.
 
 ```text
-Usage: varde dhis2 [OPTIONS] <COMMAND>
+Usage: chap-devops dhis2 [OPTIONS] <COMMAND>
 ```
 
-Subcommands: [`varde dhis2 show`](#varde-dhis2-show), [`varde dhis2 route`](#varde-dhis2-route), [`varde dhis2 analytics`](#varde-dhis2-analytics), [`varde dhis2 apps`](#varde-dhis2-apps), [`varde dhis2 connect`](#varde-dhis2-connect), [`varde dhis2 use`](#varde-dhis2-use)
+Subcommands: [`chap-devops dhis2 show`](#chap-devops-dhis2-show), [`chap-devops dhis2 route`](#chap-devops-dhis2-route), [`chap-devops dhis2 analytics`](#chap-devops-dhis2-analytics), [`chap-devops dhis2 apps`](#chap-devops-dhis2-apps), [`chap-devops dhis2 connect`](#chap-devops-dhis2-connect), [`chap-devops dhis2 use`](#chap-devops-dhis2-use)
 
-## varde dhis2 show
+## chap-devops dhis2 show
 
 Say what DHIS2 has: the chap route, analytics and the apps.
 
 ```text
-Usage: varde dhis2 show [OPTIONS]
+Usage: chap-devops dhis2 show [OPTIONS]
 ```
 
 | Argument | Description |
@@ -589,12 +589,12 @@ Usage: varde dhis2 show [OPTIONS]
 | `--user <NAME>` | DHIS2 user to authenticate as, with a password rather than a token. |
 | `--wait <SECONDS>` | Seconds to wait for DHIS2's API; 1200 local, 60 external by default. |
 
-## varde dhis2 route
+## chap-devops dhis2 route
 
 Point DHIS2's chap route at this deployment's chap-core.
 
 ```text
-Usage: varde dhis2 route [OPTIONS]
+Usage: chap-devops dhis2 route [OPTIONS]
 ```
 
 | Argument | Description |
@@ -602,12 +602,12 @@ Usage: varde dhis2 route [OPTIONS]
 | `--user <NAME>` | DHIS2 user to authenticate as, with a password rather than a token. |
 | `--wait <SECONDS>` | Seconds to wait for DHIS2's API; 1200 local, 60 external by default. |
 
-## varde dhis2 analytics
+## chap-devops dhis2 analytics
 
 Generate DHIS2's analytics tables and wait for them.
 
 ```text
-Usage: varde dhis2 analytics [OPTIONS]
+Usage: chap-devops dhis2 analytics [OPTIONS]
 ```
 
 | Argument | Description |
@@ -617,12 +617,12 @@ Usage: varde dhis2 analytics [OPTIONS]
 | `--timeout <SECONDS>` | Seconds to wait for the analytics run to finish. Default: `3600`. |
 | `--no-wait` | Start the run and return without a wait for it to finish. |
 
-## varde dhis2 apps
+## chap-devops dhis2 apps
 
 Install the Modeling and Climate apps from the App Hub.
 
 ```text
-Usage: varde dhis2 apps [OPTIONS]
+Usage: chap-devops dhis2 apps [OPTIONS]
 ```
 
 | Argument | Description |
@@ -630,14 +630,14 @@ Usage: varde dhis2 apps [OPTIONS]
 | `--user <NAME>` | DHIS2 user to authenticate as, with a password rather than a token. |
 | `--wait <SECONDS>` | Seconds to wait for DHIS2's API; 1200 local, 60 external by default. |
 
-Registry options: `--offline` (see [varde](#varde)).
+Registry options: `--offline` (see [chap-devops](#chap-devops)).
 
-## varde dhis2 connect
+## chap-devops dhis2 connect
 
 The route, the apps, then analytics; the route only on an external DHIS2.
 
 ```text
-Usage: varde dhis2 connect [OPTIONS]
+Usage: chap-devops dhis2 connect [OPTIONS]
 ```
 
 | Argument | Description |
@@ -647,14 +647,14 @@ Usage: varde dhis2 connect [OPTIONS]
 | `--timeout <SECONDS>` | Seconds to wait for the analytics run to finish. Default: `3600`. |
 | `--no-wait` | Start the run and return without a wait for it to finish. |
 
-Registry options: `--registry-url <URL>`, `--offline`, `--cache-dir <DIR>` (see [varde](#varde)).
+Registry options: `--registry-url <URL>`, `--offline`, `--cache-dir <DIR>` (see [chap-devops](#chap-devops)).
 
-## varde dhis2 use
+## chap-devops dhis2 use
 
 Use a DHIS2 that runs elsewhere, or show which DHIS2 is used.
 
 ```text
-Usage: varde dhis2 use [OPTIONS] [URL]
+Usage: chap-devops dhis2 use [OPTIONS] [URL]
 ```
 
 | Argument | Description |
@@ -663,12 +663,12 @@ Usage: varde dhis2 use [OPTIONS] [URL]
 | `--chap-url <URL>` | chap-core's URL, as that DHIS2 reaches it; the route points here. |
 | `--clear` | Forget the external DHIS2 and use the dhis2 component again. |
 
-## varde up
+## chap-devops up
 
 Sync, then start Chap (docker compose up).
 
 ```text
-Usage: varde up [OPTIONS] [EXTRA]...
+Usage: chap-devops up [OPTIONS] [EXTRA]...
 ```
 
 | Argument | Description |
@@ -676,19 +676,19 @@ Usage: varde up [OPTIONS] [EXTRA]...
 | `-a, --attach, --foreground` | Run in the foreground and stream all logs (Ctrl-C stops Chap). |
 | `--pull` | Pull every image first (docker compose up --pull always). |
 | `--no-preflight` | Do not check the host ports first. |
-| `--replace` | First stop the other varde deployments that hold these ports. |
+| `--replace` | First stop the other chap-devops deployments that hold these ports. |
 | `--wait` | Return only once chap-core, the models, OCS and DHIS2 answer. |
 | `--timeout <SECONDS>` | How long --wait waits before it fails, in seconds. Default: `300`. |
 | `<EXTRA>...` | Extra arguments passed through to docker compose up. |
 
-Registry options: `--registry-url <URL>`, `--offline`, `--cache-dir <DIR>` (see [varde](#varde)).
+Registry options: `--registry-url <URL>`, `--offline`, `--cache-dir <DIR>` (see [chap-devops](#chap-devops)).
 
-## varde down
+## chap-devops down
 
 Stop Chap (docker compose down).
 
 ```text
-Usage: varde down [OPTIONS] [EXTRA]...
+Usage: chap-devops down [OPTIONS] [EXTRA]...
 ```
 
 | Argument | Description |
@@ -697,12 +697,12 @@ Usage: varde down [OPTIONS] [EXTRA]...
 | `-y, --yes` | Skip the confirmation. |
 | `<EXTRA>...` | Extra arguments passed through to docker compose down. |
 
-## varde restart
+## chap-devops restart
 
 Recreate the services whose image or configuration changed.
 
 ```text
-Usage: varde restart [OPTIONS] [SERVICE]...
+Usage: chap-devops restart [OPTIONS] [SERVICE]...
 ```
 
 | Argument | Description |
@@ -710,12 +710,12 @@ Usage: varde restart [OPTIONS] [SERVICE]...
 | `--all` | Recreate the named services even when nothing changed. |
 | `<SERVICE>...` | Services to restart; the whole deployment when omitted. |
 
-## varde status
+## chap-devops status
 
 Show chap-core health and which models registered.
 
 ```text
-Usage: varde status [OPTIONS]
+Usage: chap-devops status [OPTIONS]
 ```
 
 | Argument | Description |
@@ -723,12 +723,12 @@ Usage: varde status [OPTIONS]
 | `--url <URL>` | Base URL of the chap-core API. |
 | `--timeout <SECONDS>` | Request timeout in seconds. Default: `5`. |
 
-## varde logs
+## chap-devops logs
 
 Show container logs (docker compose logs).
 
 ```text
-Usage: varde logs [OPTIONS] [SERVICE]...
+Usage: chap-devops logs [OPTIONS] [SERVICE]...
 ```
 
 | Argument | Description |
@@ -737,12 +737,12 @@ Usage: varde logs [OPTIONS] [SERVICE]...
 | `--tail <N>` | Show only the last N lines of each service's log. |
 | `<SERVICE>...` | Services to show logs for; all of them when omitted. |
 
-## varde open
+## chap-devops open
 
 Open a component's web interface in a browser.
 
 ```text
-Usage: varde open [OPTIONS] [NAME]
+Usage: chap-devops open [OPTIONS] [NAME]
 ```
 
 | Argument | Description |
@@ -750,22 +750,22 @@ Usage: varde open [OPTIONS] [NAME]
 | `<NAME>` | Component to open (chap-core, ocs, dhis2), or an enabled model's id. |
 | `--no-browser` | Print the address instead of opening a browser. |
 
-## varde ui
+## chap-devops ui
 
 Open the browser: marketplace models and components.
 
 ```text
-Usage: varde ui [OPTIONS]
+Usage: chap-devops ui [OPTIONS]
 ```
 
-Registry options: `--registry-url <URL>`, `--offline`, `--cache-dir <DIR>` (see [varde](#varde)).
+Registry options: `--registry-url <URL>`, `--offline`, `--cache-dir <DIR>` (see [chap-devops](#chap-devops)).
 
-## varde run
+## chap-devops run
 
 Start one model and print where it answers.
 
 ```text
-Usage: varde run [OPTIONS] <MODEL>
+Usage: chap-devops run [OPTIONS] <MODEL>
 ```
 
 | Argument | Description |
@@ -783,26 +783,26 @@ Usage: varde run [OPTIONS] <MODEL>
 | `--models-host <HOST>` | Host that chap-core calls the models back at; detected if omitted. |
 | `--timeout <SECONDS>` | How long to wait for the model to answer, in seconds. Default: `300`. |
 
-Registry options: `--registry-url <URL>`, `--offline`, `--cache-dir <DIR>` (see [varde](#varde)).
+Registry options: `--registry-url <URL>`, `--offline`, `--cache-dir <DIR>` (see [chap-devops](#chap-devops)).
 
-## varde ps
+## chap-devops ps
 
 List the models that run, and where each one answers.
 
 ```text
-Usage: varde ps [OPTIONS]
+Usage: chap-devops ps [OPTIONS]
 ```
 
 | Argument | Description |
 | --- | --- |
 | `--group <NAME>` | List this group only; every group when omitted. |
 
-## varde stop
+## chap-devops stop
 
 Stop a model and remove its compose overlay; its data stays.
 
 ```text
-Usage: varde stop [OPTIONS] [ID]
+Usage: chap-devops stop [OPTIONS] [ID]
 ```
 
 | Argument | Description |
@@ -812,15 +812,15 @@ Usage: varde stop [OPTIONS] [ID]
 | `--all` | Stop every model in the group, or in every group. |
 | `--purge` | Delete the data volumes too, and a group left empty with them. |
 
-Registry options: `--registry-url <URL>`, `--offline`, `--cache-dir <DIR>` (see [varde](#varde)).
+Registry options: `--registry-url <URL>`, `--offline`, `--cache-dir <DIR>` (see [chap-devops](#chap-devops)).
 
-## varde jobs
+## chap-devops jobs
 
 List the backtests and predictions chap-core has run.
 
 ```text
-Usage: varde jobs [OPTIONS]
-       varde jobs <COMMAND>
+Usage: chap-devops jobs [OPTIONS]
+       chap-devops jobs <COMMAND>
 ```
 
 | Argument | Description |
@@ -829,14 +829,14 @@ Usage: varde jobs [OPTIONS]
 | `--type <TYPE>` | Only jobs of this type, such as create_backtest. |
 | `--limit <N>` | Show at most this many jobs. |
 
-Subcommands: [`varde jobs list`](#varde-jobs-list), [`varde jobs show`](#varde-jobs-show), [`varde jobs logs`](#varde-jobs-logs), [`varde jobs cancel`](#varde-jobs-cancel), [`varde jobs delete`](#varde-jobs-delete)
+Subcommands: [`chap-devops jobs list`](#chap-devops-jobs-list), [`chap-devops jobs show`](#chap-devops-jobs-show), [`chap-devops jobs logs`](#chap-devops-jobs-logs), [`chap-devops jobs cancel`](#chap-devops-jobs-cancel), [`chap-devops jobs delete`](#chap-devops-jobs-delete)
 
-## varde jobs list
+## chap-devops jobs list
 
 List the jobs chap-core knows about, newest first.
 
 ```text
-Usage: varde jobs list [OPTIONS]
+Usage: chap-devops jobs list [OPTIONS]
 ```
 
 | Argument | Description |
@@ -845,24 +845,24 @@ Usage: varde jobs list [OPTIONS]
 | `--type <TYPE>` | Only jobs of this type, such as create_backtest. |
 | `--limit <N>` | Show at most this many jobs. |
 
-## varde jobs show
+## chap-devops jobs show
 
 Show everything chap-core records about one job.
 
 ```text
-Usage: varde jobs show [OPTIONS] <ID>
+Usage: chap-devops jobs show [OPTIONS] <ID>
 ```
 
 | Argument | Description |
 | --- | --- |
 | `<ID>` | Job id, or enough of its start to name one job. |
 
-## varde jobs logs
+## chap-devops jobs logs
 
 Print one job's log, which is where a failure says why.
 
 ```text
-Usage: varde jobs logs [OPTIONS] <ID>
+Usage: chap-devops jobs logs [OPTIONS] <ID>
 ```
 
 | Argument | Description |
@@ -870,36 +870,36 @@ Usage: varde jobs logs [OPTIONS] <ID>
 | `<ID>` | Job id, or enough of its start to name one job. |
 | `--tail <N>` | Print only the last N lines of the log. |
 
-## varde jobs cancel
+## chap-devops jobs cancel
 
 Ask chap-core to stop a job that is still running.
 
 ```text
-Usage: varde jobs cancel [OPTIONS] <ID>
+Usage: chap-devops jobs cancel [OPTIONS] <ID>
 ```
 
 | Argument | Description |
 | --- | --- |
 | `<ID>` | Job id, or enough of its start to name one job. |
 
-## varde jobs delete
+## chap-devops jobs delete
 
 Remove a finished job from chap-core's list.
 
 ```text
-Usage: varde jobs delete [OPTIONS] <ID>
+Usage: chap-devops jobs delete [OPTIONS] <ID>
 ```
 
 | Argument | Description |
 | --- | --- |
 | `<ID>` | Job id, or enough of its start to name one job. |
 
-## varde api
+## chap-devops api
 
 Send one authenticated request to chap-core's API.
 
 ```text
-Usage: varde api [OPTIONS] <METHOD> <PATH>
+Usage: chap-devops api [OPTIONS] <METHOD> <PATH>
 ```
 
 | Argument | Description |
@@ -911,32 +911,32 @@ Usage: varde api [OPTIONS] <METHOD> <PATH>
 | `--raw` | Print the body exactly as it arrived. |
 | `--timeout <SECONDS>` | Request timeout in seconds. Default: `30`. |
 
-## varde chap
+## chap-devops chap
 
 Run the chap CLI in a container, with no Python or uv installed.
 
 ```text
-Usage: varde chap [OPTIONS] [CHAP_ARGS]...
+Usage: chap-devops chap [OPTIONS] [CHAP_ARGS]...
 ```
 
 | Argument | Description |
 | --- | --- |
 | `--tag <TAG>` | chap-core image tag; the deployment's tag or the newest release if omitted. |
 | `--image <IMAGE>` | Image to run in; chosen from --model-name when omitted. Values: `core`, `worker`. |
-| `--group <NAME>` | `varde run` group whose network the container joins. |
+| `--group <NAME>` | `chap-devops run` group whose network the container joins. |
 | `--docker` | Give the container the docker socket, for docker_env models. |
 | `--stop` | Stop the model this run started, once chap is done. |
 | `--timeout <SECONDS>` | How long a model this run starts may take to answer, in seconds. Default: `300`. |
 | `<CHAP_ARGS>...` | Arguments for chap, such as `eval --model-name URL ...`. |
 
-Registry options: `--registry-url <URL>`, `--offline`, `--cache-dir <DIR>` (see [varde](#varde)).
+Registry options: `--registry-url <URL>`, `--offline`, `--cache-dir <DIR>` (see [chap-devops](#chap-devops)).
 
-## varde chapkit
+## chap-devops chapkit
 
 Run the chapkit CLI in the chap-core image, with no Python installed.
 
 ```text
-Usage: varde chapkit [OPTIONS] [CHAPKIT_ARGS]...
+Usage: chap-devops chapkit [OPTIONS] [CHAPKIT_ARGS]...
 ```
 
 | Argument | Description |
@@ -945,22 +945,22 @@ Usage: varde chapkit [OPTIONS] [CHAPKIT_ARGS]...
 | `--image <IMAGE>` | Image for `mlproject run`, a short name or a name; alone, lists them. |
 | `<CHAPKIT_ARGS>...` | Arguments for chapkit, such as `mlproject migrate DIR`. |
 
-## varde backup
+## chap-devops backup
 
 Create or restore a backup of this deployment.
 
 ```text
-Usage: varde backup [OPTIONS] <COMMAND>
+Usage: chap-devops backup [OPTIONS] <COMMAND>
 ```
 
-Subcommands: [`varde backup create`](#varde-backup-create), [`varde backup restore`](#varde-backup-restore)
+Subcommands: [`chap-devops backup create`](#chap-devops-backup-create), [`chap-devops backup restore`](#chap-devops-backup-restore)
 
-## varde backup create
+## chap-devops backup create
 
 Write a tar.gz of the database, the data and the files.
 
 ```text
-Usage: varde backup create [OPTIONS]
+Usage: chap-devops backup create [OPTIONS]
 ```
 
 | Argument | Description |
@@ -970,17 +970,17 @@ Usage: varde backup create [OPTIONS]
 | `--no-models` | Do not put the model data volumes in the archive. |
 | `--no-components` | Do not put the component data volumes in the archive. |
 
-## varde backup restore
+## chap-devops backup restore
 
 Put a deployment back from a backup archive.
 
 ```text
-Usage: varde backup restore [OPTIONS] <ARCHIVE>
+Usage: chap-devops backup restore [OPTIONS] <ARCHIVE>
 ```
 
 | Argument | Description |
 | --- | --- |
-| `<ARCHIVE>` | The tar.gz written by varde backup create. |
+| `<ARCHIVE>` | The tar.gz written by chap-devops backup create. |
 | `--yes` | Skip the confirmation. |
 | `--files-only` | Restore only the deployment files; no Docker needed. |
 | `--db-only` | Restore only the chap-core database. |
@@ -989,54 +989,54 @@ Usage: varde backup restore [OPTIONS] <ARCHIVE>
 | `--adopt-identity` | Use the compose project name from the archive. |
 | `--no-start` | Do not start the deployment at the end. |
 
-Registry options: `--registry-url <URL>`, `--offline`, `--cache-dir <DIR>` (see [varde](#varde)).
+Registry options: `--registry-url <URL>`, `--offline`, `--cache-dir <DIR>` (see [chap-devops](#chap-devops)).
 
-## varde doctor
+## chap-devops doctor
 
 Run a checklist over this machine and this deployment.
 
 ```text
-Usage: varde doctor [OPTIONS]
+Usage: chap-devops doctor [OPTIONS]
 ```
 
-Registry options: `--registry-url <URL>`, `--offline`, `--cache-dir <DIR>` (see [varde](#varde)).
+Registry options: `--registry-url <URL>`, `--offline`, `--cache-dir <DIR>` (see [chap-devops](#chap-devops)).
 
-## varde docker
+## chap-devops docker
 
 Use Docker directly: containers, images, compose.
 
 ```text
-Usage: varde docker [OPTIONS] <COMMAND>
+Usage: chap-devops docker [OPTIONS] <COMMAND>
 ```
 
-Subcommands: [`varde docker ps`](#varde-docker-ps), [`varde docker pull`](#varde-docker-pull), [`varde docker exec`](#varde-docker-exec), [`varde docker run`](#varde-docker-run), [`varde docker config`](#varde-docker-config)
+Subcommands: [`chap-devops docker ps`](#chap-devops-docker-ps), [`chap-devops docker pull`](#chap-devops-docker-pull), [`chap-devops docker exec`](#chap-devops-docker-exec), [`chap-devops docker run`](#chap-devops-docker-run), [`chap-devops docker config`](#chap-devops-docker-config)
 
-## varde docker ps
+## chap-devops docker ps
 
 List the containers this deployment is running.
 
 ```text
-Usage: varde docker ps [OPTIONS] [EXTRA]...
+Usage: chap-devops docker ps [OPTIONS] [EXTRA]...
 ```
 
 | Argument | Description |
 | --- | --- |
 | `<EXTRA>...` | Extra arguments passed through to docker compose ps. |
 
-## varde docker pull
+## chap-devops docker pull
 
 Download the pinned images into the local Docker daemon.
 
 ```text
-Usage: varde docker pull [OPTIONS]
+Usage: chap-devops docker pull [OPTIONS]
 ```
 
-## varde docker exec
+## chap-devops docker exec
 
 Run a command inside one of the running containers.
 
 ```text
-Usage: varde docker exec [OPTIONS] <SERVICE> [CMD]...
+Usage: chap-devops docker exec [OPTIONS] <SERVICE> [CMD]...
 ```
 
 | Argument | Description |
@@ -1044,48 +1044,48 @@ Usage: varde docker exec [OPTIONS] <SERVICE> [CMD]...
 | `<SERVICE>` | Service to run the command in. |
 | `<CMD>...` | Command to run; a shell (sh) when omitted. |
 
-## varde docker run
+## chap-devops docker run
 
 Run any docker compose command against this deployment.
 
 ```text
-Usage: varde docker run [OPTIONS] [ARGS]...
+Usage: chap-devops docker run [OPTIONS] [ARGS]...
 ```
 
 | Argument | Description |
 | --- | --- |
 | `<ARGS>...` | Arguments passed to docker compose after the -f list. |
 
-## varde docker config
+## chap-devops docker config
 
 Print every compose file merged into one document.
 
 ```text
-Usage: varde docker config [OPTIONS] [EXTRA]...
+Usage: chap-devops docker config [OPTIONS] [EXTRA]...
 ```
 
 | Argument | Description |
 | --- | --- |
 | `<EXTRA>...` | Extra arguments passed through to docker compose config. |
 
-## varde top
+## chap-devops top
 
-Watch every varde deployment on this machine as a live tree.
+Watch every chap-devops deployment on this machine as a live tree.
 
 ```text
-Usage: varde top [OPTIONS]
+Usage: chap-devops top [OPTIONS]
 ```
 
 | Argument | Description |
 | --- | --- |
 | `--interval <SECONDS>` | Seconds between two looks at docker. Default: `2`. |
 
-## varde cleanup
+## chap-devops cleanup
 
 Delete what deployments whose directory is gone left in docker.
 
 ```text
-Usage: varde cleanup [OPTIONS]
+Usage: chap-devops cleanup [OPTIONS]
 ```
 
 | Argument | Description |
@@ -1093,22 +1093,22 @@ Usage: varde cleanup [OPTIONS]
 | `-n, --dry-run` | List what would be deleted and change nothing. |
 | `--yes` | Delete without asking first. |
 
-## varde self
+## chap-devops self
 
-Update varde itself, and report what this build is.
+Update chap-devops itself, and report what this build is.
 
 ```text
-Usage: varde self [OPTIONS] <COMMAND>
+Usage: chap-devops self [OPTIONS] <COMMAND>
 ```
 
-Subcommands: [`varde self update`](#varde-self-update), [`varde self version`](#varde-self-version)
+Subcommands: [`chap-devops self update`](#chap-devops-self-update), [`chap-devops self version`](#chap-devops-self-version)
 
-## varde self update
+## chap-devops self update
 
 Replace this binary with the newest release.
 
 ```text
-Usage: varde self update [OPTIONS]
+Usage: chap-devops self update [OPTIONS]
 ```
 
 | Argument | Description |
@@ -1117,22 +1117,22 @@ Usage: varde self update [OPTIONS]
 | `--version <TAG>` | Install this release tag instead of the newest one. |
 | `-y, --yes` | Do not ask before replacing the binary. |
 
-Registry options: `--offline`, `--cache-dir <DIR>` (see [varde](#varde)).
+Registry options: `--offline`, `--cache-dir <DIR>` (see [chap-devops](#chap-devops)).
 
-## varde self version
+## chap-devops self version
 
 Show what this build is: version, revision, target and path.
 
 ```text
-Usage: varde self version [OPTIONS]
+Usage: chap-devops self version [OPTIONS]
 ```
 
-## varde completions
+## chap-devops completions
 
-Print a shell completion script for varde.
+Print a shell completion script for chap-devops.
 
 ```text
-Usage: varde completions [OPTIONS] <SHELL>
+Usage: chap-devops completions [OPTIONS] <SHELL>
 ```
 
 | Argument | Description |

@@ -29,8 +29,10 @@ fn said(report: &StopReport) -> String {
 /// are hints.
 #[test]
 fn a_stop_is_one_line_and_the_rest_is_hints() {
-    let kept =
-        crate::commands::docker::kept_volume_line("g_ck_m_data", Some("varde models disable m"));
+    let kept = crate::commands::docker::kept_volume_line(
+        "g_ck_m_data",
+        Some("chap-devops models disable m"),
+    );
     let report = StopReport {
         stopped: vec![stopped(
             "m",
@@ -50,7 +52,7 @@ fn a_stop_is_one_line_and_the_rest_is_hints() {
             "stopped m\n\
              hint: stopped and removed the m container; the host port it published is free again\n\
              hint: {kept}\n\
-             hint: `varde run m` starts it again\n"
+             hint: `chap-devops run m` starts it again\n"
         )
     );
 }
@@ -70,7 +72,7 @@ fn a_purge_says_what_went() {
          removed volume v1\n\
          removed group trial\n\
          hint: removed volume v2\n\
-         hint: `varde run m --group trial` starts it again\n"
+         hint: `chap-devops run m --group trial` starts it again\n"
     );
 }
 
@@ -82,7 +84,7 @@ fn what_did_not_work_is_a_warning() {
             "m",
             None,
             &[
-                "the m container could not be stopped; `varde up` removes it as an orphan",
+                "the m container could not be stopped; `chap-devops up` removes it as an orphan",
                 "volume v could not be removed: in use",
                 crate::commands::docker::UNNAMEABLE_VOLUME,
             ],
@@ -104,6 +106,6 @@ fn nothing_to_stop_says_so() {
     };
     assert_eq!(
         said(&report),
-        "nothing was running to stop\nhint: `varde ps` lists what runs\n"
+        "nothing was running to stop\nhint: `chap-devops ps` lists what runs\n"
     );
 }

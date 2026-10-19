@@ -9,7 +9,7 @@ use tempfile::TempDir;
 mod answers;
 mod external;
 
-/// The `dhis2` row, out of a `varde status --json` document.
+/// The `dhis2` row, out of a `chap-devops status --json` document.
 #[cfg(unix)]
 fn dhis2_row(report: &Json) -> &Json {
     report["components"]
@@ -35,7 +35,7 @@ fn status_calls_dhis2_up_once_api_ping_answers() {
         &bin,
         &["status", "--json", "--timeout", "2"],
     );
-    status.env("VARDE_NO_DOCKER_PROBE", "1");
+    status.env("CHAP_DEVOPS_NO_DOCKER_PROBE", "1");
     let out = status.assert().get_output().stdout.clone();
     let report: Json = serde_json::from_slice(&out).expect("status --json is one document");
     let row = dhis2_row(&report);
@@ -51,7 +51,7 @@ fn status_calls_dhis2_up_once_api_ping_answers() {
 
     // And the human line says the same.
     let mut status = chap_with_docker(&sandbox, &dir, &bin, &["status", "--timeout", "2"]);
-    status.env("VARDE_NO_DOCKER_PROBE", "1");
+    status.env("CHAP_DEVOPS_NO_DOCKER_PROBE", "1");
     let out = status.assert().get_output().stdout.clone();
     let text = String::from_utf8_lossy(&out).into_owned();
     assert!(
@@ -64,7 +64,7 @@ fn status_calls_dhis2_up_once_api_ping_answers() {
 /// Two deployments made with the same ports take turns on them, and the one
 /// that is up answers on the port for both. With this deployment's `chap`
 /// container not running, a chap-core answering on its port is someone
-/// else's: `varde status` says this one is not running rather than `up`.
+/// else's: `chap-devops status` says this one is not running rather than `up`.
 #[cfg(unix)]
 #[test]
 fn status_does_not_claim_another_deployments_chap_core() {
@@ -82,7 +82,7 @@ fn status_does_not_claim_another_deployments_chap_core() {
         .success();
     let (_temp, bin) = docker_running("dhis2");
     let mut cmd = chap_with_docker(&sandbox, &dir, &bin, &["status", "--timeout", "2"]);
-    cmd.env("VARDE_NO_DOCKER_PROBE", "1");
+    cmd.env("CHAP_DEVOPS_NO_DOCKER_PROBE", "1");
     let out = cmd.assert().failure().get_output().clone();
     let text = String::from_utf8_lossy(&out.stdout);
     let err = String::from_utf8_lossy(&out.stderr);
@@ -95,12 +95,12 @@ fn status_does_not_claim_another_deployments_chap_core() {
 
 /// The gap this closes. A deployment can sit for good with chap-core `up`, the
 /// `dhis2` row `up` and the Modeling App unable to reach Chap at all, because
-/// the only line that ever named `varde dhis2 connect` was printed minutes
+/// the only line that ever named `chap-devops dhis2 connect` was printed minutes
 /// earlier, when the component was added and DHIS2 did not exist yet.
 ///
-/// So `varde status` says it under its verdict while `.varde/components.yaml`
+/// So `chap-devops status` says it under its verdict while `.chap-devops/components.yaml`
 /// records no connect - and stops the moment one is recorded. It is local
-/// knowledge and no request: what varde has recorded, never what DHIS2 is.
+/// knowledge and no request: what chap-devops has recorded, never what DHIS2 is.
 #[cfg(unix)]
 #[test]
 fn status_names_the_connect_a_running_dhis2_has_not_had() {
@@ -121,7 +121,7 @@ fn status_names_the_connect_a_running_dhis2_has_not_had() {
     let (_temp, bin) = docker_running_all(&["chap", "dhis2"]);
     let status = |sandbox: &Sandbox| {
         let mut cmd = chap_with_docker(sandbox, &dir, &bin, &["status", "--timeout", "2"]);
-        cmd.env("VARDE_NO_DOCKER_PROBE", "1");
+        cmd.env("CHAP_DEVOPS_NO_DOCKER_PROBE", "1");
         String::from_utf8_lossy(&cmd.assert().get_output().stdout).into_owned()
     };
 
@@ -131,17 +131,19 @@ fn status_names_the_connect_a_running_dhis2_has_not_had() {
         "{text}"
     );
     assert!(
-        text.contains("varde has not connected this DHIS2 to Chap; run `varde dhis2 connect`"),
+        text.contains(
+            "chap-devops has not connected this DHIS2 to Chap; run `chap-devops dhis2 connect`"
+        ),
         "{text}"
     );
     // Under the verdict, with the model hints, rather than on the row.
     let verdict = text.find("no models enabled").expect(&text);
-    let hint = text.find("varde has not connected").expect(&text);
+    let hint = text.find("chap-devops has not connected").expect(&text);
     assert!(hint > verdict, "{text}");
 
-    // A record of a connect stops it. Written here the way `varde dhis2
+    // A record of a connect stops it. Written here the way `chap-devops dhis2
     // connect` writes it, because this test has no DHIS2 to connect to.
-    let components = dir.join(".varde").join("components.yaml");
+    let components = dir.join(".chap-devops").join("components.yaml");
     let body = std::fs::read_to_string(&components).expect("components.yaml");
     std::fs::write(
         &components,
@@ -154,7 +156,7 @@ fn status_names_the_connect_a_running_dhis2_has_not_had() {
         text.contains(&format!("dhis2       up   http://localhost:{dhis2_port}")),
         "{text}"
     );
-    assert!(!text.contains("varde dhis2 connect"), "{text}");
+    assert!(!text.contains("chap-devops dhis2 connect"), "{text}");
 }
 
 /// The failure the request exists to catch. A DHIS2 container reports itself
@@ -174,7 +176,7 @@ fn status_does_not_call_a_dhis2_up_that_serves_pages_but_no_api() {
         &bin,
         &["status", "--json", "--timeout", "2"],
     );
-    status.env("VARDE_NO_DOCKER_PROBE", "1");
+    status.env("CHAP_DEVOPS_NO_DOCKER_PROBE", "1");
     let out = status.assert().get_output().stdout.clone();
     let report: Json = serde_json::from_slice(&out).expect("status --json is one document");
     let row = dhis2_row(&report);
@@ -187,7 +189,7 @@ fn status_does_not_call_a_dhis2_up_that_serves_pages_but_no_api() {
     );
 
     let mut status = chap_with_docker(&sandbox, &dir, &bin, &["status", "--timeout", "2"]);
-    status.env("VARDE_NO_DOCKER_PROBE", "1");
+    status.env("CHAP_DEVOPS_NO_DOCKER_PROBE", "1");
     let out = status.assert().get_output().stdout.clone();
     let text = String::from_utf8_lossy(&out).into_owned();
     assert!(text.contains("dhis2       starting"), "{text}");
@@ -230,7 +232,7 @@ fn status_json_carries_the_dhis2_row_on_a_dhis2_only_deployment() {
     assert_eq!(report["api"]["state"], "off", "{report}");
 }
 
-/// The three things `varde doctor` has to say about a DHIS2 deployment: the
+/// The three things `chap-devops doctor` has to say about a DHIS2 deployment: the
 /// component and its seed, the image it pulls, and the one file without which
 /// DHIS2 will not start at all.
 #[test]
@@ -272,7 +274,7 @@ fn doctor_reports_the_dhis2_component_its_image_and_a_missing_config() {
     assert!(text.contains("port dhis2"), "{text}");
 
     // Without `dhis2/dhis.conf` DHIS2 throws on startup, so its absence is a
-    // fault with `varde sync` as the way out.
+    // fault with `chap-devops sync` as the way out.
     std::fs::remove_file(dir.join("dhis2").join("dhis.conf")).expect("the scaffolded config");
     let assert = sandbox
         .chap()
@@ -286,7 +288,10 @@ fn doctor_reports_the_dhis2_component_its_image_and_a_missing_config() {
         text.contains("fail  components") && text.contains("dhis2/dhis.conf is missing"),
         "{text}"
     );
-    assert!(text.contains("run `varde sync` to scaffold"), "{text}");
+    assert!(
+        text.contains("run `chap-devops sync` to scaffold"),
+        "{text}"
+    );
 }
 
 /// A DHIS2 added or kept after `init` picks its version with
@@ -337,7 +342,7 @@ fn components_enable_dhis2_picks_its_version() {
         .stderr(predicates::str::contains("DHIS2 settings"));
 }
 
-/// `varde update` re-pulls every enabled component's image, DHIS2's among them,
+/// `chap-devops update` re-pulls every enabled component's image, DHIS2's among them,
 /// and says so before it pulls anything.
 ///
 /// The warning beside it is the part DHIS2 needs and the others do not. Nothing
@@ -367,7 +372,7 @@ fn update_lists_the_dhis2_image_and_warns_about_the_migration() {
     // The fake docker answers every `volume inspect` with success, so `dhis2_db`
     // is there as far as this run can tell - which is when the line is earned.
     assert!(stderr.contains("`dhis2/core:2.42`"), "{stderr}");
-    assert!(stderr.contains("varde backup create"), "{stderr}");
+    assert!(stderr.contains("chap-devops backup create"), "{stderr}");
     assert!(stderr.contains("404s"), "{stderr}");
     // Not the `components enable dhis2` wording, which names two tags.
     assert!(!stderr.contains("moves from"), "{stderr}");
@@ -500,7 +505,7 @@ fn dhis2_show_names_a_route_whose_token_chap_core_refuses() {
         .stdout(predicates::str::contains(
             "the `chap` route does not carry chap-core's API token",
         ))
-        .stdout(predicates::str::contains("varde dhis2 connect"));
+        .stdout(predicates::str::contains("chap-devops dhis2 connect"));
 
     dhis2_chap(&sandbox, &dir, &bin, None, &["route", "-v"])
         .assert()
@@ -592,7 +597,7 @@ fn dhis2_route_leaves_a_route_that_already_matches_alone() {
 /// The refusal `route.remote_servers_allowed` produces, measured: this is the
 /// body a live DHIS2 2.42.6 answers with.
 ///
-/// Up to and including 0.4.0 none of the three phrases `varde` looked for -
+/// Up to and including 0.4.0 none of the three phrases `chap-devops` looked for -
 /// `remote server`, `not allowed`, `allowlist` - were anywhere in it, so the
 /// branch never fired and the operator got the passthrough:
 /// `answered HTTP 409 Conflict: Route URL is not permitted`, which is true and
@@ -618,7 +623,7 @@ fn dhis2_route_names_the_allowlist_and_the_restart_that_applies_it() {
         .stderr(predicates::str::contains("`dhis2/dhis.conf`"))
         // A plain restart applies it: `restart` recreates a service whose
         // mounted config changed since it started.
-        .stderr(predicates::str::contains("run `varde restart dhis2`"));
+        .stderr(predicates::str::contains("run `chap-devops restart dhis2`"));
 
     let stderr = String::from_utf8_lossy(&assert.get_output().stderr).into_owned();
     assert!(!stderr.contains("--all"), "{stderr}");
@@ -650,7 +655,7 @@ fn dhis2_reports_what_to_fix_when_the_credentials_are_refused() {
         ))
         .stderr(predicates::str::contains("DHIS2_ADMIN_USERNAME"))
         .stderr(predicates::str::contains("DHIS2_ADMIN_PASSWORD"))
-        .stderr(predicates::str::contains("VARDE_DHIS2_PASSWORD"));
+        .stderr(predicates::str::contains("CHAP_DEVOPS_DHIS2_PASSWORD"));
     let stderr = String::from_utf8_lossy(&assert.get_output().stderr).into_owned();
     assert!(!stderr.contains("district"), "{stderr}");
     assert!(!stderr.contains("request failed"), "{stderr}");
@@ -662,18 +667,18 @@ fn dhis2_reports_what_to_fix_when_the_credentials_are_refused() {
         .assert()
         .failure()
         .stderr(predicates::str::contains(
-            "varde has no password for DHIS2 user `ops`",
+            "chap-devops has no password for DHIS2 user `ops`",
         ))
-        .stderr(predicates::str::contains("VARDE_DHIS2_PASSWORD"));
+        .stderr(predicates::str::contains("CHAP_DEVOPS_DHIS2_PASSWORD"));
     assert_eq!(stand_in.asked().len(), asked, "{:?}", stand_in.asked());
 
     // One exported for the run is theirs, and the refusal then names them.
     dhis2_chap(&sandbox, &dir, &bin, None, &["route", "--user", "ops"])
-        .env("VARDE_DHIS2_PASSWORD", "theirs")
+        .env("CHAP_DEVOPS_DHIS2_PASSWORD", "theirs")
         .assert()
         .failure()
         .stderr(predicates::str::contains(
-            "did not accept the password for `ops` (password from VARDE_DHIS2_PASSWORD)",
+            "did not accept the password for `ops` (password from CHAP_DEVOPS_DHIS2_PASSWORD)",
         ));
 }
 
@@ -767,7 +772,7 @@ fn dhis2_analytics_no_wait_starts_the_run_and_names_the_way_back() {
         "started the analytics run (job job-1)",
     ))
     .stdout(predicates::str::contains(
-        "hint: run `varde dhis2 analytics` again to watch the same run",
+        "hint: run `chap-devops dhis2 analytics` again to watch the same run",
     ));
 
     assert!(
@@ -798,7 +803,7 @@ fn dhis2_apps_resolves_the_version_on_the_app_hub_and_has_dhis2_install_it() {
             "installed DHIS2 Climate App 1.16.2",
         ))
         .stdout(predicates::str::contains(
-            "hint: open DHIS2 with `varde open dhis2`",
+            "hint: open DHIS2 with `chap-devops open dhis2`",
         ))
         // The sentence the blank bound produced, which was false.
         .stdout(predicates::str::contains("no version of").not());
@@ -875,7 +880,7 @@ fn dhis2_show_reports_every_piece_that_is_missing() {
             "apps       Modeling App not installed, DHIS2 Climate App not installed",
         ))
         .stdout(predicates::str::contains(
-            "run `varde dhis2 connect` to do the rest",
+            "run `chap-devops dhis2 connect` to do the rest",
         ));
 
     let asked = stand_in.asked();
@@ -887,11 +892,11 @@ fn dhis2_show_reports_every_piece_that_is_missing() {
     );
 }
 
-/// The `apps` row is the two apps varde installs, and never the instance's own
+/// The `apps` row is the two apps chap-devops installs, and never the instance's own
 /// thirty. A real 2.42.6 lists 29 bundled apps, and they buried the answer.
 #[cfg(unix)]
 #[test]
-fn dhis2_show_reports_only_the_two_apps_varde_installs() {
+fn dhis2_show_reports_only_the_two_apps_chap_devops_installs() {
     let bundled = |name: &str, key: &str, version: &str| serde_json::json!({"name": name, "key": key, "version": version, "bundled": true});
     let stand_in = Dhis2StandIn::with(Dhis2State {
         apps: vec![
@@ -899,7 +904,7 @@ fn dhis2_show_reports_only_the_two_apps_varde_installs() {
             bundled("Cache Cleaner", "cache-cleaner", "100.2.2"),
             bundled("Maintenance app", "maintenance", "32.34.1-v42.0"),
             // The instance's own spelling of the Modeling App, which is the
-            // App Hub's and not varde'.
+            // App Hub's and not chap-devops'.
             serde_json::json!({"name": "Modeling", "key": "modeling", "version": "7.1.0"}),
         ],
         ..Dhis2State::default()
@@ -944,7 +949,7 @@ fn dhis2_show_reports_only_the_two_apps_varde_installs() {
 ///
 /// Measured on a real 2.42.6 with the Laos climate demo: `show` reported a last
 /// success of 2026-06-16 while `analytics_2024` did not exist at all - the
-/// table was absent, not empty. varde cannot look at the tables, so it says
+/// table was absent, not empty. chap-devops cannot look at the tables, so it says
 /// what it checked and puts the question in front of the operator.
 #[cfg(unix)]
 #[test]
@@ -964,9 +969,9 @@ fn dhis2_show_does_not_call_an_inherited_analytics_timestamp_evidence() {
         .stdout(predicates::str::contains(
             "missing: analytics may never have run on this deployment",
         ))
-        .stdout(predicates::str::contains("`varde dhis2 analytics`"))
+        .stdout(predicates::str::contains("`chap-devops dhis2 analytics`"))
         // Not the sentence for an instance that has never run it: it may well
-        // have, and varde has no way to tell.
+        // have, and chap-devops has no way to tell.
         .stdout(predicates::str::contains("analytics has never run").not());
 
     let report = json_of(&mut dhis2_chap(
@@ -1154,7 +1159,7 @@ fn dhis2_connect_does_the_route_the_apps_and_then_analytics() {
         .stdout(predicates::str::contains("installed Modeling App 7.1.0"))
         .stdout(predicates::str::contains("analytics finished in"))
         .stdout(predicates::str::contains(
-            "the Modeling App can reach Chap; open DHIS2 with `varde open dhis2`",
+            "the Modeling App can reach Chap; open DHIS2 with `chap-devops open dhis2`",
         ));
 
     // The order is the route, then the apps, then the long one.
@@ -1192,7 +1197,7 @@ fn dhis2_connect_offline_skips_the_apps_and_reports_the_skip() {
         .stdout(predicates::str::contains("skipped:"))
         .stdout(predicates::str::contains("App Hub"))
         .stdout(predicates::str::contains(
-            "run `varde dhis2 show` to see what is still missing",
+            "run `chap-devops dhis2 show` to see what is still missing",
         ));
 
     assert!(
@@ -1206,10 +1211,10 @@ fn dhis2_connect_offline_skips_the_apps_and_reports_the_skip() {
 }
 
 /// The record `connect` leaves behind, which is the whole of what stops
-/// `varde up` and `varde status` asking for it again.
+/// `chap-devops up` and `chap-devops status` asking for it again.
 ///
 /// It is written only when the run got as far as a verified route and both
-/// apps, it says in the report what it is worth, and it names `varde dhis2
+/// apps, it says in the report what it is worth, and it names `chap-devops dhis2
 /// show` as the thing that actually asks DHIS2.
 #[cfg(unix)]
 #[test]
@@ -1217,7 +1222,7 @@ fn dhis2_connect_records_that_it_ran_and_says_what_the_record_is_worth() {
     let stand_in = Dhis2StandIn::new();
     let (sandbox, dir, _temp, bin) = dhis2_connected(&stand_in);
     let recorded = || {
-        let body = std::fs::read_to_string(dir.join(".varde").join("components.yaml"))
+        let body = std::fs::read_to_string(dir.join(".chap-devops").join("components.yaml"))
             .expect("components.yaml");
         body.lines()
             .find(|line| line.trim_start().starts_with("connected_at:"))
@@ -1240,21 +1245,21 @@ fn dhis2_connect_records_that_it_ran_and_says_what_the_record_is_worth() {
     .assert()
     .success()
     .stdout(predicates::str::contains(
-        "hint: recorded the connect in `.varde/components.yaml`, so `varde up` and \
-             `varde status` stop asking for it",
+        "hint: recorded the connect in `.chap-devops/components.yaml`, so `chap-devops up` and \
+             `chap-devops status` stop asking for it",
     ))
     // The caveat sits where the record is, because this is the one moment
     // it could be taken for a verdict.
     .stdout(predicates::str::contains(
         "hint: the record says that this ran, not that the route is still right; \
-             `varde dhis2 show` asks DHIS2",
+             `chap-devops dhis2 show` asks DHIS2",
     ));
 
     let at = recorded();
     assert!(at.starts_with("connected_at: 20"), "{at}");
     assert!(at.ends_with('Z'), "a UTC timestamp: {at}");
 
-    // And `varde status` stops asking for it. chap-core is not answering in
+    // And `chap-devops status` stops asking for it. chap-core is not answering in
     // this sandbox, so the row is what proves the state was read at all.
     let mut status = chap_with_docker(
         &sandbox,
@@ -1262,7 +1267,7 @@ fn dhis2_connect_records_that_it_ran_and_says_what_the_record_is_worth() {
         &bin,
         &["status", "--json", "--timeout", "2"],
     );
-    status.env("VARDE_NO_DOCKER_PROBE", "1");
+    status.env("CHAP_DEVOPS_NO_DOCKER_PROBE", "1");
     let out = status.assert().get_output().stdout.clone();
     let report: Json = serde_json::from_slice(&out).expect("status --json is one document");
     assert_eq!(report["dhis2_needs_connecting"], false, "{report}");
@@ -1275,15 +1280,15 @@ fn dhis2_connect_records_that_it_ran_and_says_what_the_record_is_worth() {
 /// A deployment nothing has connected keeps its empty record, because one step
 /// is not a connection. A deployment that **was** connected keeps the record it
 /// has: the apps are still in DHIS2, this run simply did not look, and clearing
-/// on a flag that turned off an unrelated step would make `varde up` say varde
-/// has not connected a DHIS2 varde connected.
+/// on a flag that turned off an unrelated step would make `chap-devops up` say chap-devops
+/// has not connected a DHIS2 chap-devops connected.
 #[cfg(unix)]
 #[test]
 fn dhis2_connect_offline_leaves_the_record_as_it_found_it() {
     let stand_in = Dhis2StandIn::new();
     let (sandbox, dir, _temp, bin) = dhis2_connected(&stand_in);
     let recorded = || {
-        std::fs::read_to_string(dir.join(".varde").join("components.yaml"))
+        std::fs::read_to_string(dir.join(".chap-devops").join("components.yaml"))
             .expect("components.yaml")
     };
 
@@ -1333,7 +1338,7 @@ fn dhis2_connect_offline_leaves_the_record_as_it_found_it() {
 
 /// The record is about a DHIS2 instance, so it dies with the component.
 ///
-/// `varde components disable dhis2 --purge` removes `dhis2_db`; re-enabling
+/// `chap-devops components disable dhis2 --purge` removes `dhis2_db`; re-enabling
 /// restores the seed dump, **which ships its own `chap` route pointing at an
 /// external server**. A record that survived that would suppress the one line
 /// asking the operator to repoint it, so `disable` forgets it either way round
@@ -1347,7 +1352,7 @@ fn disabling_dhis2_forgets_the_connect_it_had_recorded() {
     dhis2_chap(&sandbox, &dir, &bin, Some(stand_in.port), &["connect"])
         .assert()
         .success();
-    let body = std::fs::read_to_string(dir.join(".varde").join("components.yaml"))
+    let body = std::fs::read_to_string(dir.join(".chap-devops").join("components.yaml"))
         .expect("components.yaml");
     assert!(!body.contains("connected_at: null"), "{body}");
 
@@ -1356,11 +1361,11 @@ fn disabling_dhis2_forgets_the_connect_it_had_recorded() {
         .assert()
         .success()
         .stdout(predicates::str::contains(
-            "hint: the record of `varde dhis2 connect` is forgotten with the component; \
+            "hint: the record of `chap-devops dhis2 connect` is forgotten with the component; \
              a DHIS2 enabled here again is asked to connect afresh",
         ));
 
-    let body = std::fs::read_to_string(dir.join(".varde").join("components.yaml"))
+    let body = std::fs::read_to_string(dir.join(".chap-devops").join("components.yaml"))
         .expect("components.yaml");
     assert!(body.contains("connected_at: null"), "{body}");
 
@@ -1369,7 +1374,7 @@ fn disabling_dhis2_forgets_the_connect_it_had_recorded() {
         .components(&["enable", "dhis2", "--port", &stand_in.port.to_string()])
         .assert()
         .success();
-    let body = std::fs::read_to_string(dir.join(".varde").join("components.yaml"))
+    let body = std::fs::read_to_string(dir.join(".chap-devops").join("components.yaml"))
         .expect("components.yaml");
     assert!(body.contains("connected_at: null"), "{body}");
 
@@ -1379,7 +1384,7 @@ fn disabling_dhis2_forgets_the_connect_it_had_recorded() {
         .components(&["disable", "dhis2"])
         .assert()
         .success()
-        .stdout(predicates::str::contains("varde dhis2 connect").not());
+        .stdout(predicates::str::contains("chap-devops dhis2 connect").not());
 }
 
 /// A deployment this DHIS2 is not part of, and one whose DHIS2 keeps its port
@@ -1403,7 +1408,9 @@ fn dhis2_refuses_a_deployment_without_a_reachable_dhis2() {
         .stderr(predicates::str::contains(
             "dhis2 is not a component of this deployment, so there is no DHIS2 to ask",
         ))
-        .stderr(predicates::str::contains("`varde components enable dhis2`"));
+        .stderr(predicates::str::contains(
+            "`chap-devops components enable dhis2`",
+        ));
 
     // Enabled, publishing no host port: there is nothing to reach from here.
     sandbox
@@ -1422,7 +1429,7 @@ fn dhis2_refuses_a_deployment_without_a_reachable_dhis2() {
         ))
         .stderr(predicates::str::contains("http://dhis2:8080"))
         .stderr(predicates::str::contains(
-            "`varde components enable dhis2 --port N`",
+            "`chap-devops components enable dhis2 --port N`",
         ));
 }
 
@@ -1434,15 +1441,15 @@ fn dhis2_outside_a_project_says_so() {
     chap_in(&sandbox, sandbox.home.path(), &["dhis2"])
         .assert()
         .failure()
-        .stderr(predicates::str::contains("not a varde deployment"));
+        .stderr(predicates::str::contains("not a chap-devops deployment"));
     chap_in(&sandbox, sandbox.home.path(), &["dhis2", "show"])
         .assert()
         .failure()
-        .stderr(predicates::str::contains("not a varde deployment"));
+        .stderr(predicates::str::contains("not a chap-devops deployment"));
 }
 
 /// Enabling the component says the two halves cannot talk yet and names the one
-/// command that connects them. `varde up` does not do it: see the chapter.
+/// command that connects them. `chap-devops up` does not do it: see the chapter.
 #[test]
 fn enabling_dhis2_names_the_command_that_connects_it_to_chap() {
     let sandbox = Sandbox::new();
@@ -1454,7 +1461,7 @@ fn enabling_dhis2_names_the_command_that_connects_it_to_chap() {
         .components(&["enable", "dhis2", "--port", &free_port().to_string()])
         .assert()
         .success()
-        .stdout(predicates::str::contains("`varde dhis2 connect`"))
+        .stdout(predicates::str::contains("`chap-devops dhis2 connect`"))
         .stdout(predicates::str::contains(
             "the Modeling App reaches chap-core through a DHIS2 route",
         ));
@@ -1468,7 +1475,10 @@ fn enabling_dhis2_names_the_command_that_connects_it_to_chap() {
 
     // A new port on a DHIS2 that a connect is recorded for leaves the route
     // as it is, so the note does not come back.
-    let components = sandbox.project().join(".varde").join("components.yaml");
+    let components = sandbox
+        .project()
+        .join(".chap-devops")
+        .join("components.yaml");
     let body = read(&components);
     std::fs::write(
         &components,
@@ -1484,7 +1494,7 @@ fn enabling_dhis2_names_the_command_that_connects_it_to_chap() {
 }
 
 /// `components enable dhis2 --seed` sets the seed that the messages name, so
-/// nobody has to edit `.varde/components.yaml` by hand.
+/// nobody has to edit `.chap-devops/components.yaml` by hand.
 #[test]
 fn enable_dhis2_seed_sets_the_seed_of_a_new_database() {
     let sandbox = Sandbox::new();
@@ -1502,17 +1512,20 @@ fn enable_dhis2_seed_sets_the_seed_of_a_new_database() {
         .assert()
         .success()
         .stderr(predicates::str::contains(
-            "`varde components enable dhis2 --seed URL`",
+            "`chap-devops components enable dhis2 --seed URL`",
         ))
         .stderr(predicates::str::contains("components.yaml").not());
-    let components = sandbox.project().join(".varde").join("components.yaml");
+    let components = sandbox
+        .project()
+        .join(".chap-devops")
+        .join("components.yaml");
 
     sandbox
         .components(&["enable", "dhis2", "--seed", "dumps/mine.sql.gz"])
         .assert()
         .success()
         .stderr(predicates::str::contains(
-            "or run `varde components enable dhis2 --seed none`",
+            "or run `chap-devops components enable dhis2 --seed none`",
         ));
     assert!(
         read(&components).contains("seed: dumps/mine.sql.gz"),

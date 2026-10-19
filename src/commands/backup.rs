@@ -1,4 +1,4 @@
-//! `varde backup create` — write a deployment into one `tar.gz`.
+//! `chap-devops backup create` — write a deployment into one `tar.gz`.
 //!
 //! Four parts, each skippable: the project files (a plain copy), the chap-core
 //! database (`pg_dump -Fc` through the running postgres container), one tar
@@ -6,7 +6,7 @@
 //! mounts the same volume the model does) and one tar per component data
 //! volume (read through a busybox container, since no component one-shot
 //! mounts a volume the archive holds). Everything is staged under
-//! `.varde/tmp/`, packed in one `tar -czf` into a temporary sibling of the
+//! `.chap-devops/tmp/`, packed in one `tar -czf` into a temporary sibling of the
 //! destination and renamed into place, so a failure halfway leaves no
 //! half-written archive and any archive already at that path exactly as it was.
 //!
@@ -32,7 +32,7 @@ use quiesce::Running;
 use serde::Serialize;
 use std::path::{Path, PathBuf};
 
-/// The shape of `varde backup create --json`.
+/// The shape of `chap-devops backup create --json`.
 #[derive(Debug, Serialize)]
 pub struct BackupReport {
     pub path: PathBuf,
@@ -47,7 +47,7 @@ pub struct BackupReport {
 ///
 /// Ctrl-C stops the run at the next step: the service held still is let go,
 /// no archive is written and the stage is removed. A second Ctrl-C exits at
-/// once, and `varde up` then resumes what is still paused.
+/// once, and `chap-devops up` then resumes what is still paused.
 pub fn run(ctx: &Ctx, args: &BackupCreateArgs) -> Result<()> {
     let project = ctx.project()?;
     let out = destination(&project, args.out.as_deref())?;
@@ -80,7 +80,7 @@ fn interrupted(resumed: &[String], stuck: &[String]) -> anyhow::Error {
     }
     if !stuck.is_empty() {
         said.push(format!(
-            "{} could not be started again; run `varde up` to resume {}",
+            "{} could not be started again; run `chap-devops up` to resume {}",
             stuck.join(", "),
             if stuck.len() == 1 { "it" } else { "them" }
         ));
@@ -97,7 +97,7 @@ fn create(
     args: &BackupCreateArgs,
 ) -> Result<()> {
     let out = out.to_path_buf();
-    let stage = Stage::new(&project.varde_dir(), "backup")?;
+    let stage = Stage::new(&project.chap_devops_dir(), "backup")?;
     let mut members = vec![MANIFEST_MEMBER.to_string()];
 
     // Files. Always: without them the archive says nothing about what it is a
@@ -142,7 +142,7 @@ fn create(
 
     let manifest = Manifest {
         schema_version: backup::SCHEMA_VERSION,
-        created_by: format!("varde {}", ctx.cli_version),
+        created_by: format!("chap-devops {}", ctx.cli_version),
         created_at: backup::timestamp(backup::now()),
         project: project_name(&project.dir),
         chap_image_tag: (!no_chap_core).then(|| project.state.chap_image_tag.clone()),
@@ -173,7 +173,7 @@ fn create(
         }
         return Err(anyhow::anyhow!(
             "{} was written without the data of {} (see the warnings above); fix what stopped \
-             the read, then `varde backup create` again",
+             the read, then `chap-devops backup create` again",
             out.display(),
             failed.join(", ")
         ));
@@ -265,7 +265,7 @@ fn destination(project: &Project, out: Option<&Path>) -> Result<PathBuf> {
 fn project_name(dir: &Path) -> String {
     dir.file_name()
         .map(|n| n.to_string_lossy().into_owned())
-        .unwrap_or_else(|| "varde".to_string())
+        .unwrap_or_else(|| "chap-devops".to_string())
 }
 
 /// Where the archive landed, then what went in, with sizes, under `-v`.
@@ -324,7 +324,7 @@ fn say(report: &BackupReport, lines: &mut output::Report) {
         };
     }
     lines.hint(format!(
-        "`varde backup restore {}` restores it",
+        "`chap-devops backup restore {}` restores it",
         report.path.display()
     ));
 }

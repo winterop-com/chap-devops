@@ -1,9 +1,9 @@
-//! `varde sync`, `update`, `up`, `down`, `logs`, `restart` and `varde docker`:
+//! `chap-devops sync`, `update`, `up`, `down`, `logs`, `restart` and `chap-devops docker`:
 //! rendering the compose files and running them.
 
 use clap::{Args, Subcommand};
 
-/// Render the compose files from .varde/
+/// Render the compose files from .chap-devops/
 #[derive(Debug, Clone, Args)]
 pub struct SyncArgs {
     /// Write nothing; exit non-zero if anything would change
@@ -50,7 +50,7 @@ pub struct UpArgs {
     #[arg(long)]
     pub no_preflight: bool,
 
-    /// First stop the other varde deployments that hold these ports
+    /// First stop the other chap-devops deployments that hold these ports
     #[arg(long, conflicts_with = "no_preflight")]
     pub replace: bool,
 
@@ -207,7 +207,7 @@ pub struct ConfigArgs {
 /// The docker compose wrappers, as one value for `commands::docker::run`.
 ///
 /// Flat on purpose: `up`, `down` and `logs` are top-level commands while the
-/// rest live under `varde docker`, but all of them build one argument list and
+/// rest live under `chap-devops docker`, but all of them build one argument list and
 /// run down the same path.
 #[derive(Debug, Clone)]
 pub enum DockerCmd {

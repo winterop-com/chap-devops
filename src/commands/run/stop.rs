@@ -1,4 +1,4 @@
-//! `varde stop`, and the stop key of `varde top`.
+//! `chap-devops stop`, and the stop key of `chap-devops top`.
 
 use super::group::remove_if_empty;
 use super::ps::scope;
@@ -12,7 +12,7 @@ use crate::project::Project;
 use serde::Serialize;
 use std::path::{Path, PathBuf};
 
-/// What `varde stop` did, for `--json`.
+/// What `chap-devops stop` did, for `--json`.
 #[derive(Debug, Serialize)]
 struct StopReport {
     stopped: Vec<StoppedModel>,
@@ -33,7 +33,7 @@ struct StoppedModel {
 
 /// Stop a model, or every model in scope: its container goes and its overlay
 /// with it; the data volume stays unless `--purge` says otherwise, and the
-/// definition of a model that was added stays too, so `varde run` starts it
+/// definition of a model that was added stays too, so `chap-devops run` starts it
 /// again without asking GitHub.
 pub fn stop(ctx: &Ctx, args: &ModelStopArgs) -> Result<()> {
     let scope = scope(ctx, args.group.as_deref())?;
@@ -59,10 +59,10 @@ pub fn stop(ctx: &Ctx, args: &ModelStopArgs) -> Result<()> {
     if let Some(id) = &args.id {
         if wanted.is_empty() {
             return Err(anyhow::anyhow!(
-                "{id} is not running {}; `varde ps` lists what is",
+                "{id} is not running {}; `chap-devops ps` lists what is",
                 match scope.as_slice() {
                     [(None, dir)] => format!("in {}", dir.display()),
-                    _ => "in any `varde run` group".to_string(),
+                    _ => "in any `chap-devops run` group".to_string(),
                 }
             ));
         }
@@ -124,7 +124,7 @@ pub fn stop(ctx: &Ctx, args: &ModelStopArgs) -> Result<()> {
     ctx.out.report_ok(&report, |lines| say(&report, lines))
 }
 
-/// The closing lines of `varde stop`.
+/// The closing lines of `chap-devops stop`.
 fn say(report: &StopReport, lines: &mut Report) {
     if report.stopped.is_empty() {
         lines.info("nothing was running to stop");
@@ -146,14 +146,14 @@ fn say(report: &StopReport, lines: &mut Report) {
         lines.hint(format!("removed volume {volume}"));
     }
     match report.stopped.as_slice() {
-        [] => lines.hint("`varde ps` lists what runs"),
+        [] => lines.hint("`chap-devops ps` lists what runs"),
         [one] => lines.hint(match one.group.as_deref() {
             Some(g) if g != DEFAULT_GROUP => {
-                format!("`varde run {} --group {g}` starts it again", one.id)
+                format!("`chap-devops run {} --group {g}` starts it again", one.id)
             }
-            _ => format!("`varde run {}` starts it again", one.id),
+            _ => format!("`chap-devops run {}` starts it again", one.id),
         }),
-        _ => lines.hint("`varde run <model>` starts one again"),
+        _ => lines.hint("`chap-devops run <model>` starts one again"),
     };
 }
 
@@ -175,7 +175,7 @@ fn say_note(report: &crate::commands::enable::DisableReport, note: &str, lines: 
 }
 
 /// Stop one enabled model of the deployment in `dir`, printing nothing: what
-/// `varde stop` and the stop key of `varde top` share.
+/// `chap-devops stop` and the stop key of `chap-devops top` share.
 pub(crate) fn stop_in(
     ctx: &Ctx,
     dir: &Path,

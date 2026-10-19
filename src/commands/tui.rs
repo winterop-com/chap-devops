@@ -1,4 +1,4 @@
-//! `varde ui` — the browser: marketplace models on one page, the components
+//! `chap-devops ui` — the browser: marketplace models on one page, the components
 //! this deployment is made of on the other.
 //!
 //! The browser returns a [`Selection`](crate::compose::Selection); applying
@@ -20,7 +20,7 @@ use crate::tui::run_tui;
 /// `--json` is rejected before this is reached.
 pub fn run(ctx: &Ctx, _args: &UiArgs) -> Result<()> {
     // The browser edits a deployment, so there has to be one; the error already
-    // tells the user to run `varde init`.
+    // tells the user to run `chap-devops init`.
     let project = ctx.project()?;
     let registry = super::registry_for(ctx, Some(&project))?;
 
@@ -28,18 +28,18 @@ pub fn run(ctx: &Ctx, _args: &UiArgs) -> Result<()> {
         return ctx.out.report(&serde_json::json!({}), |lines| {
             lines
                 .info("left the browser; nothing was written")
-                .hint("`varde ui` opens it again");
+                .hint("`chap-devops ui` opens it again");
         });
     };
     if selection.is_empty() {
         return ctx.out.report(&serde_json::json!({}), |lines| {
             lines
                 .info("no changes to save")
-                .hint("`varde ui` opens the browser again");
+                .hint("`chap-devops ui` opens the browser again");
         });
     }
 
-    // The browser may have been open for minutes, and another varde may have
+    // The browser may have been open for minutes, and another chap-devops may have
     // changed the deployment meanwhile: the selection is applied to the state
     // as it is now, read under the lock that keeps it so until the save.
     let (project, _lock) = ctx.project_mut()?;
@@ -134,7 +134,7 @@ fn summary(report: &ApplyReport, notes: &[String], lines: &mut Report) {
     }
     match report.is_empty() {
         true => lines.info("no changes"),
-        false => lines.info("run `varde up` to apply"),
+        false => lines.info("run `chap-devops up` to apply"),
     };
 }
 

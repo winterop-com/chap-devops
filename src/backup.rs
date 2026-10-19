@@ -1,12 +1,12 @@
 //! The backup archive: its layout, its manifest, and the pure helpers
-//! `varde backup create` and `varde backup restore` share.
+//! `chap-devops backup create` and `chap-devops backup restore` share.
 //!
 //! An archive is a plain `tar.gz` with five kinds of member, all optional
 //! but the first:
 //!
 //! ```text
 //! manifest.yaml            what this archive is and what it holds
-//! files/                   .env, .varde/**, the directory of every component
+//! files/                   .env, .chap-devops/**, the directory of every component
 //!                          that has one, and every compose*.yml
 //! db/chap_core.dump        pg_dump -Fc of the chap-core database
 //! models/<service_id>.tar  one model data volume, as tar saw it
@@ -14,11 +14,11 @@
 //!                          with several volumes has a member for each
 //! ```
 //!
-//! Nothing in here is varde-specific magic: `tar`, `pg_restore` and a busybox
+//! Nothing in here is chap-devops-specific magic: `tar`, `pg_restore` and a busybox
 //! container can put a deployment back together without this CLI, which is the
 //! point of keeping the layout this flat. The archive is built and read with
 //! the system `tar` binary rather than a Rust tar crate, so what an operator
-//! sees with `tar -tzf` is exactly what `varde backup restore` sees.
+//! sees with `tar -tzf` is exactly what `chap-devops backup restore` sees.
 
 mod dhis2;
 mod files;
@@ -59,7 +59,7 @@ pub const DB_MEMBER: &str = "db/chap_core.dump";
 pub const MODELS_MEMBER: &str = "models";
 /// Archive member holding the component data tars.
 pub const COMPONENTS_MEMBER: &str = "components";
-/// Scratch directory inside `.varde/`, never part of a backup.
+/// Scratch directory inside `.chap-devops/`, never part of a backup.
 pub const TMP_DIR: &str = "tmp";
 /// Where `backup restore` parks the `.env` it is about to replace.
 pub const ENV_BACKUP_FILE: &str = ".env.before-restore";
@@ -88,7 +88,7 @@ pub fn component_member(member: &str) -> String {
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct Manifest {
     pub schema_version: u32,
-    /// e.g. `varde 0.1.0`.
+    /// e.g. `chap-devops 0.1.0`.
     pub created_by: String,
     /// UTC, `YYYY-MM-DDTHH:MM:SSZ`.
     pub created_at: String,
@@ -159,7 +159,7 @@ pub struct ManifestModel {
     #[serde(default)]
     pub host_port: Option<u16>,
     pub data_dir: String,
-    /// `user:group` the service runs as, as recorded in `.varde/models.yaml`.
+    /// `user:group` the service runs as, as recorded in `.chap-devops/models.yaml`.
     pub user: String,
     /// Named volume the data directory lives in.
     pub volume: String,
@@ -225,14 +225,14 @@ pub struct ManifestComponent {
 pub fn parse_manifest(body: &str, archive: &Path) -> Result<Manifest> {
     let manifest: Manifest = serde_yaml_ng::from_str(body).map_err(|e| {
         anyhow::anyhow!(
-            "{}: its {MANIFEST_MEMBER} is not a varde backup manifest: {e}",
+            "{}: its {MANIFEST_MEMBER} is not a chap-devops backup manifest: {e}",
             archive.display()
         )
     })?;
     if manifest.schema_version > SCHEMA_VERSION {
         return Err(anyhow::anyhow!(
-            "{}: manifest schema version {} is newer than this varde understands ({SCHEMA_VERSION}); \
-             upgrade varde",
+            "{}: manifest schema version {} is newer than this chap-devops understands ({SCHEMA_VERSION}); \
+             upgrade chap-devops",
             archive.display(),
             manifest.schema_version
         ));
@@ -243,7 +243,7 @@ pub fn parse_manifest(body: &str, archive: &Path) -> Result<Manifest> {
 /// Serialise a manifest the way it is written into an archive.
 pub fn render_manifest(manifest: &Manifest) -> Result<String> {
     Ok(format!(
-        "# varde backup manifest. `varde backup restore` reads this; \
+        "# chap-devops backup manifest. `chap-devops backup restore` reads this; \
          `tar -xzf <archive> -O {MANIFEST_MEMBER}` prints it.\n{}",
         serde_yaml_ng::to_string(manifest)?
     ))
@@ -251,7 +251,7 @@ pub fn render_manifest(manifest: &Manifest) -> Result<String> {
 
 // ---------------------------------------------------------------- naming ---
 
-/// Default archive name: `varde-backup-<project>-<YYYYMMDD-HHMMSS>.tar.gz`.
+/// Default archive name: `chap-devops-backup-<project>-<YYYYMMDD-HHMMSS>.tar.gz`.
 ///
 /// The project name is folded to the characters a file name should hold, so a
 /// directory called `Chap prod (eu)` still yields something scriptable.
@@ -268,9 +268,9 @@ pub fn archive_name(project: &str, stamp: &str) -> String {
     }
     let safe = safe.trim_matches('-').to_string();
     if safe.is_empty() {
-        format!("varde-backup-{stamp}.tar.gz")
+        format!("chap-devops-backup-{stamp}.tar.gz")
     } else {
-        format!("varde-backup-{safe}-{stamp}.tar.gz")
+        format!("chap-devops-backup-{safe}-{stamp}.tar.gz")
     }
 }
 
@@ -298,7 +298,7 @@ pub fn resolve_out_path(
 /// `path`, or the first of `<stem>-2.tar.gz`, `<stem>-3.tar.gz`, ... that
 /// does not exist yet.
 ///
-/// For a name varde made up: two backups in the same second get the same
+/// For a name chap-devops made up: two backups in the same second get the same
 /// stamp, and the second must not replace the first without a word. A path
 /// the operator wrote out is theirs to overwrite, so it does not come here.
 pub fn unused_path(path: PathBuf, exists: impl Fn(&Path) -> bool) -> PathBuf {

@@ -1,14 +1,14 @@
-//! `varde auth` — the API token and the service registration key.
+//! `chap-devops auth` — the API token and the service registration key.
 //!
 //! Four verbs over the same two `.env` lines: `show` reads them, `enable`
 //! writes them, `disable` comments them out and `rotate` replaces them. The
-//! values never leave `.env`; `.varde/project.yaml` only records which of them
+//! values never leave `.env`; `.chap-devops/project.yaml` only records which of them
 //! are in use, and the model overlays are re-rendered from that so each
 //! service sends the registration key when there is one.
 //!
 //! Nothing here restarts anything. chap-core and the model containers read
 //! `.env` when compose creates them, so every command that changes a secret
-//! ends by saying that `varde up` has to follow.
+//! ends by saying that `chap-devops up` has to follow.
 
 use crate::auth::{
     self, API_TOKEN_ENV_VAR, MODELING_APP_HINT, REGISTRATION_KEY_ENV_VAR, write_secrets,
@@ -21,38 +21,38 @@ use crate::output::{self, Out, Report};
 use crate::project::{AuthState, ENV_FILE, Project};
 use std::path::Path;
 
-/// The `varde up` reminder for this deployment, `with` or `without`
+/// The `chap-devops up` reminder for this deployment, `with` or `without`
 /// authentication: neither chap-core nor a model re-reads `.env` while its
 /// container exists.
 ///
-/// A chap-core elsewhere is not one `varde up` restarts, so the line names
+/// A chap-core elsewhere is not one `chap-devops up` restarts, so the line names
 /// only the models, and a second line says what that chap-core needs.
 fn restart_lines(project: &Project, with: bool, lines: &mut Report) {
     let how = if with { "with" } else { "without" };
     let Some(external) = &project.state.components.chap_core_external else {
         lines.info(format!(
-            "run `varde up` to restart chap-core and the models {how} authentication"
+            "run `chap-devops up` to restart chap-core and the models {how} authentication"
         ));
         return;
     };
     lines.info(format!(
-        "run `varde up` to restart the models {how} authentication"
+        "run `chap-devops up` to restart the models {how} authentication"
     ));
     if with {
         lines.info(external_key_line(&external.url));
     }
 }
 
-/// What a chap-core elsewhere needs once authentication is on: varde does not
+/// What a chap-core elsewhere needs once authentication is on: chap-devops does not
 /// change it, so the key in `.env` has to be the one it checks.
 fn external_key_line(url: &str) -> String {
     format!(
-        "varde does not change the chap-core at {url}; set `{REGISTRATION_KEY_ENV_VAR}` in \
+        "chap-devops does not change the chap-core at {url}; set `{REGISTRATION_KEY_ENV_VAR}` in \
          `{ENV_FILE}` to its registration key"
     )
 }
 
-/// `varde auth show`: what is protected, and by which token.
+/// `chap-devops auth show`: what is protected, and by which token.
 pub fn show(ctx: &Ctx, args: &AuthShowArgs) -> Result<()> {
     let project = ctx.project()?;
     let body = read_env(&project)?;
@@ -100,16 +100,16 @@ pub fn show(ctx: &Ctx, args: &AuthShowArgs) -> Result<()> {
     })
 }
 
-/// What `varde auth token` says when there is no token to print.
+/// What `chap-devops auth token` says when there is no token to print.
 ///
-/// On stderr, so stdout holds the token and nothing else: `TOKEN=$(varde auth
+/// On stderr, so stdout holds the token and nothing else: `TOKEN=$(chap-devops auth
 /// token)` has to come back empty rather than with a sentence in it.
 const NO_TOKEN: &str =
-    "API authentication is off in this deployment; run `varde auth enable` to turn it on";
+    "API authentication is off in this deployment; run `chap-devops auth enable` to turn it on";
 
-/// `varde auth token`: the token alone, for a script to capture.
+/// `chap-devops auth token`: the token alone, for a script to capture.
 ///
-/// `varde auth show --reveal` prints the token inside a report meant to be
+/// `chap-devops auth show --reveal` prints the token inside a report meant to be
 /// read; this prints the value and nothing else, which is the difference
 /// between a command a person runs and one a shell substitutes. A deployment
 /// with authentication off has no token, so stdout stays empty and the exit
@@ -145,12 +145,12 @@ fn data_sources(project: &Project, body: &str) -> Vec<(&'static str, Option<Stri
         .collect()
 }
 
-/// Why `varde auth enable --token` with another token is refused while
+/// Why `chap-devops auth enable --token` with another token is refused while
 /// authentication is on.
 const TOKEN_NOT_USED: &str = "--token was not used: API authentication is already on with \
-     another token; run `varde auth disable`, then `varde auth enable --token TOKEN`";
+     another token; run `chap-devops auth disable`, then `chap-devops auth enable --token TOKEN`";
 
-/// `varde auth enable`: put both secrets in `.env` and render the overlays.
+/// `chap-devops auth enable`: put both secrets in `.env` and render the overlays.
 pub fn enable(ctx: &Ctx, args: &AuthEnableArgs) -> Result<()> {
     let (mut project, _lock) = ctx.project_mut()?;
     let body = read_env(&project)?;
@@ -176,8 +176,8 @@ pub fn enable(ctx: &Ctx, args: &AuthEnableArgs) -> Result<()> {
         return ctx.out.report(&value, |lines| {
             lines
                 .info("API authentication is already on")
-                .hint("`varde auth rotate` replaces both secrets")
-                .hint("`varde auth show --reveal` prints the token");
+                .hint("`chap-devops auth rotate` replaces both secrets")
+                .hint("`chap-devops auth show --reveal` prints the token");
         });
     }
 
@@ -222,7 +222,7 @@ pub fn enable(ctx: &Ctx, args: &AuthEnableArgs) -> Result<()> {
     )
 }
 
-/// `varde auth disable`: comment both secrets out and render the overlays.
+/// `chap-devops auth disable`: comment both secrets out and render the overlays.
 pub fn disable(ctx: &Ctx, _args: &AuthDisableArgs) -> Result<()> {
     let (mut project, _lock) = ctx.project_mut()?;
     let body = read_env(&project)?;
@@ -235,7 +235,7 @@ pub fn disable(ctx: &Ctx, _args: &AuthDisableArgs) -> Result<()> {
         return ctx.out.report(&value, |lines| {
             lines
                 .info("API authentication is already off")
-                .hint("`varde auth enable` turns it on");
+                .hint("`chap-devops auth enable` turns it on");
         });
     }
 
@@ -253,7 +253,7 @@ pub fn disable(ctx: &Ctx, _args: &AuthDisableArgs) -> Result<()> {
     });
     ctx.out.report(&value, |lines| {
         lines.info("API authentication is off").hint(format!(
-            "both values are kept as comments in `{ENV_FILE}`, so `varde auth enable` \
+            "both values are kept as comments in `{ENV_FILE}`, so `chap-devops auth enable` \
              recovers them"
         ));
         written_lines(&project.dir, &report, lines);
@@ -261,7 +261,7 @@ pub fn disable(ctx: &Ctx, _args: &AuthDisableArgs) -> Result<()> {
     })
 }
 
-/// `varde auth rotate`: replace both secrets with new ones.
+/// `chap-devops auth rotate`: replace both secrets with new ones.
 pub fn rotate(ctx: &Ctx, _args: &AuthRotateArgs) -> Result<()> {
     let (mut project, _lock) = ctx.project_mut()?;
     let body = read_env(&project)?;
@@ -323,7 +323,7 @@ fn apply(
         }
         lines
             .hint(format!(
-                "wrote the API token to `{ENV_FILE}`; `varde auth show --reveal` prints it"
+                "wrote the API token to `{ENV_FILE}`; `chap-devops auth show --reveal` prints it"
             ))
             .hint(format!(
                 "wrote the registration key to `{ENV_FILE}`; every model overlay now sends it"
@@ -332,11 +332,11 @@ fn apply(
         restart_lines(project, true, lines);
         match change {
             Change::Enabled => lines.hint(format!(
-                "{MODELING_APP_HINT}; any other client needs it from `varde auth show --reveal`"
+                "{MODELING_APP_HINT}; any other client needs it from `chap-devops auth show --reveal`"
             )),
             Change::Rotated => lines.info(
                 "every client keeps sending the old token until it is updated: run \
-                 `varde dhis2 connect` after `varde up` for the DHIS2 route, and update \
+                 `chap-devops dhis2 connect` after `chap-devops up` for the DHIS2 route, and update \
                  anything else calling this API",
             ),
         };
@@ -344,7 +344,7 @@ fn apply(
 }
 
 /// A secret `.env` already knows: one that is in use, or one
-/// `varde auth disable` left behind as a comment.
+/// `chap-devops auth disable` left behind as a comment.
 ///
 /// Reusing it is what makes `disable` followed by `enable` a round trip: a
 /// deployment that was turned off by mistake comes back with the token its
@@ -353,13 +353,13 @@ fn recover(body: &str, var: &str) -> Option<String> {
     auth::active_value(body, var).or_else(|| auth::commented_value(body, var))
 }
 
-/// Re-render the compose files from the new state; `sync` saves `.varde/`.
+/// Re-render the compose files from the new state; `sync` saves `.chap-devops/`.
 fn render(ctx: &Ctx, project: &mut Project) -> Result<crate::compose::SyncReport> {
     let registry = super::registry_for(ctx, Some(project))?;
     sync(project, &registry, false)
 }
 
-/// Save `.varde/project.yaml` with the state `.env` actually describes.
+/// Save `.chap-devops/project.yaml` with the state `.env` actually describes.
 ///
 /// The no-change paths still do this: a project whose recorded booleans drifted
 /// from its `.env` - a hand-edited file, a restore -
@@ -403,7 +403,7 @@ fn written_lines(dir: &Path, report: &crate::compose::SyncReport, lines: &mut Re
     }
 }
 
-/// The tables of `varde auth show`: the two switches and the token, then the
+/// The tables of `chap-devops auth show`: the two switches and the token, then the
 /// OCS data sources.
 fn show_tables(
     out: &Out,
@@ -438,7 +438,7 @@ fn show_tables(
     text
 }
 
-/// The lines after the tables of `varde auth show`.
+/// The lines after the tables of `chap-devops auth show`.
 fn show_summary(
     effective: &AuthState,
     recorded: AuthState,
@@ -448,7 +448,7 @@ fn show_summary(
     if !effective.is_on() {
         lines
             .info("nothing protects this API: anyone who can reach the port can use it")
-            .hint("`varde auth enable` turns authentication on");
+            .hint("`chap-devops auth enable` turns authentication on");
     }
     if effective.api_token {
         lines.hint(format!(
@@ -459,12 +459,12 @@ fn show_summary(
         lines
             .hint("model services send the registration key as `X-Service-Key` when they register");
     }
-    // `.env` is what the deployment does; the booleans in `.varde/` are only a
+    // `.env` is what the deployment does; the booleans in `.chap-devops/` are only a
     // record of it, and a mismatch means one of them was edited by hand.
     if effective.is_on() && recorded != *effective {
         lines.warning(format!(
-            "`.varde/project.yaml` records api_token: {}, registration_key: {}, which is not \
-             what `{ENV_FILE}` sets; `varde auth enable` or `varde auth disable` lines them up \
+            "`.chap-devops/project.yaml` records api_token: {}, registration_key: {}, which is not \
+             what `{ENV_FILE}` sets; `chap-devops auth enable` or `chap-devops auth disable` lines them up \
              again",
             recorded.api_token, recorded.registration_key
         ));
@@ -472,7 +472,7 @@ fn show_summary(
     if !data_sources.is_empty() {
         lines.hint(
             "ERA5-Land needs one or both of ECMWF_DATASTORES_* and EDH_API_KEY, per dataset; \
-             WorldPop and CHIRPS3 need none; set them in `.env` and run `varde up`",
+             WorldPop and CHIRPS3 need none; set them in `.env` and run `chap-devops up`",
         );
     }
 }

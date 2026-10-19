@@ -1,4 +1,4 @@
-//! `varde init` — write a deployment directory.
+//! `chap-devops init` — write a deployment directory.
 
 mod chap_core;
 mod components;
@@ -15,8 +15,8 @@ use crate::compose::sync::{write_dhis2_config, write_ocs_config};
 use crate::compose::{API_SERVICE, EnableRequest, Selection, apply, render_env};
 use crate::error::{ChapError, Result};
 use crate::project::{
-    API_PORT_ENV_VAR, ComposeSource, DEFAULT_PORT_RANGE, ENV_FILE, MODELS_FILE, PROJECT_FILE,
-    Project, ProjectState, VARDE_DIR,
+    API_PORT_ENV_VAR, CHAP_DEVOPS_DIR, ComposeSource, DEFAULT_PORT_RANGE, ENV_FILE, MODELS_FILE,
+    PROJECT_FILE, Project, ProjectState,
 };
 use crate::registry::{self, Registry};
 use chap_core::{CHECKOUT_TAG, ChapCore, checkout_source, resolve_chap_core};
@@ -40,7 +40,7 @@ const POSTGRES_USER: &str = "chap";
 const POSTGRES_DB: &str = "chap_core";
 
 /// Create compose.yml, compose.marketplace.yml, the model overlays, .env and
-/// the `.varde/` directory in the target directory.
+/// the `.chap-devops/` directory in the target directory.
 ///
 /// `args.source` names a chap-core checkout to build from instead of a
 /// release to pull; see [`checkout_source`].
@@ -49,7 +49,7 @@ const POSTGRES_DB: &str = "chap_core";
 /// tag older than the dump or a dump older than 2.41. The dump is read where
 /// the bind mount finds it, in the deployment directory. A dump that is not
 /// there yet is not read, and the note says so. A URL is checked by the dump
-/// step of the first `varde up`.
+/// step of the first `chap-devops up`.
 fn settle_dump_version(
     components: &mut crate::components::Components,
     dir: &std::path::Path,
@@ -67,7 +67,7 @@ fn settle_dump_version(
     let found = dir.join(source);
     if !found.is_file() {
         return Ok(Some(format!(
-            "{source} is not in {}, so varde did not read its DHIS2 version, and DHIS2 runs {}",
+            "{source} is not in {}, so chap-devops did not read its DHIS2 version, and DHIS2 runs {}",
             dir.display(),
             components.dhis2.image_tag
         )));
@@ -95,12 +95,12 @@ pub fn run(ctx: &Ctx, args: &InitArgs) -> Result<()> {
     create(ctx, args, true)
 }
 
-/// [`run`], printing its report only when `report_it` is set: `varde run`
+/// [`run`], printing its report only when `report_it` is set: `chap-devops run`
 /// creates its deployment on the way to something else, and says so itself.
 pub(crate) fn create(ctx: &Ctx, args: &InitArgs, report_it: bool) -> Result<()> {
     let checkout = args.source.as_deref().map(checkout_source).transpose()?;
     // The positional DIR is relative to the working directory, not to -C:
-    // `varde init foo` is a fresh deployment, not an operation on a project.
+    // `chap-devops init foo` is a fresh deployment, not an operation on a project.
     let dir = resolve_dir(&args.dir)?;
     if Project::exists(&dir) && !args.force {
         return Err(ChapError::AlreadyInitialized(dir).into());
@@ -109,7 +109,7 @@ pub(crate) fn create(ctx: &Ctx, args: &InitArgs, report_it: bool) -> Result<()> 
     // in here will find this project, not the outer one, so say so.
     if let Some(parent) = dir.parent().and_then(Project::find_root) {
         crate::output::warn(&format!(
-            "{} is inside the varde deployment at {}; commands run below it will use the new deployment",
+            "{} is inside the chap-devops deployment at {}; commands run below it will use the new deployment",
             dir.display(),
             parent.display()
         ));
@@ -153,7 +153,7 @@ pub(crate) fn create(ctx: &Ctx, args: &InitArgs, report_it: bool) -> Result<()> 
     // A re-init resets the component set from the flags and the defaults, so the
     // DHIS2 pin it records can move while the database the previous one created
     // is still on this machine. DHIS2 migrates a schema forward only, so that is
-    // said before anything is written rather than found out at `varde up`.
+    // said before anything is written rather than found out at `chap-devops up`.
     if let Some(previous) = &previous
         && let Some(note) = crate::commands::components::dhis2_tag_moved(previous, &components)
     {
@@ -164,7 +164,7 @@ pub(crate) fn create(ctx: &Ctx, args: &InitArgs, report_it: bool) -> Result<()> 
     // warning plus a fallback, never a half-written directory.
     // A deployment without chap-core asks GitHub nothing: the tag is recorded
     // as given and `compose.yml` would come from the embedded copy, which is
-    // what `varde components enable chap-core` renders and `varde update`
+    // what `chap-devops components enable chap-core` renders and `chap-devops update`
     // then moves to a release.
     if checkout.is_some() && !components.chap_core.enabled {
         return Err(anyhow::anyhow!(
@@ -203,7 +203,7 @@ pub(crate) fn create(ctx: &Ctx, args: &InitArgs, report_it: bool) -> Result<()> 
         ..ProjectState::default()
     };
     // The ports the deployment publishes, and a taken one is only a problem at
-    // `varde up`: the process holding one may well be a previous stack this
+    // `chap-devops up`: the process holding one may well be a previous stack this
     // deployment is meant to replace, and a deployment that is down is not
     // holding anything yet. So: a warning with a way out, not a refusal to
     // write the directory.
@@ -257,7 +257,7 @@ pub(crate) fn create(ctx: &Ctx, args: &InitArgs, report_it: bool) -> Result<()> 
     let mut warnings = Vec::new();
     // Compose reads `.env` after the compose files, so a CHAP_API_PORT line in
     // a file this run is keeping wins over `--api-port`. Say so rather than
-    // leaving the API on a port nothing in `.varde/` mentions.
+    // leaving the API on a port nothing in `.chap-devops/` mentions.
     if env == EnvAction::Kept
         && let Ok(body) = std::fs::read_to_string(&env_path)
         && let Some(pinned) = env_api_port(&body).filter(|p| *p != args.api_port)
@@ -281,7 +281,7 @@ pub(crate) fn create(ctx: &Ctx, args: &InitArgs, report_it: bool) -> Result<()> 
             if args.api_token.is_some() {
                 warnings.push(format!(
                     "--api-token needs a .env to write to, and this run {}; \
-                     run `varde auth enable` in the deployment instead",
+                     run `chap-devops auth enable` in the deployment instead",
                     match env {
                         EnvAction::Kept => "is keeping the one already there",
                         _ => "writes none (--no-env)",
@@ -307,7 +307,7 @@ pub(crate) fn create(ctx: &Ctx, args: &InitArgs, report_it: bool) -> Result<()> 
     // would otherwise linger: unreferenced by the umbrella, but still holding
     // their host port against the allocator. The compose file of a component
     // that is not coming back is the same problem, and worse: nothing in
-    // `.varde/` would mention it afterwards, so no later `varde sync` would ever
+    // `.chap-devops/` would mention it afterwards, so no later `chap-devops sync` would ever
     // remove it either.
     let mut stale = remove_stale_overlays(&dir, &selection);
     if let Some(previous) = &previous {
@@ -320,11 +320,11 @@ pub(crate) fn create(ctx: &Ctx, args: &InitArgs, report_it: bool) -> Result<()> 
 
     std::fs::create_dir_all(&dir)
         .map_err(|e| anyhow::anyhow!("creating {}: {e}", dir.display()))?;
-    // The state lock every other writer of `.varde/` takes: an `init --force`
-    // over a deployment another varde is changing waits for it rather than
+    // The state lock every other writer of `.chap-devops/` takes: an `init --force`
+    // over a deployment another chap-devops is changing waits for it rather than
     // writing over it half-way.
-    std::fs::create_dir_all(dir.join(VARDE_DIR))
-        .map_err(|e| anyhow::anyhow!("creating {}: {e}", dir.join(VARDE_DIR).display()))?;
+    std::fs::create_dir_all(dir.join(CHAP_DEVOPS_DIR))
+        .map_err(|e| anyhow::anyhow!("creating {}: {e}", dir.join(CHAP_DEVOPS_DIR).display()))?;
     let _lock = crate::project::StateLock::acquire(&dir)?;
     let mut written = Vec::new();
 
@@ -332,14 +332,14 @@ pub(crate) fn create(ctx: &Ctx, args: &InitArgs, report_it: bool) -> Result<()> 
     // renders compose.yml from it a moment later, and every later sync
     // re-renders from this copy rather than from the network.
     if let Some(body) = &chap_core.cached {
-        let varde = dir.join(VARDE_DIR);
-        std::fs::create_dir_all(&varde)
-            .map_err(|e| anyhow::anyhow!("creating {}: {e}", varde.display()))?;
+        let chap_devops = dir.join(CHAP_DEVOPS_DIR);
+        std::fs::create_dir_all(&chap_devops)
+            .map_err(|e| anyhow::anyhow!("creating {}: {e}", chap_devops.display()))?;
         let name = chap_core
             .source
             .cached_file()
             .expect("a downloaded copy has a file name");
-        let path = varde.join(name);
+        let path = chap_devops.join(name);
         std::fs::write(&path, body)
             .map_err(|e| anyhow::anyhow!("writing {}: {e}", path.display()))?;
         written.push(path);
@@ -349,8 +349,8 @@ pub(crate) fn create(ctx: &Ctx, args: &InitArgs, report_it: bool) -> Result<()> 
         if env_exists {
             crate::output::warn(
                 "--fresh-env rewrote .env with a new POSTGRES_PASSWORD; a database volume \
-                 from an earlier `varde up` still holds the old one - drop it with \
-                 `varde down --volumes` or change the role with ALTER USER",
+                 from an earlier `chap-devops up` still holds the old one - drop it with \
+                 `chap-devops down --volumes` or change the role with ALTER USER",
             );
         }
         crate::dotenv::write(
@@ -421,14 +421,14 @@ pub(crate) fn create(ctx: &Ctx, args: &InitArgs, report_it: bool) -> Result<()> 
     }
 
     // apply() writes the overlays, compose.marketplace.yml (even with no
-    // models) and .varde/.
+    // models) and .chap-devops/.
     let endpoints = crate::manual::Endpoints::from_env(ctx.registry.offline);
     let mut report = apply(&mut project, &registry, &selection, &endpoints)?;
     report.removed.extend(stale);
     written.extend(report.written.iter().cloned());
-    written.push(dir.join(VARDE_DIR).join(PROJECT_FILE));
-    written.push(dir.join(VARDE_DIR).join(MODELS_FILE));
-    written.push(dir.join(VARDE_DIR).join(COMPONENTS_FILE));
+    written.push(dir.join(CHAP_DEVOPS_DIR).join(PROJECT_FILE));
+    written.push(dir.join(CHAP_DEVOPS_DIR).join(MODELS_FILE));
+    written.push(dir.join(CHAP_DEVOPS_DIR).join(COMPONENTS_FILE));
     // apply() reports .env again when it appends a pin to the file init just
     // wrote; the summary lists each file once.
     let mut seen = std::collections::BTreeSet::new();
@@ -498,7 +498,7 @@ fn carried_manual(dir: &Path) -> crate::project::ManualModels {
         return existing.state.manual;
     }
     let path = dir
-        .join(crate::project::VARDE_DIR)
+        .join(crate::project::CHAP_DEVOPS_DIR)
         .join(crate::project::MANUAL_MODELS_FILE);
     let Ok(body) = std::fs::read_to_string(&path) else {
         return Default::default();
@@ -508,7 +508,7 @@ fn carried_manual(dir: &Path) -> crate::project::ManualModels {
         Err(e) => {
             crate::output::warn(&format!(
                 "the models added to this deployment are not carried over: {}: {e}; \
-                 `varde models add` adds them again",
+                 `chap-devops models add` adds them again",
                 path.display()
             ));
             Default::default()
@@ -522,7 +522,7 @@ fn carried_manual(dir: &Path) -> crate::project::ManualModels {
 /// A fresh directory gets `<slug of the directory name>-<6 hex>`, because the
 /// directory name on its own is not unique: two deployments in directories
 /// both called `demo` would share `demo_chap-db` and every other volume, and a
-/// fresh `varde up` would inherit a database created with a password it has
+/// fresh `chap-devops up` would inherit a database created with a password it has
 /// never seen.
 ///
 /// A directory that is already a deployment keeps the name it has, `--force`
@@ -554,7 +554,7 @@ fn compose_project(dir: &Path) -> Result<String> {
 ///
 /// `none` enables nothing, `all` every model, anything else is a
 /// comma-separated list of marketplace ids or service ids. There is no default
-/// model: the marketplace decides what it lists, and an id built into varde
+/// model: the marketplace decides what it lists, and an id built into chap-devops
 /// fails when that list changes.
 fn parse_models(spec: &str, registry: &Registry) -> Result<Selection> {
     let spec = spec.trim();

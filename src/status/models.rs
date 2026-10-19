@@ -18,7 +18,7 @@ pub enum ModelState {
     RunningNotRegistered,
     /// No container, so nothing could have registered.
     NotRunning,
-    /// Its container is paused, as an interrupted `varde backup create` can
+    /// Its container is paused, as an interrupted `chap-devops backup create` can
     /// leave it: it is there and does not answer.
     Paused,
     /// Registered with chap-core, but not a model this project enables.
@@ -37,7 +37,7 @@ pub enum ModelState {
     /// chap-core knows it, and has no configured model of the version it
     /// registered with, so nothing can run it and the Modeling App does not
     /// list it. chap-core 2.4 and later makes none from a registration;
-    /// `varde models configs sync` makes them.
+    /// `chap-devops models configs sync` makes them.
     NotConfigured,
 }
 
@@ -96,7 +96,7 @@ pub struct ModelStatus {
     /// caller, which has docker.
     #[serde(skip)]
     pub young: bool,
-    /// For a model added with `varde models add`: its model id and the source
+    /// For a model added with `chap-devops models add`: its model id and the source
     /// it was added from, so a hint can spell out removing and adding it again.
     #[serde(skip)]
     pub added_from: Option<(String, String)>,
@@ -284,13 +284,13 @@ pub struct RevisionWarning {
     pub managed: bool,
 }
 
-/// The unmanaged rows that chap-core cannot run, as far as varde can see it:
+/// The unmanaged rows that chap-core cannot run, as far as chap-devops can see it:
 /// a registration with an empty `git_revision`, a configured model whose
 /// `healthStatus` is `revision_mismatch`, or configured models of other
 /// versions only.
 ///
 /// The unmanaged rows, and a model of this deployment that chap-core has no
-/// configured model for because it reports no revision: `varde models
+/// configured model for because it reports no revision: `chap-devops models
 /// configs sync` cannot fix that one, so its row gets this way out instead. A
 /// template stored from another revision with no configured model is not
 /// seen, because only the template listing says that, and that listing

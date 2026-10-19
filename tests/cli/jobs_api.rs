@@ -12,10 +12,10 @@ fn served_project(sandbox: &Sandbox) -> PathBuf {
     sandbox.project()
 }
 
-/// Every request to chap-core takes the token the way `varde api` does:
+/// Every request to chap-core takes the token the way `chap-devops api` does:
 /// `.env` first, then an exported `CHAP_API_TOKEN`. `jobs` used to read `.env`
-/// alone, so on a deployment whose token lives in the shell `varde api GET
-/// /v1/jobs` worked and `varde jobs` was refused.
+/// alone, so on a deployment whose token lives in the shell `chap-devops api GET
+/// /v1/jobs` worked and `chap-devops jobs` was refused.
 #[test]
 fn jobs_sends_the_exported_token_when_env_has_none() {
     let sandbox = Sandbox::new();
@@ -79,7 +79,9 @@ fn jobs_lists_what_chap_core_has_run_newest_first() {
         "{text}"
     );
     assert!(
-        text.contains(&format!("run `varde jobs logs {FAILED_ID}` to see why")),
+        text.contains(&format!(
+            "run `chap-devops jobs logs {FAILED_ID}` to see why"
+        )),
         "{text}"
     );
 }
@@ -129,7 +131,7 @@ fn jobs_says_where_a_job_would_come_from_when_there_are_none() {
     // A chap-core that has run nothing answers with an empty list, and the
     // deployment is pointed at the port it answers on.
     let empty = server("application/json", "[]");
-    let dir = sandbox.home.path().join("varde-empty");
+    let dir = sandbox.home.path().join("chap-devops-empty");
     let mut init = sandbox.chap();
     init.arg("init")
         .arg(&dir)
@@ -228,7 +230,7 @@ fn jobs_takes_an_id_prefix_and_says_when_it_matches_nothing() {
         .failure()
         .code(1)
         .stderr(predicates::str::contains(
-            "job zzzz not found; run `varde jobs` to list them",
+            "job zzzz not found; run `chap-devops jobs` to list them",
         ));
 
     // And one that names several says so rather than picking one.
@@ -387,7 +389,7 @@ fn api_sends_a_body_from_a_file_from_stdin_and_inline() {
     .code(2)
     .stderr(predicates::str::contains("not valid JSON"));
 
-    // So is a method varde does not send, and a path with no leading slash.
+    // So is a method chap-devops does not send, and a path with no leading slash.
     chap_in(&sandbox, &dir, &["api", "BREW", "/v1/echo"])
         .assert()
         .failure()
@@ -422,7 +424,7 @@ fn api_exits_one_on_an_http_error_and_two_when_chap_core_is_not_there() {
     );
 
     // Nothing listening at all is a different exit code, with the sentence
-    // `varde status` uses.
+    // `chap-devops status` uses.
     chap_in(
         &sandbox,
         &dir,
@@ -440,7 +442,7 @@ fn api_exits_one_on_an_http_error_and_two_when_chap_core_is_not_there() {
     .failure()
     .code(2)
     .stderr(predicates::str::contains("is not responding"))
-    .stderr(predicates::str::contains("run `varde status`"));
+    .stderr(predicates::str::contains("run `chap-devops status`"));
 }
 
 #[test]

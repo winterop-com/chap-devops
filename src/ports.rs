@@ -1,4 +1,4 @@
-//! Host ports: is anything listening right now, and what `varde up` says when
+//! Host ports: is anything listening right now, and what `chap-devops up` says when
 //! the answer is yes.
 //!
 //! A deployment publishes very few host ports - chap-core's API, plus the
@@ -19,9 +19,9 @@
 //! tried in turn.
 //!
 //! A port nothing is listening on can still be spoken for: a deployment that
-//! is down holds no socket, and the collision only shows at the `varde up`
+//! is down holds no socket, and the collision only shows at the `chap-devops up`
 //! that finds the other one already there. [`other_deployments`] finds the
-//! ones that can be found without a registry, so `varde init` can say so while
+//! ones that can be found without a registry, so `chap-devops init` can say so while
 //! the port is still easy to change.
 
 use crate::components::Component;
@@ -80,11 +80,11 @@ pub fn first_free(lo: u16, hi: u16, busy: &dyn Fn(u16) -> bool) -> Option<u16> {
     (lo..=hi).find(|port| !busy(*port))
 }
 
-/// Every `(service, host port)` pair `varde up` is about to ask Docker to
+/// Every `(service, host port)` pair `chap-devops up` is about to ask Docker to
 /// publish.
 ///
-/// chap-core's port comes from `.env` or `.varde/project.yaml` rather than
-/// from the files: `compose.varde.yml` publishes it as
+/// chap-core's port comes from `.env` or `.chap-devops/project.yaml` rather than
+/// from the files: `compose.chap-devops.yml` publishes it as
 /// `${CHAP_API_PORT:-<port>}`, which only Docker expands, so reading the files
 /// would give the recorded default and not the port the stack will actually
 /// ask for. [`Project::api_port_in_effect`] is what Docker will resolve that
@@ -98,7 +98,7 @@ pub fn claims(project: &Project) -> Vec<PortClaim> {
             port: project.effective_api_port(),
         });
     }
-    // The components are read from `.varde/components.yaml` rather than from
+    // The components are read from `.chap-devops/components.yaml` rather than from
     // the rendered files, so a port is checked even before the first sync.
     // The same claim coming back out of the files below is deduplicated.
     for component in Component::ALL {
@@ -119,7 +119,7 @@ pub fn claims(project: &Project) -> Vec<PortClaim> {
         }
     }
     for (service, port) in crate::compose::ports::published_ports(&project.dir, &files) {
-        // compose.varde.yml overrides chap's own mapping, and the api_port
+        // compose.chap-devops.yml overrides chap's own mapping, and the api_port
         // above is what that override resolves to.
         if service == crate::compose::API_SERVICE {
             continue;
@@ -189,18 +189,18 @@ fn ways_out(claim: &PortClaim, suggestion: Option<u16>) -> String {
         };
         // `.env` and nothing else: `init` writes an active `CHAP_API_PORT`
         // line even at the default, and compose reads it last, so an
-        // `init --api-port N --force` would move `.varde/` and leave the
+        // `init --api-port N --force` would move `.chap-devops/` and leave the
         // published port where it was.
         return format!("set {API_PORT_ENV_VAR}={free} in `.env`");
     }
-    // A component publishes its port from `.varde/components.yaml`, so the
+    // A component publishes its port from `.chap-devops/components.yaml`, so the
     // way to move it is the command that wrote it there, with the free port
     // the caller found above this claim's own.
     if let Ok(component) = Component::from_name(&claim.service)
         && component.takes_port()
     {
         return format!(
-            "run `varde components enable {name} --port {free}`",
+            "run `chap-devops components enable {name} --port {free}`",
             name = component.name(),
             free = suggestion
                 .map(|port| port.to_string())
@@ -208,8 +208,8 @@ fn ways_out(claim: &PortClaim, suggestion: Option<u16>) -> String {
         );
     }
     format!(
-        "run `varde models unexpose {service}` (the model stays \
-         reachable through chap-core) / `varde models expose {service} --port auto`",
+        "run `chap-devops models unexpose {service}` (the model stays \
+         reachable through chap-core) / `chap-devops models expose {service} --port auto`",
         service = claim.service
     )
 }
@@ -218,11 +218,11 @@ fn ways_out(claim: &PortClaim, suggestion: Option<u16>) -> String {
 /// rest.
 const NAMED_HOLDERS: usize = 3;
 
-/// One line of guidance for a port no listener holds, but another varde
+/// One line of guidance for a port no listener holds, but another chap-devops
 /// deployment on this machine already publishes.
 ///
 /// Not the same problem as a busy port: nothing is wrong today, and the
-/// collision only surfaces at the second `varde up`. So the first way out is
+/// collision only surfaces at the second `chap-devops up`. So the first way out is
 /// to keep the port and run the deployments one at a time.
 pub fn claimed_line(claim: &PortClaim, holders: &[&Deployment], suggestion: Option<u16>) -> String {
     let named: Vec<String> = holders
@@ -246,13 +246,13 @@ pub fn claimed_line(claim: &PortClaim, holders: &[&Deployment], suggestion: Opti
 /// One line about a host port a component is being told to publish, or `None`
 /// when the port can be had.
 ///
-/// The decision `varde components enable NAME --port PORT` makes is the same
-/// decision `varde init --api-port` makes, so it gets the same two answers:
-/// something on this machine is listening on that port now, or another varde
+/// The decision `chap-devops components enable NAME --port PORT` makes is the same
+/// decision `chap-devops init --api-port` makes, so it gets the same two answers:
+/// something on this machine is listening on that port now, or another chap-devops
 /// deployment beside this one publishes it and the two cannot be up at once.
 /// Neither is a refusal - the deployment is not up yet, and the port is still
 /// easy to change - so the caller reports the line as a warning and carries on,
-/// exactly as `varde init` does.
+/// exactly as `chap-devops init` does.
 ///
 /// Best-effort about docker, like everything else that asks it a question: no
 /// docker CLI means no running services and no other deployments, which is the
@@ -293,7 +293,7 @@ fn component_port_line(
     // port as well as by service - a component being *moved* onto some other
     // process's port is a conflict however much of this deployment is up. The
     // component's own container on that port counts too, even when the
-    // recorded port is another one (after a restore of `.varde/` files).
+    // recorded port is another one (after a restore of `.chap-devops/` files).
     if own.publishes(&claim.service, port)
         || claims(project)
             .iter()
@@ -315,10 +315,10 @@ fn component_port_line(
     };
     let suggestion = first_free(port.saturating_add(1), u16::MAX, &taken);
     // Another service of this very deployment on the same port: whether or
-    // not it is up, the next `varde up` cannot start both.
+    // not it is up, the next `chap-devops up` cannot start both.
     if let Some(held) = own.iter().find(|held| held.port == port) {
         return Some(format!(
-            "port {port} is also published by {} in this deployment, so `varde up` cannot start \
+            "port {port} is also published by {} in this deployment, so `chap-devops up` cannot start \
              both; pick another with `--port {}`",
             held.service,
             suggestion.unwrap_or(port.saturating_add(1))
@@ -336,7 +336,7 @@ fn component_port_line(
     Some(claimed_line(&claim, &holders, suggestion))
 }
 
-/// Another varde deployment on this machine: where it is, and the host ports
+/// Another chap-devops deployment on this machine: where it is, and the host ports
 /// it would publish were it up.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Deployment {
@@ -346,7 +346,7 @@ pub struct Deployment {
 
 impl Deployment {
     /// What this deployment goes by: its directory name, which is what
-    /// `varde init` was pointed at.
+    /// `chap-devops init` was pointed at.
     pub fn name(&self) -> String {
         self.dir
             .file_name()
@@ -368,13 +368,13 @@ impl Deployment {
     }
 }
 
-/// Every other varde deployment on this machine that can be found without
+/// Every other chap-devops deployment on this machine that can be found without
 /// anyone keeping a registry, given the directory one is about to be written
 /// in.
 ///
 /// Two cheap searches, because a deployment is a directory and nothing else
 /// records where they are: the directories beside `dir`, which is where
-/// `varde init a && varde init b` puts them, and the compose projects docker
+/// `chap-devops init a && chap-devops init b` puts them, and the compose projects docker
 /// remembers, which covers the ones that have been started at least once from
 /// anywhere. A deployment created somewhere else and never started is in
 /// neither, and is the case this cannot see.
@@ -414,7 +414,7 @@ pub fn other_deployments(dir: &Path, compose_ls: &dyn Fn() -> Option<String>) ->
     found
 }
 
-/// The directories next to `dir` that hold a `.varde/project.yaml`, in name
+/// The directories next to `dir` that hold a `.chap-devops/project.yaml`, in name
 /// order. `dir` itself is never one of them.
 pub(crate) fn sibling_dirs(dir: &Path) -> Vec<PathBuf> {
     let Some(parent) = dir.parent() else {
@@ -515,15 +515,15 @@ fn resolved(path: &Path) -> PathBuf {
     }
 }
 
-/// One busy port, as `varde up` reports it: the claim, a free port above it,
-/// and the other varde deployments that publish it too.
+/// One busy port, as `chap-devops up` reports it: the claim, a free port above it,
+/// and the other chap-devops deployments that publish it too.
 pub struct Conflict<'a> {
     pub claim: PortClaim,
     pub suggestion: Option<u16>,
     pub holders: Vec<&'a Deployment>,
 }
 
-/// The line for a busy port that another running varde deployment
+/// The line for a busy port that another running chap-devops deployment
 /// publishes, named with the command that stops it.
 pub fn held_line(claim: &PortClaim, holders: &[&Deployment], suggestion: Option<u16>) -> String {
     let named: Vec<String> = holders
@@ -533,7 +533,7 @@ pub fn held_line(claim: &PortClaim, holders: &[&Deployment], suggestion: Option<
         .collect();
     let stop = holders
         .first()
-        .map(|held| format!("stop it with `varde -C {} down`", held.dir.display()))
+        .map(|held| format!("stop it with `chap-devops -C {} down`", held.dir.display()))
         .unwrap_or_default();
     let verb = if holders.len() == 1 {
         "publishes"
@@ -550,7 +550,7 @@ pub fn held_line(claim: &PortClaim, holders: &[&Deployment], suggestion: Option<
     )
 }
 
-/// The whole message `varde up` fails with when a port it needs is taken.
+/// The whole message `chap-devops up` fails with when a port it needs is taken.
 pub fn preflight_message(conflicts: &[Conflict]) -> String {
     let n = conflicts.len();
     let mut out = format!(
@@ -565,7 +565,7 @@ pub fn preflight_message(conflicts: &[Conflict]) -> String {
         };
         out.push_str(&format!("  {line}\n"));
     }
-    out.push_str("  or run `varde up --no-preflight` to hand the conflict to Docker");
+    out.push_str("  or run `chap-devops up --no-preflight` to hand the conflict to Docker");
     out
 }
 

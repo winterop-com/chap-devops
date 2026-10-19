@@ -1,7 +1,7 @@
 //! End-to-end tests for what a build says about its channel.
 //!
-//! `varde self version` is the one command that reports which release series
-//! a binary follows, and `varde self update` is the one that acts on it. Both
+//! `chap-devops self version` is the one command that reports which release series
+//! a binary follows, and `chap-devops self update` is the one that acts on it. Both
 //! are exercised here without touching the network: the channel of a test
 //! build is decided at compile time by `build.rs`, and every command that
 //! would reach the release feed is run under `--offline`, which is refused
@@ -11,14 +11,14 @@ use assert_cmd::Command;
 use serde_json::Value as Json;
 use tempfile::TempDir;
 
-/// A `varde` with a cache directory of its own and no update check, run from
+/// A `chap-devops` with a cache directory of its own and no update check, run from
 /// a directory that is not a project.
 fn bare() -> (TempDir, Command) {
     let cache = tempfile::tempdir().unwrap();
-    let mut cmd = Command::cargo_bin("varde").expect("the varde binary is built");
-    cmd.env("VARDE_CACHE_DIR", cache.path())
-        .env("VARDE_DATA_DIR", cache.path().join("data"))
-        .env("VARDE_NO_UPDATE_CHECK", "1")
+    let mut cmd = Command::cargo_bin("chap-devops").expect("the chap-devops binary is built");
+    cmd.env("CHAP_DEVOPS_CACHE_DIR", cache.path())
+        .env("CHAP_DEVOPS_DATA_DIR", cache.path().join("data"))
+        .env("CHAP_DEVOPS_NO_UPDATE_CHECK", "1")
         .current_dir(cache.path());
     (cache, cmd)
 }

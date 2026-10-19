@@ -100,7 +100,7 @@ pub(super) fn resolve_secrets(requested: Option<&Option<String>>) -> Result<Opti
 ///
 /// The file is the single source of truth, so reading it back covers all three
 /// cases at once: a file this run rendered with `--api-token`, one that was
-/// kept and already carries secrets from an earlier run or `varde auth enable`,
+/// kept and already carries secrets from an earlier run or `chap-devops auth enable`,
 /// and `--no-env`, which has no file and therefore no secrets.
 pub(super) fn env_auth(env: EnvAction, path: &Path) -> AuthState {
     if env == EnvAction::Skipped {
@@ -127,12 +127,12 @@ pub(super) enum KeptTag {
 /// Move the `CHAP_IMAGE_TAG` line of a kept `.env` to the tag this run
 /// records.
 ///
-/// `.env` is kept for its secrets, but the image pin in it is a line varde
-/// owns: `init` wrote it, and `varde update --chap-tag` moves it the same way.
+/// `.env` is kept for its secrets, but the image pin in it is a line chap-devops
+/// owns: `init` wrote it, and `chap-devops update --chap-tag` moves it the same way.
 /// Left alone, a re-init from a checkout back to a release keeps
 /// `CHAP_IMAGE_TAG=checkout`, and compose then asks ghcr for a tag that does
 /// not exist. Only a line that still says what this deployment recorded
-/// (`previous`), or the `checkout` value only varde writes, is moved.
+/// (`previous`), or the `checkout` value only chap-devops writes, is moved.
 pub(super) fn move_kept_tag(dir: &Path, previous: Option<&str>, new: &str) -> Result<KeptTag> {
     let Ok(body) = std::fs::read_to_string(dir.join(ENV_FILE)) else {
         return Ok(KeptTag::Same);

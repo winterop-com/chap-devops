@@ -73,7 +73,7 @@ pub fn run_tui(ctx: &Ctx, project: &Project, registry: &Registry) -> Result<Opti
     }
 }
 
-/// Run the configured model form alone, for `varde models configs add` and
+/// Run the configured model form alone, for `chap-devops models configs add` and
 /// `update` at a terminal. Enter hands the form to `check`, which gives the
 /// draft or the reason the form shows; Esc and ctrl-c give `None`.
 pub fn run_form(
@@ -279,7 +279,7 @@ impl TerminalGuard {
             anyhow::anyhow!(
                 "could not take over the terminal: {e}. \
                  The model browser needs an interactive terminal; \
-                 use `varde models enable` and `varde models disable` in a script."
+                 use `chap-devops models enable` and `chap-devops models disable` in a script."
             )
         })?;
         Ok(TerminalGuard { inner })

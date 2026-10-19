@@ -41,7 +41,7 @@ fn a_report_lists_what_changed_and_what_to_do_next() {
     assert!(text.contains("enabled chapkit_ewars_model v1.0.0 on http://localhost:5001\n"));
     assert!(text.contains("updated auto_arima_chapkit v1.0.0 on http://localhost:5002\n"));
     assert!(text.contains("disabled chapkit_simple_multistep_model\n"));
-    assert!(text.ends_with("run `varde up` to apply\n"));
+    assert!(text.ends_with("run `chap-devops up` to apply\n"));
 }
 
 #[test]
@@ -98,9 +98,9 @@ fn what_the_browser_selects_applies_to_a_real_project() {
     let (id, model) = &report.enabled[0];
     assert_eq!(id, &selection.enable[0].id);
     assert!(dir.path().join(&model.compose_file).is_file());
-    assert!(dir.path().join(".varde/models.yaml").is_file());
+    assert!(dir.path().join(".chap-devops/models.yaml").is_file());
     assert!(dir.path().join("compose.marketplace.yml").is_file());
-    assert!(human(&report, &[]).contains("run `varde up`"));
+    assert!(human(&report, &[]).contains("run `chap-devops up`"));
 }
 
 /// The same seam for the second page: Tab, space, save - and a component
@@ -151,14 +151,14 @@ fn what_the_browser_selects_on_the_components_page_applies_too() {
         vec![("ocs".to_string(), Some(8790))]
     );
     assert!(dir.path().join(OCS_COMPOSE).is_file());
-    assert!(dir.path().join(".varde/components.yaml").is_file());
+    assert!(dir.path().join(".chap-devops/components.yaml").is_file());
     let text = human(&report, &["stopped nothing".to_string()]);
     assert!(
         text.contains("enabled the ocs component on http://localhost:8790\n"),
         "{text}"
     );
     assert!(text.contains("\nstopped nothing\n"), "{text}");
-    assert!(text.ends_with("run `varde up` to apply\n"), "{text}");
+    assert!(text.ends_with("run `chap-devops up` to apply\n"), "{text}");
 }
 
 /// A component that was switched off is reported as off, with the notes
@@ -180,5 +180,5 @@ fn the_report_names_the_components_that_were_switched_off() {
     assert!(text.contains("disabled the ocs component\n"), "{text}");
     assert!(text.contains("\nstopped ocs\n"), "{text}");
     assert!(text.contains("\nkept the volume ocs_data\n"), "{text}");
-    assert!(text.ends_with("run `varde up` to apply\n"), "{text}");
+    assert!(text.ends_with("run `chap-devops up` to apply\n"), "{text}");
 }

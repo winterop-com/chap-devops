@@ -74,7 +74,7 @@ fn report(route: Option<RouteReport>) -> Dhis2Report {
         skipped: Vec::new(),
         record: None,
         configured: None,
-        next: "run `varde dhis2 show` to see what is still missing".to_string(),
+        next: "run `chap-devops dhis2 show` to see what is still missing".to_string(),
     }
 }
 
@@ -149,7 +149,7 @@ fn only_a_proved_route_with_both_apps_counts_as_connected() {
 /// evidence leaves it alone.
 ///
 /// The transition that matters is the middle one: a deployment that has
-/// been connected, then `varde dhis2 connect --offline`, which proves the
+/// been connected, then `chap-devops dhis2 connect --offline`, which proves the
 /// route and skips the apps. The record is still there afterwards, because
 /// nothing that run saw says it stopped being true. The same deployment
 /// with a route nothing answered through loses it, and the hint comes back.
@@ -173,7 +173,7 @@ fn a_run_that_could_not_look_leaves_the_record_as_it_found_it() {
             .connected_at
     };
 
-    // The `--offline` shape, on a deployment varde did connect.
+    // The `--offline` shape, on a deployment chap-devops did connect.
     assert_eq!(
         record_connect(&ctx, &mut project, Judgement::Unknown).unwrap(),
         ConnectRecord::Unchanged
@@ -226,15 +226,15 @@ fn the_record_line_never_claims_the_route_is_right() {
     let recorded = lines(|l| record_lines(ConnectRecord::Recorded, l));
     assert_eq!(
         recorded,
-        "hint: recorded the connect in `.varde/components.yaml`, so `varde up` and \
-         `varde status` stop asking for it\n\
+        "hint: recorded the connect in `.chap-devops/components.yaml`, so `chap-devops up` and \
+         `chap-devops status` stop asking for it\n\
          hint: the record says that this ran, not that the route is still right; \
-         `varde dhis2 show` asks DHIS2\n"
+         `chap-devops dhis2 show` asks DHIS2\n"
     );
 
     let cleared = lines(|l| record_lines(ConnectRecord::Cleared, l));
     assert!(
-        cleared.starts_with("hint: cleared the earlier `varde dhis2 connect`"),
+        cleared.starts_with("hint: cleared the earlier `chap-devops dhis2 connect`"),
         "{cleared}"
     );
     assert!(cleared.contains("ask for it again"), "{cleared}");
@@ -275,7 +275,7 @@ fn the_instance_line_never_carries_the_password() {
     );
     assert_eq!(
         credential_hint(&token),
-        "the credential is API token from VARDE_DHIS2_TOKEN"
+        "the credential is API token from CHAP_DEVOPS_DHIS2_TOKEN"
     );
 
     // An instance that did not say its version still gets a line.
@@ -321,7 +321,10 @@ fn a_route_that_is_already_right_says_there_was_nothing_to_change() {
         text.contains("already points at http://chap:8000/**; chap-core answered through it"),
         "{text}"
     );
-    assert!(text.contains("hint: run `varde dhis2 show`"), "{text}");
+    assert!(
+        text.contains("hint: run `chap-devops dhis2 show`"),
+        "{text}"
+    );
 }
 
 /// A route that was written but proved nothing says so rather than
@@ -342,11 +345,11 @@ fn an_unverified_route_does_not_claim_chap_core_answered() {
     assert!(!text.contains("chap-core answered through it"), "{text}");
 }
 
-/// A route that nothing answered through names the cause that varde checked:
+/// A route that nothing answered through names the cause that chap-devops checked:
 /// chap-core down, the allowlist for an empty 503, or the address that DHIS2
 /// uses for chap-core.
 #[test]
-fn an_unanswered_route_names_the_cause_varde_checked() {
+fn an_unanswered_route_names_the_cause_chap_devops_checked() {
     let proof = |empty_503| RouteProof {
         verified: false,
         answered: "HTTP 503 Service Unavailable".to_string(),
@@ -359,13 +362,13 @@ fn an_unanswered_route_names_the_cause_varde_checked() {
 
     assert_eq!(
         way_out_for(&proof(true), None, None, local),
-        "run `varde status` to see whether chap-core is up"
+        "run `chap-devops status` to see whether chap-core is up"
     );
     assert_eq!(
         way_out_for(&proof(true), at(), None, local),
         "chap-core answers at http://localhost:8700, so the DHIS2 allowlist may refuse \
          http://chap:8000; add it to `route.remote_servers_allowed` in `dhis2/dhis.conf` and \
-         run `varde restart dhis2`"
+         run `chap-devops restart dhis2`"
     );
     assert!(
         way_out_for(&proof(true), at(), Some("http://localhost:8700"), external)
@@ -375,10 +378,11 @@ fn an_unanswered_route_names_the_cause_varde_checked() {
         way_out_for(&proof(false), at(), Some("http://localhost:8700"), external),
         "chap-core answers at http://localhost:8700, so DHIS2 may not reach it at \
          http://localhost:8700; give the address DHIS2 reaches chap-core at with \
-         `varde dhis2 use --chap-url URL`"
+         `chap-devops dhis2 use --chap-url URL`"
     );
     assert!(
-        way_out_for(&proof(false), at(), None, local).ends_with("`varde logs dhis2` may say why")
+        way_out_for(&proof(false), at(), None, local)
+            .ends_with("`chap-devops logs dhis2` may say why")
     );
 }
 
@@ -490,7 +494,7 @@ fn a_skipped_step_is_reported_with_the_reason() {
     assert!(text.contains("App Hub"), "{text}");
 }
 
-/// The two apps varde is about, in the order it installs them.
+/// The two apps chap-devops is about, in the order it installs them.
 fn shown_apps(versions: &[&str]) -> Vec<ShownApp> {
     dhis2::HUB_APPS
         .iter()
@@ -517,7 +521,7 @@ fn show_names_every_missing_piece_and_the_command_that_fixes_them() {
             "analytics has never run".to_string(),
             "the Modeling App is not installed".to_string(),
         ],
-        next: "run `varde dhis2 connect` to do the rest".to_string(),
+        next: "run `chap-devops dhis2 connect` to do the rest".to_string(),
     };
     let text = human_show(&report, &out());
     assert!(text.contains("route      none"), "{text}");
@@ -527,18 +531,18 @@ fn show_names_every_missing_piece_and_the_command_that_fixes_them() {
         "{text}"
     );
     assert!(text.contains("missing: there is no `chap` route"), "{text}");
-    assert!(text.contains("run `varde dhis2 connect`"), "{text}");
+    assert!(text.contains("run `chap-devops dhis2 connect`"), "{text}");
 }
 
 /// The row is the two apps and nothing else. A real instance lists 29
 /// bundled apps of its own, and they are not what this command answers for.
 #[test]
-fn the_apps_row_is_the_two_apps_varde_installs_and_no_others() {
+fn the_apps_row_is_the_two_apps_chap_devops_installs_and_no_others() {
     let bundled = serde_json::json!([
         {"name": "Reports", "key": "reports", "version": "100.2.4"},
         {"name": "Maintenance app", "key": "maintenance", "version": "32.34.1-v42.0"},
         // The instance's own spelling of the Modeling App, which is not
-        // the App Hub's and not varde'.
+        // the App Hub's and not chap-devops'.
         {"name": "Modeling", "key": "modeling", "version": "7.1.0"},
     ]);
     let apps: Vec<ShownApp> = dhis2::HUB_APPS
@@ -574,7 +578,7 @@ fn the_apps_row_is_the_two_apps_varde_installs_and_no_others() {
 }
 
 /// The row a seeded deployment gets must not read as "analytics is done",
-/// and the one varde watched finish must not read as more than that.
+/// and the one chap-devops watched finish must not read as more than that.
 #[test]
 fn the_analytics_row_says_what_the_timestamp_is_worth() {
     let when = "2026-06-16T07:51:00.093";
@@ -586,7 +590,7 @@ fn the_analytics_row_says_what_the_timestamp_is_worth() {
 
     let here = analytics_cell(dhis2::AnalyticsEvidence::RanHere, when, &out());
     assert_eq!(here, format!("{when} (a run finished on this deployment)"));
-    // What varde saw is a run finishing, which is not a row count: a run
+    // What chap-devops saw is a run finishing, which is not a row count: a run
     // can finish having written nothing, which is why it says neither
     // "done" nor anything about the tables.
     assert!(!here.contains("done"), "{here}");
@@ -620,7 +624,8 @@ fn show_on_a_connected_instance_says_it_is_connected() {
         analytics: dhis2::AnalyticsEvidence::RanHere,
         apps: shown_apps(&["7.1.0", "1.16.2"]),
         missing: Vec::new(),
-        next: "the Modeling App can reach Chap; open DHIS2 with `varde open dhis2`".to_string(),
+        next: "the Modeling App can reach Chap; open DHIS2 with `chap-devops open dhis2`"
+            .to_string(),
     };
     let text = human_show(&report, &out());
     assert!(text.contains("http://chap:8000/** (healthy)"), "{text}");
@@ -633,7 +638,7 @@ fn show_on_a_connected_instance_says_it_is_connected() {
         "{text}"
     );
     assert!(!text.contains("missing:"), "{text}");
-    assert!(text.contains("`varde open dhis2`"), "{text}");
+    assert!(text.contains("`chap-devops open dhis2`"), "{text}");
 }
 
 /// A route aimed at somebody else's chap-core is the trap the whole step
@@ -660,7 +665,7 @@ fn show_marks_a_route_that_points_at_another_chap_core() {
             "the `chap` route points at http://158.39.75.126/stable/**, not at this deployment"
                 .to_string(),
         ],
-        next: "run `varde dhis2 connect` to do the rest".to_string(),
+        next: "run `chap-devops dhis2 connect` to do the rest".to_string(),
     };
     let text = human_show(&report, &out());
     assert!(text.contains("(another chap-core)"), "{text}");
@@ -701,13 +706,13 @@ fn the_missing_apps_are_the_ones_the_instance_does_not_have() {
 /// what these commands do.
 #[test]
 fn the_refusals_name_what_is_true_instead_and_the_way_out() {
-    assert!(NO_CHAP_CORE.contains("`varde components enable chap-core`"));
-    assert!(NOT_RUNNING.contains("`varde up`"));
-    assert!(NO_DHIS2.contains("`varde components enable dhis2`"));
+    assert!(NO_CHAP_CORE.contains("`chap-devops components enable chap-core`"));
+    assert!(NOT_RUNNING.contains("`chap-devops up`"));
+    assert!(NO_DHIS2.contains("`chap-devops components enable dhis2`"));
     let internal = no_host_port("http://dhis2:8080");
     assert!(internal.contains("http://dhis2:8080"), "{internal}");
     assert!(
-        internal.contains("`varde components enable dhis2 --port N`"),
+        internal.contains("`chap-devops components enable dhis2 --port N`"),
         "{internal}"
     );
     for text in [NO_CHAP_CORE, NOT_RUNNING, NO_DHIS2, &internal] {
@@ -784,7 +789,7 @@ fn a_failed_analytics_run_says_the_cause_and_not_the_statement() {
     assert!(memory.contains("4 to 5 GB"), "{memory}");
     let other = failure_message("table is locked by job abc", "2 seconds");
     assert!(
-        other.ends_with("`varde logs dhis2` has the rest"),
+        other.ends_with("`chap-devops logs dhis2` has the rest"),
         "{other}"
     );
 }
@@ -793,27 +798,27 @@ fn a_failed_analytics_run_says_the_cause_and_not_the_statement() {
 /// missing step, because `connect` sets only the route there.
 #[test]
 fn show_names_the_command_for_each_missing_step_on_an_external_dhis2() {
-    let ready = "the Modeling App can reach Chap; open DHIS2 with `varde open dhis2`";
+    let ready = "the Modeling App can reach Chap; open DHIS2 with `chap-devops open dhis2`";
     assert_eq!(show_next(true, true, false, true), ready);
     assert_eq!(show_next(false, true, false, true), ready);
     assert_eq!(
         show_next(false, true, true, false),
-        "run `varde dhis2 connect` to do the rest"
+        "run `chap-devops dhis2 connect` to do the rest"
     );
     assert_eq!(
         show_next(true, true, true, true),
-        "run `varde dhis2 apps` for the apps; the apps and analytics change this DHIS2, so ask \
+        "run `chap-devops dhis2 apps` for the apps; the apps and analytics change this DHIS2, so ask \
          its admin first"
     );
     assert_eq!(
         show_next(true, false, false, true),
-        "run `varde dhis2 connect` for the route"
+        "run `chap-devops dhis2 connect` for the route"
     );
     let all = show_next(true, false, true, false);
     assert!(
         all.starts_with(
-            "run `varde dhis2 connect` for the route, then `varde dhis2 apps` for the apps, \
-             then `varde dhis2 analytics`"
+            "run `chap-devops dhis2 connect` for the route, then `chap-devops dhis2 apps` for the apps, \
+             then `chap-devops dhis2 analytics`"
         ),
         "{all}"
     );
@@ -826,11 +831,11 @@ fn connect_on_an_external_dhis2_names_the_apps_to_install() {
     assert_eq!(
         external_next(true, Some(&["the Climate App"])),
         "the Modeling App can reach Chap after the admin of this DHIS2 installs the Climate \
-         App; `varde dhis2 show` says when they are there"
+         App; `chap-devops dhis2 show` says when they are there"
     );
-    assert!(external_next(true, Some(&[])).contains("`varde open dhis2`"));
+    assert!(external_next(true, Some(&[])).contains("`chap-devops open dhis2`"));
     assert!(external_next(true, None).contains("says which are there"));
-    assert!(external_next(false, Some(&[])).contains("`varde dhis2 show`"));
+    assert!(external_next(false, Some(&[])).contains("`chap-devops dhis2 show`"));
 }
 
 /// `use` names the URL that moved: a change of `--chap-url` alone does not
@@ -866,14 +871,14 @@ fn use_names_the_url_that_moved() {
     assert_eq!(
         headline(external("http://localhost:8080", "http://localhost:8700")),
         "changed the chap-url of the external DHIS2 at http://localhost:8080 to \
-         http://host.docker.internal:8700 in `.varde/components.yaml`"
+         http://host.docker.internal:8700 in `.chap-devops/components.yaml`"
     );
     assert_eq!(
         headline(external(
             "http://localhost:8090",
             "http://host.docker.internal:8700"
         )),
-        "changed the external DHIS2 to http://localhost:8080 in `.varde/components.yaml`"
+        "changed the external DHIS2 to http://localhost:8080 in `.chap-devops/components.yaml`"
     );
 }
 
@@ -885,7 +890,7 @@ fn a_request_through_the_route_that_got_no_answer_is_not_blamed_on_dhis2() {
         anyhow::Error::from(crate::error::ChapError::Dhis2Unreachable {
             url: "http://localhost:8780".to_string(),
             reason: reason.to_string(),
-            next: "run `varde status` to see whether its container is up",
+            next: "run `chap-devops status` to see whether its container is up",
         })
     };
     let timeout = proxied_failure(&unreachable("timeout: global"));
@@ -897,22 +902,23 @@ fn a_request_through_the_route_that_got_no_answer_is_not_blamed_on_dhis2() {
     );
     for text in [timeout, refused] {
         assert!(!text.contains("is not responding"), "{text}");
-        assert!(!text.contains("varde status"), "{text}");
+        assert!(!text.contains("chap-devops status"), "{text}");
     }
     let other = proxied_failure(&anyhow::anyhow!("something else"));
     assert_eq!(other, "something else");
 }
 
 /// Without chap-core, `show` names the commands that work there and the one
-/// that adds chap-core, never `varde dhis2 connect`, which refuses.
+/// that adds chap-core, never `chap-devops dhis2 connect`, which refuses.
 #[test]
 fn show_without_chap_core_does_not_name_connect() {
-    let route = "the `chap` route needs chap-core; `varde components enable chap-core` adds it";
+    let route =
+        "the `chap` route needs chap-core; `chap-devops components enable chap-core` adds it";
     assert_eq!(no_chap_core_next(false, true), route);
     assert_eq!(
         no_chap_core_next(true, false),
         format!(
-            "run `varde dhis2 apps` for the apps, then `varde dhis2 analytics` for the \
+            "run `chap-devops dhis2 apps` for the apps, then `chap-devops dhis2 analytics` for the \
              analytics tables; {route}"
         )
     );
@@ -922,7 +928,7 @@ fn show_without_chap_core_does_not_name_connect() {
     ] {
         assert!(!next.contains("connect"), "{next}");
         assert!(
-            next.contains("`varde components enable chap-core`"),
+            next.contains("`chap-devops components enable chap-core`"),
             "{next}"
         );
     }

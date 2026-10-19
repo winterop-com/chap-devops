@@ -7,8 +7,8 @@ make test      # run the test suite
 make check     # formatting and clippy, fixing nothing
 make lint      # fix what check reports: clippy --fix, then format (writes files)
 make build     # fast host-arch compile check
-make release   # universal (arm64+x86_64) macOS binary at bin/varde
-make install   # copy bin/varde to $PREFIX/bin, with the link vg (PREFIX defaults to ~/.local)
+make release   # universal (arm64+x86_64) macOS binary at bin/chap-devops
+make install   # copy bin/chap-devops to $PREFIX/bin, with the link cdx (PREFIX defaults to ~/.local)
 make run       # build the release binary, then run it (ARGS="...")
 make vendor    # refresh the embedded marketplace snapshot
 make docs      # regenerate the reference, then build the book into site/
@@ -46,7 +46,7 @@ for DHIS2. A new test goes in the module for its command, and a helper moves to
 `common/` once a second module needs it. Keep a module under about 1500 lines;
 past that, split it by concern.
 
-`varde models add` and `varde update --chap-tag` are the commands that cannot
+`chap-devops models add` and `chap-devops update --chap-tag` are the commands that cannot
 be tested that way: they resolve a repository, a release or a compose file over
 HTTP. Those tests stand a local server in for everything they would reach -
 GitHub's REST API, the raw file host, ghcr and the marketplace index - through
@@ -54,10 +54,10 @@ four hooks nothing on the command line can set:
 
 | Variable | What it moves |
 | --- | --- |
-| `VARDE_GITHUB_API` | The GitHub REST base URL, normally `https://api.github.com`: the repository lookups, chap-core's release feed, `varde`'s own, and `/rate_limit`. |
-| `VARDE_GITHUB_RAW` | The raw file base URL, normally `https://raw.githubusercontent.com`: chap-core's `compose.ghcr.yml` at a ref. |
-| `VARDE_GHCR_URL` | The registry base URL, normally `https://ghcr.io`. |
-| `VARDE_NO_DOCKER_PROBE` | `1` turns off the uid probe, which would otherwise `docker pull` an image the test has not got. |
+| `CHAP_DEVOPS_GITHUB_API` | The GitHub REST base URL, normally `https://api.github.com`: the repository lookups, chap-core's release feed, `chap-devops`'s own, and `/rate_limit`. |
+| `CHAP_DEVOPS_GITHUB_RAW` | The raw file base URL, normally `https://raw.githubusercontent.com`: chap-core's `compose.ghcr.yml` at a ref. |
+| `CHAP_DEVOPS_GHCR_URL` | The registry base URL, normally `https://ghcr.io`. |
+| `CHAP_DEVOPS_NO_DOCKER_PROBE` | `1` turns off the uid probe, which would otherwise `docker pull` an image the test has not got. |
 
 The registry itself moves with the ordinary `--registry-url` flag. The hooks
 exist for the tests: an operator who wants another registry wants another image
@@ -89,21 +89,21 @@ images, once per chap-core tag (`latest` and `master` by default) and DHIS2
 version (2.41, 2.42, 2.43 and `dev` by default; `dev` is the unreleased next
 one, `dhis2/core-dev:master`). Each pair gets one deployment with OCS, the
 object store, DHIS2 and the models running together, on ports of its own.
-DHIS2 2.42 is seeded from the Laos climate demo varde uses by default, and the
+DHIS2 2.42 is seeded from the Laos climate demo chap-devops uses by default, and the
 other versions start empty: DHIS2's Sierra Leone demo exists for some of them,
 but its `admin` may not create the route `dhis2 connect` writes. Then:
 
-1. `varde up`, and a wait until `varde status` exits 0: every service up and
+1. `chap-devops up`, and a wait until `chap-devops status` exits 0: every service up and
    every model registered;
-2. `varde doctor`;
+2. `chap-devops doctor`;
 3. OCS answering `/health` and listing `/stac/collections`, then ingesting
    three days of CHIRPS3 (public, no credentials) and publishing it;
-4. `varde dhis2 connect`: the route, the apps, analytics;
-5. `varde models test --all`: every model trains and predicts;
-6. `varde models test --all --backtest`: a dataset, a backtest and its scores
+4. `chap-devops dhis2 connect`: the route, the apps, analytics;
+5. `chap-devops models test --all`: every model trains and predicts;
+6. `chap-devops models test --all --backtest`: a dataset, a backtest and its scores
    through chap-core, the path the Modeling App takes;
-7. `varde chap eval` of the first model over the deployment's network, on
-   chap-core's Laos example data, then `varde chap plot-backtest`. Both files
+7. `chap-devops chap eval` of the first model over the deployment's network, on
+   chap-core's Laos example data, then `chap-devops chap plot-backtest`. Both files
    must be on the host.
 
 ```sh
@@ -132,7 +132,7 @@ the logs as an artifact for 14 days.
 ## Slides
 
 The slide decks are [Marp](https://marp.app/) Markdown: one file for each deck
-in `slides/decks/`, and one theme, `slides/theme/varde.css`. A `---` line
+in `slides/decks/`, and one theme, `slides/theme/chap-devops.css`. A `---` line
 starts a new slide.
 
 ```sh
@@ -152,7 +152,7 @@ slides after the book, so Pages serves them at `/slides/`, and
 Run `make docs` first and `make slides` after it: `mdbook build` empties
 `site/`, and that removes the slides.
 
-Each command and each output on a slide must be one that varde really runs
+Each command and each output on a slide must be one that chap-devops really runs
 or prints. Copy it from a real run, or from the chapter that it comes from.
 
 ## The build script
@@ -166,11 +166,11 @@ or prints. Copy it from a real run, or from the chapter that it comes from.
   index names but the directory does not hold fails the build with a message
   naming it; a file on disk the index does not list is a `cargo:warning` and
   is left out.
-- `TARGET`, the triple this binary is built for, which `varde self update`
-  reads to pick its release asset and `varde self version` prints.
+- `TARGET`, the triple this binary is built for, which `chap-devops self update`
+  reads to pick its release asset and `chap-devops self version` prints.
 - `GIT_REVISION`, the short commit of the checkout, empty when there is no git
-  or no repository, which `varde self version` prints when it is there.
-- `VARDE_BUILD_CHANNEL`, `stable` or `dev`, read from the environment variable
+  or no repository, which `chap-devops self version` prints when it is there.
+- `CHAP_DEVOPS_BUILD_CHANNEL`, `stable` or `dev`, read from the environment variable
   of the same name. Only the exact value `dev` selects the dev channel, so
   nothing an environment happens to hold can end up in the compiled string,
   and a local build is stable without anyone having to say so.
@@ -179,13 +179,13 @@ or prints. Copy it from a real run, or from the chapter that it comes from.
 
 The script names its own `rerun-if-changed` files, so it re-runs when the
 vendor directory or `.git/HEAD` moves and not otherwise, plus a
-`rerun-if-env-changed` for `VARDE_BUILD_CHANNEL`, so flipping the channel
+`rerun-if-env-changed` for `CHAP_DEVOPS_BUILD_CHANNEL`, so flipping the channel
 rebuilds rather than handing back a cached binary from the other one.
 
 ## Vendoring the marketplace snapshot
 
 The catalogue compiled into the binary is the last fallback when the registry
-can be neither fetched nor read from cache, so `varde` works on a machine that
+can be neither fetched nor read from cache, so `chap-devops` works on a machine that
 has never had network access.
 
 ```sh
@@ -232,7 +232,7 @@ change without the chapter changing with it.
 make docs-reference     # cargo run -q -- docs-markdown > docs/reference.md
 ```
 
-`varde docs-markdown` is a hidden subcommand (`hide = true`) implemented in
+`chap-devops docs-markdown` is a hidden subcommand (`hide = true`) implemented in
 `src/commands/docs.rs`. It walks the static `Cli::command()` tree through
 clap's introspection API and prints one `##` section per command path, with the
 about text, a fenced usage line from clap's `render_usage`, and a table of
@@ -242,10 +242,10 @@ Two details matter. It renders from the **static** tree rather than the one
 `main.rs` parsed, because `main.rs` hides the project-only commands when there
 is no project and the reference has to list all of them. And it skips clap's
 own `-h` and `-V` by their *action* rather than their name, because
-`varde models enable --version` is a flag of ours that must stay.
+`chap-devops models enable --version` is a flag of ours that must stay.
 
 The generated file is committed, and `cargo test` compares
-`varde docs-markdown` to it byte for byte. When that test fails, run
+`chap-devops docs-markdown` to it byte for byte. When that test fails, run
 `make docs-reference` and commit the result. `make docs` depends on
 `docs-reference`, so a local book build can never be stale.
 
@@ -387,19 +387,19 @@ pushes straight away.
 
 The tag starts `release.yml`, which attaches eight files to the release:
 
-- `varde-universal-apple-darwin.tar.gz`, both macOS slices in one binary,
+- `chap-devops-universal-apple-darwin.tar.gz`, both macOS slices in one binary,
   signed and notarized;
-- `varde-aarch64-apple-darwin.tar.gz` and `varde-x86_64-apple-darwin.tar.gz`,
+- `chap-devops-aarch64-apple-darwin.tar.gz` and `chap-devops-x86_64-apple-darwin.tar.gz`,
   likewise signed and notarized;
-- `varde-x86_64-unknown-linux-musl.tar.gz` and
-  `varde-aarch64-unknown-linux-musl.tar.gz`, static;
-- `varde-x86_64-pc-windows-msvc.zip` and `varde-aarch64-pc-windows-msvc.zip`,
+- `chap-devops-x86_64-unknown-linux-musl.tar.gz` and
+  `chap-devops-aarch64-unknown-linux-musl.tar.gz`, static;
+- `chap-devops-x86_64-pc-windows-msvc.zip` and `chap-devops-aarch64-pc-windows-msvc.zip`,
   unsigned and untested;
 - `SHA256SUMS`, covering all seven archives.
 
-Each archive holds one directory, `varde-<version>-<target>/`, with the binary,
-`README.md`, `LICENSE` and `completions/` holding `varde.bash`, `_varde`,
-`varde.fish` and `_varde.ps1`, generated by running `varde completions` on the
+Each archive holds one directory, `chap-devops-<version>-<target>/`, with the binary,
+`README.md`, `LICENSE` and `completions/` holding `chap-devops.bash`, `_chap-devops`,
+`chap-devops.fish` and `_chap-devops.ps1`, generated by running `chap-devops completions` on the
 binary that was just built.
 
 No archive name carries the version: the tag is already in the download URL,
@@ -467,12 +467,12 @@ main)`. It is the same build the tag path produces, signed and notarized the
 same way; what differs is which release it lands on and what the binary says
 about itself.
 
-- `VARDE_BUILD_CHANNEL` is set at the workflow level to `stable` for a
+- `CHAP_DEVOPS_BUILD_CHANNEL` is set at the workflow level to `stable` for a
   `refs/tags/v*` run and `dev` for everything else, so a dispatch build is
   never mistaken for a release build either. `build.rs` compiles it in and
-  `varde self version` prints it as `channel`.
+  `chap-devops self version` prints it as `channel`.
 - The version does not change: a dev build reports the Cargo version, which
-  is the last tag. The commit is what moves, so `varde self update` on a dev
+  is the last tag. The commit is what moves, so `chap-devops self update` on a dev
   build compares the commit the release notes record against the build's own
   `GIT_REVISION` rather than comparing versions, and the once-a-day notice
   does the same. The line the commit is read back from is written by
@@ -481,7 +481,7 @@ about itself.
 - A stable build never drifts onto a dev one: it follows
   `releases/latest`, which GitHub documents as "the most recent
   non-prerelease, non-draft release", and the notice checks `prerelease`
-  itself on top of that. Crossing over is `varde self update --version dev`,
+  itself on top of that. Crossing over is `chap-devops self update --version dev`,
   and `install.sh --version dev` installs one from scratch.
 - The tag is moved by the workflow itself, with `git tag -f dev` and a force
   push, before the release is written. GitHub's create-a-release and
@@ -512,7 +512,7 @@ The two publish jobs are guarded against each other: `publish` runs only for
 on a minimal container image, and shellcheck-clean under `-s sh` in CI.
 
 It resolves the platform from `uname -s` and `uname -m`, resolves the version
-from `VARDE_VERSION`, then the GitHub API, then the redirect of the
+from `CHAP_DEVOPS_VERSION`, then the GitHub API, then the redirect of the
 `releases/latest` page, downloads the archive and `SHA256SUMS` into a `mktemp`
 directory, verifies with whichever of `sha256sum` and `shasum` exists, and
 installs with `install -m 0755`. Completion scripts are copied into the
@@ -521,29 +521,29 @@ the install.
 
 `--version dev` needs nothing special: the tag goes into the download URL like
 any other, and the binary inside the archive is found by matching
-`varde-*-<target>/varde` rather than by spelling the directory out, because a
+`chap-devops-*-<target>/chap-devops` rather than by spelling the directory out, because a
 rolling archive carries `dev-<short commit>` where a release carries the tag.
 
-`--here`, which `VARDE_INSTALL_DIR=.` and `--dir .` also select, stops after
-`install -m 0755 ./varde`: it prints the path and the version and returns
+`--here`, which `CHAP_DEVOPS_INSTALL_DIR=.` and `--dir .` also select, stops after
+`install -m 0755 ./chap-devops`: it prints the path and the version and returns
 without touching completion directories or saying anything about `PATH`. It is
 the shape a CI job or a one-off trial wants, and the one mode that writes
 nothing outside the current directory.
 
-`VARDE_DOWNLOAD_BASE` overrides where the archive and `SHA256SUMS` come from.
+`CHAP_DEVOPS_DOWNLOAD_BASE` overrides where the archive and `SHA256SUMS` come from.
 It is there to test the script against a locally built release and an install
 never needs it. `curl` reads `file://`, so the whole path can be exercised
 without a release:
 
 ```sh
 target="$(uname -m | sed 's/arm64/universal/')-apple-darwin"
-name="varde-v0.0.0-test-$target"
+name="chap-devops-v0.0.0-test-$target"
 mkdir -p /tmp/rel/"$name"
-cp target/debug/varde README.md LICENSE /tmp/rel/"$name"/
-tar -czf /tmp/rel/varde-"$target".tar.gz -C /tmp/rel "$name"
-(cd /tmp/rel && shasum -a 256 varde-"$target".tar.gz > SHA256SUMS)
+cp target/debug/chap-devops README.md LICENSE /tmp/rel/"$name"/
+tar -czf /tmp/rel/chap-devops-"$target".tar.gz -C /tmp/rel "$name"
+(cd /tmp/rel && shasum -a 256 chap-devops-"$target".tar.gz > SHA256SUMS)
 
-VARDE_DOWNLOAD_BASE=file:///tmp/rel \
+CHAP_DEVOPS_DOWNLOAD_BASE=file:///tmp/rel \
   sh install.sh --version v0.0.0-test --dir /tmp/bin
 ```
 
@@ -565,7 +565,7 @@ Gatekeeper fetches it from Apple instead. The keychain is deleted in an
 
 ```sh
 shasum -a 256 -c SHA256SUMS --ignore-missing
-codesign -dv --verbose=4 varde
+codesign -dv --verbose=4 chap-devops
 ```
 
 The second prints `Authority=Developer ID Application: ...` and a secure
@@ -578,7 +578,7 @@ a release can be audited without downloading anything.
 ### The docs deploy
 
 Pushing the release commit to `main` also runs `docs.yml`, which rebuilds the
-book and deploys it to <https://winterop-com.github.io/varde/>. There is
+book and deploys it to <https://winterop-com.github.io/chap-devops/>. There is
 nothing to do by hand; the version in the install commands is written out in
 `docs/install.md` and is updated there when it matters.
 
@@ -593,7 +593,7 @@ scripts/bootstrap-repo.sh          # print the commands
 scripts/bootstrap-repo.sh --yes    # run them
 ```
 
-It creates `winterop-com/varde` as a public repository from this checkout,
+It creates `winterop-com/chap-devops` as a public repository from this checkout,
 pushes `main`, switches GitHub Pages to the Actions build source (which has to
 happen before `docs.yml` can deploy), sets the About link to the documentation
 site, and runs `scripts/github-secrets.sh`.

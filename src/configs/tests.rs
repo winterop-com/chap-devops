@@ -106,7 +106,7 @@ fn check_refuses_a_live_name_a_required_covariate_and_a_bad_name() {
     assert_eq!(
         err,
         "m has a configured model monthly_climate already; give another --name, or archive it \
-         first with `varde models configs archive m monthly_climate`"
+         first with `chap-devops models configs archive m monthly_climate`"
     );
     let err = check(&draft("w", &["population"]), &free, &existing, "m").expect_err("required");
     assert!(

@@ -93,7 +93,7 @@ fn the_kept_line_names_the_config_delete_or_else_each_artifact() {
     assert_eq!(
         line,
         "ewars: kept test_config_01J and 1 artifact in its database; remove it with \
-         `varde docker exec ewars curl -fsS -X DELETE http://127.0.0.1:8000/api/v1/configs/c2`"
+         `chap-devops docker exec ewars curl -fsS -X DELETE http://127.0.0.1:8000/api/v1/configs/c2`"
     );
     let line = kept_line(
         "ewars",
@@ -108,7 +108,7 @@ fn the_kept_line_names_the_config_delete_or_else_each_artifact() {
     );
     assert!(
         line.ends_with(
-            "/api/v1/artifacts/a2` then `varde docker exec ewars curl -fsS -X DELETE \
+            "/api/v1/artifacts/a2` then `chap-devops docker exec ewars curl -fsS -X DELETE \
              http://127.0.0.1:8000/api/v1/artifacts/a3`"
         ),
         "{line}"

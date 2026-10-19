@@ -267,7 +267,7 @@ pub fn help_entries() -> &'static [(&'static str, &'static str)] {
         ("v", "pick the channel; on the dhis2 component, its version"),
         ("t", "show or hide templates"),
         ("/", "filter; Enter keeps it, Esc clears it"),
-        ("s", "save the changes; `varde up` applies them"),
+        ("s", "save the changes; `chap-devops up` applies them"),
         ("u", "discard the pending changes"),
         ("o", "open the repository, or the web interface"),
         ("c", "show the model's image reference"),

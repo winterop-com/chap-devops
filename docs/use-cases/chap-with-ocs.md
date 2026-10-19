@@ -4,22 +4,22 @@ chap-core with an Open Climate Service beside it, so Chap has climate data to
 fetch from inside the same deployment.
 
 ```sh
-varde init mychap --models chapkit_simple_multistep_model --with ocs,s3
+chap-devops init mychap --models chapkit_simple_multistep_model --with ocs,s3
 cd mychap
-varde up
-varde status                 # chap-core, ocs and s3 lines, then the models
+chap-devops up
+chap-devops status                 # chap-core, ocs and s3 lines, then the models
 ```
 
-The first `varde up` pulls the images that are not on the machine yet: the
+The first `chap-devops up` pulls the images that are not on the machine yet: the
 chap-core images, the model image and the OCS image. The OCS image alone is
 about 3 GB on disk. With the chap-core and model images already present, the
-first `varde up` took about a minute in one test run. It ends with one line:
+first `chap-devops up` took about a minute in one test run. It ends with one line:
 
 ```text
 started chap, chapkit-simple-multistep-model, ocs, postgres, redis, s3, worker
 ```
 
-`varde status` then shows this:
+`chap-devops status` then shows this:
 
 ```text
 chap-core   up   http://localhost:8700   2.4.0   auth: off
@@ -30,14 +30,14 @@ MODEL                           STATE                       REACH          LAST 
 chapkit-simple-multistep-model  registered, not configured  via chap-core  1s ago
 
 1 model registered
-chapkit-simple-multistep-model: chap-core has no configured model for it, so nothing can run it; run `varde models configs sync`
+chapkit-simple-multistep-model: chap-core has no configured model for it, so nothing can run it; run `chap-devops models configs sync`
 ```
 
-`registered, not configured` is the normal state after a plain `varde up`.
+`registered, not configured` is the normal state after a plain `chap-devops up`.
 A backtest and the Modeling App need a configured model. Make them:
 
 ```sh
-varde models configs sync
+chap-devops models configs sync
 ```
 
 ```text
@@ -45,8 +45,8 @@ chapkit_simple_multistep_model: created configured model monthly_climate
 chapkit_simple_multistep_model: created configured model monthly_selfhistory
 ```
 
-`varde up --wait` does the same step for you. See
-[Configured models](../models.md#configured-models). Now `varde status` shows
+`chap-devops up --wait` does the same step for you. See
+[Configured models](../models.md#configured-models). Now `chap-devops status` shows
 the model as `registered`:
 
 ```text
@@ -57,16 +57,16 @@ chapkit-simple-multistep-model  registered  via chap-core  2s ago
 ```
 
 chap-core reaches OCS at `http://ocs:9000` on the compose network, and you
-reach it at `http://localhost:8790`. varde does not configure chap-core to
+reach it at `http://localhost:8790`. chap-devops does not configure chap-core to
 fetch from OCS. chap-core has no setting for it: the two run side by side, and
 you connect them. See [OCS](../components.md#ocs).
 
-`init` writes `ocs/climate-service.yaml`, which is yours to edit. varde changes
+`init` writes `ocs/climate-service.yaml`, which is yours to edit. chap-devops changes
 only its `read_only` and `plugins_dir` keys. It also puts the data source credentials into `.env`, commented
 out. ERA5-Land needs one or both of a Copernicus Climate Data Store account
 and an Earth Data Hub account. WorldPop and CHIRPS3 need no account.
 
-It worked when `varde status` shows chap-core, `ocs` and `s3` as `up` and each
+It worked when `chap-devops status` shows chap-core, `ocs` and `s3` as `up` and each
 model as `registered`.
 
 ## Climate data in and out
@@ -83,12 +83,12 @@ DHIS2 on port 8780. This deployment has no DHIS2. Do one of these:
 
 - Give `geometries` a GeoJSON `FeatureCollection` of your own districts. The
   feature ids become the `location` column.
-- Add the demo DHIS2 with `varde components enable dhis2`, then `varde up`.
-  `varde up` returns while DHIS2 still starts. Run `varde status` again until
+- Add the demo DHIS2 with `chap-devops components enable dhis2`, then `chap-devops up`.
+  `chap-devops up` returns while DHIS2 still starts. Run `chap-devops status` again until
   `dhis2` shows `up`. See [Growing a deployment](./growing.md).
 
 The extent is Laos, like the demo DHIS2, until you change it.
-`varde doctor` warns about this on its `components` line, and tells you how
+`chap-devops doctor` warns about this on its `components` line, and tells you how
 to change it. See
 [`ocs/climate-service.yaml`](../components.md#ocsclimate-serviceyaml).
 

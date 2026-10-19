@@ -1,7 +1,7 @@
 //! A picture of the browser, taken the way Textual takes one: the buffer that
 //! was just drawn, written out as SVG.
 //!
-//! ratatui has no screenshot of its own and varde takes no dependency for
+//! ratatui has no screenshot of its own and chap-devops takes no dependency for
 //! one: a terminal cell is a rectangle and a glyph, which is two SVG
 //! elements. What lands in the file is what the terminal showed, cell for
 //! cell, so the picture cannot drift from the screen it claims to be.
@@ -32,7 +32,7 @@ const ANSI: [&str; 16] = [
     "#555753", "#ef2929", "#8ae234", "#fce94f", "#729fcf", "#ad7fa8", "#34e2e2", "#eeeeec",
 ];
 
-/// Write a picture of `buffer` to the directory `varde ui` was started in,
+/// Write a picture of `buffer` to the directory `chap-devops ui` was started in,
 /// and say what happened.
 ///
 /// No directory is created and nothing is overwritten by name: the file is
@@ -51,13 +51,13 @@ fn save_in(dir: &Path, buffer: &Buffer, theme: &Theme, now: SystemTime) -> Strin
     }
 }
 
-/// `varde-ui-20260925-143012.svg`.
+/// `chap-devops-ui-20260925-143012.svg`.
 fn file_name(now: SystemTime) -> String {
     let secs = now
         .duration_since(UNIX_EPOCH)
         .map(|since| since.as_secs())
         .unwrap_or_default();
-    format!("varde-ui-{}.svg", stamp(secs))
+    format!("chap-devops-ui-{}.svg", stamp(secs))
 }
 
 /// The whole buffer as one SVG document.
@@ -256,7 +256,7 @@ fn round(v: f32) -> String {
 }
 
 /// `YYYYMMDD-HHMMSS`, in UTC: a picture is named after the moment it was
-/// taken, and varde carries no timezone database to say it in local time.
+/// taken, and chap-devops carries no timezone database to say it in local time.
 fn stamp(secs: u64) -> String {
     let (year, month, day) = civil((secs / 86_400) as i64);
     let rest = secs % 86_400;

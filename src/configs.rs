@@ -1,5 +1,5 @@
 //! chap-core's configured models of the models this deployment runs:
-//! `varde models configs`, the configurations page of `varde ui`, and the
+//! `chap-devops models configs`, the configurations page of `chap-devops ui`, and the
 //! step other commands run ([`sync`]).
 //!
 //! A configured model is a model template with a name, values for its user
@@ -29,11 +29,11 @@ use serde_json::{Map, Value as Json};
 pub use sync::CONFIGURED_MODELS_PATH;
 
 /// The live model templates. A read that also makes a template for each
-/// registered service that has none (chap-core's discovery), so `varde
+/// registered service that has none (chap-core's discovery), so `chap-devops
 /// status` does not ask it.
 pub const TEMPLATES_PATH: &str = "/v1/crud/model-templates";
 
-/// The prefix of a configured model that `chapkit test` or `varde models
+/// The prefix of a configured model that `chapkit test` or `chap-devops models
 /// test` left.
 pub const TEST_PREFIX: &str = "test_config_";
 
@@ -229,8 +229,8 @@ pub fn template_of_service(
     match answer.status {
         404 => {
             return Err(format!(
-                "{model} is not registered with chap-core; start it with `varde up`, and run \
-                 this again when `varde status` shows it registered"
+                "{model} is not registered with chap-core; start it with `chap-devops up`, and run \
+                 this again when `chap-devops status` shows it registered"
             ));
         }
         409 if answer.detail().contains(sync::NO_REVISION_REFUSAL) => {
@@ -303,7 +303,7 @@ pub fn check(
     {
         return Err(format!(
             "{model} has a configured model {} already; give another --name, or archive it \
-             first with `varde models configs archive {model} {}`",
+             first with `chap-devops models configs archive {model} {}`",
             draft.variant, draft.variant
         ));
     }
@@ -349,7 +349,7 @@ pub fn check_variant(variant: &str) -> std::result::Result<(), String> {
         .all(|c| c.is_ascii_alphanumeric() || matches!(c, '_' | '-' | '.'))
     {
         return Err(format!(
-            "`{variant}` is not a name varde gives a configured model; use letters, digits, \
+            "`{variant}` is not a name chap-devops gives a configured model; use letters, digits, \
              `_`, `-` and `.`"
         ));
     }
@@ -404,7 +404,7 @@ pub fn replace(
 pub fn not_archived(old: i64, err: &anyhow::Error) -> String {
     format!(
         "the new values are live, but the old row {old} was not archived: {err}; archive it \
-         with `varde api DELETE {CONFIGURED_MODELS_PATH}/{old}`"
+         with `chap-devops api DELETE {CONFIGURED_MODELS_PATH}/{old}`"
     )
 }
 

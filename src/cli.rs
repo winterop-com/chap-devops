@@ -1,4 +1,4 @@
-//! The `varde` command tree.
+//! The `chap-devops` command tree.
 //!
 //! Doc comments on the types and fields are the `--help` text, and every one of
 //! them is a single clause: asking for help is not asking for the manual, so the
@@ -79,29 +79,29 @@ impl std::str::FromStr for ComponentPortArg {
     }
 }
 
-/// The one-liner both `varde -h` and `varde --help` open with. There is no
+/// The one-liner both `chap-devops -h` and `chap-devops --help` open with. There is no
 /// `long_about`: the two spellings of help say the same thing.
 const ABOUT: &str = "deploy Chap (climate-informed disease forecasting) and its services";
 
-/// The last line of `varde --help`. Anything longer than a clause belongs in
+/// The last line of `chap-devops --help`. Anything longer than a clause belongs in
 /// the book, so the help points at it instead of repeating it.
 ///
 /// A line, and nothing more: the blank line the help ends on is written where
 /// the help is printed (`print_and_exit` in `main`), because clap `trim_end`s
 /// the rendered help and appends one newline of its own, so a newline added
 /// here or to `after_help` would be thrown away.
-pub const DOCS_LINE: &str = "Docs: https://winterop-com.github.io/varde/";
+pub const DOCS_LINE: &str = "Docs: https://winterop-com.github.io/chap-devops/";
 
 /// The book itself, for the places that open it rather than print it. A test
 /// keeps it and [`DOCS_LINE`] pointing at the same place.
-pub const DOCS_URL: &str = "https://winterop-com.github.io/varde/";
+pub const DOCS_URL: &str = "https://winterop-com.github.io/chap-devops/";
 
 /// The heading the global options are listed under, in their own block after
 /// each command's own options.
 const GLOBAL: &str = "Global options";
 
 /// The heading of `--registry-url`, `--offline` and `--cache-dir`. They are
-/// global, so `varde --offline init` parses, but [`command`] hides them from
+/// global, so `chap-devops --offline init` parses, but [`command`] hides them from
 /// the help of every command that does not read them.
 const REGISTRY: &str = "Registry options";
 
@@ -156,7 +156,7 @@ const REGISTRY_USERS: &[(&str, &[&str])] = &[
     ("self update", &["offline", "cache_dir"]),
 ];
 
-/// The registry options a command's help lists, by its path below `varde`
+/// The registry options a command's help lists, by its path below `chap-devops`
 /// (`"models list"`).
 pub fn registry_options_of(path: &str) -> &'static [&'static str] {
     REGISTRY_USERS
@@ -214,9 +214,9 @@ fn with_global_copies(
 /// Deploy Chap (climate-informed disease forecasting) and its services.
 #[derive(Debug, Parser)]
 // `bin_name` as well as `name`: without it clap takes the usage line from
-// argv[0], so the same help reads `varde.exe` on Windows and `varde`
+// argv[0], so the same help reads `chap-devops.exe` on Windows and `chap-devops`
 // everywhere else - and `docs/reference.md` is generated from that help.
-#[command(name = "varde", bin_name = "varde", version, about = ABOUT, after_help = DOCS_LINE)]
+#[command(name = "chap-devops", bin_name = "chap-devops", version, about = ABOUT, after_help = DOCS_LINE)]
 pub struct Cli {
     /// Print machine-readable JSON instead of human output
     #[arg(long, global = true, help_heading = GLOBAL)]
@@ -263,7 +263,7 @@ pub struct Cli {
 
 #[derive(Debug, Subcommand)]
 pub enum Command {
-    /// Create a deployment directory: compose files, .env and .varde/
+    /// Create a deployment directory: compose files, .env and .chap-devops/
     Init(Box<InitArgs>),
 
     /// Show and change what this deployment is made of
@@ -275,7 +275,7 @@ pub enum Command {
     /// Inspect and refresh the marketplace registry
     Registry(RegistryArgs),
 
-    /// Render the compose files from .varde/
+    /// Render the compose files from .chap-devops/
     Sync(SyncArgs),
 
     /// Move the pins to what upstream publishes now, and pull
@@ -338,17 +338,17 @@ pub enum Command {
     /// Use Docker directly: containers, images, compose
     Docker(DockerArgs),
 
-    /// Watch every varde deployment on this machine as a live tree
+    /// Watch every chap-devops deployment on this machine as a live tree
     Top(TopArgs),
 
     /// Delete what deployments whose directory is gone left in docker
     Cleanup(CleanupArgs),
 
-    /// Update varde itself, and report what this build is
+    /// Update chap-devops itself, and report what this build is
     #[command(name = "self")]
     SelfCmd(SelfArgs),
 
-    /// Print a shell completion script for varde
+    /// Print a shell completion script for chap-devops
     Completions(CompletionsArgs),
 
     /// Print the whole command tree as Markdown
@@ -356,7 +356,7 @@ pub enum Command {
     DocsMarkdown(DocsMarkdownArgs),
 }
 
-/// Update varde itself, and report what this build is
+/// Update chap-devops itself, and report what this build is
 #[derive(Debug, Args)]
 #[command(arg_required_else_help = true)]
 pub struct SelfArgs {
@@ -393,7 +393,7 @@ pub struct SelfUpdateArgs {
 #[derive(Debug, Clone, Args)]
 pub struct SelfVersionArgs {}
 
-/// Print a shell completion script for varde
+/// Print a shell completion script for chap-devops
 #[derive(Debug, Clone, Args)]
 pub struct CompletionsArgs {
     /// Shell to generate for
@@ -403,7 +403,7 @@ pub struct CompletionsArgs {
 
 /// Print the whole command tree as Markdown.
 ///
-/// Hidden: it documents `varde` rather than doing anything to a deployment,
+/// Hidden: it documents `chap-devops` rather than doing anything to a deployment,
 /// and `make docs-reference` is the only caller. It needs no project and no
 /// Docker.
 #[derive(Debug, Clone, Args)]

@@ -70,7 +70,7 @@ fn manual_check(
                     .clone()
                     .unwrap_or_else(|| entry.image.clone())
             ),
-            "run `varde update --dry-run` to see the error in full",
+            "run `chap-devops update --dry-run` to see the error in full",
         ),
         Some(tag) if tag == entry.tag => Check::ok(
             check_id,
@@ -81,7 +81,7 @@ fn manual_check(
             check_id,
             name,
             format!("running {}, and {branch} has published {tag}", entry.tag),
-            "run `varde update` to move the pin",
+            "run `chap-devops update` to move the pin",
         ),
     }
 }
@@ -395,14 +395,14 @@ fn day_in(log: &[crate::manual::github::Commit], sha: &str) -> String {
         .unwrap_or_default()
 }
 
-/// Whether the rendered compose files still match `.varde/`.
+/// Whether the rendered compose files still match `.chap-devops/`.
 ///
-/// This is `varde sync --check` with its own exit code taken away: the same
+/// This is `chap-devops sync --check` with its own exit code taken away: the same
 /// dry run, reported as one line.
 pub(super) fn sync_check(project: &Project, catalogue: &Result<registry::Registry>) -> Check {
     const ID: &str = "sync";
     const NAME: &str = "compose files";
-    // The same catalogue `varde sync` would load, with the deployment's own
+    // The same catalogue `chap-devops sync` would load, with the deployment's own
     // definitions folded in - without them a manually added model would look
     // like one the catalogue dropped. A collision is reported by every
     // command that writes; this one only reads.
@@ -425,13 +425,13 @@ pub(super) fn sync_check(project: &Project, catalogue: &Result<registry::Registr
             ID,
             NAME,
             format!("{err:#}"),
-            "run `varde sync` to see it in full",
+            "run `chap-devops sync` to see it in full",
         ),
         Ok(report) if report.drift => Check::warn(
             ID,
             NAME,
-            format!("out of date with .varde/ ({})", report.summary()),
-            "run `varde sync`, or `varde up`, which syncs first",
+            format!("out of date with .chap-devops/ ({})", report.summary()),
+            "run `chap-devops sync`, or `chap-devops up`, which syncs first",
         ),
         Ok(report) => Check::ok(ID, NAME, format!("in sync ({})", report.summary())),
     }
@@ -457,7 +457,7 @@ pub fn pin_verdict(
         return (
             Status::Ok,
             format!(
-                "{build}; `varde update` re-pulls it, `varde update --pin-chap-core` pins a release"
+                "{build}; `chap-devops update` re-pulls it, `chap-devops update --pin-chap-core` pins a release"
             ),
             None,
         );
@@ -483,7 +483,7 @@ pub fn pin_verdict(
         return (
             Status::Warn,
             format!("{tag} pinned, {latest} released"),
-            Some("run `varde update --dry-run` to see what would move".to_string()),
+            Some("run `chap-devops update --dry-run` to see what would move".to_string()),
         );
     }
     (Status::Ok, format!("{tag} is the newest release"), None)

@@ -95,33 +95,36 @@ fn a_chap_core_that_is_not_answering_names_the_way_out() {
     let report = up(Vec::new(), &[], &[]);
     let starting = down_message(&report, "io: Connection reset by peer", true, false);
     assert!(
-        starting.contains("still starting, so run `varde status` again in a moment"),
+        starting.contains("still starting, so run `chap-devops status` again in a moment"),
         "{starting}"
     );
     let down = down_message(&report, "io: Connection refused", false, false);
-    assert!(down.ends_with("; `varde logs chap` says why"), "{down}");
+    assert!(
+        down.ends_with("; `chap-devops logs chap` says why"),
+        "{down}"
+    );
     // A chap that never started has no log to read.
     let absent = down_message(&report, "io: Connection refused", false, true);
     assert!(
         absent.ends_with(
-            "; this deployment has no `chap` container yet, so start it with `varde up`"
+            "; this deployment has no `chap` container yet, so start it with `chap-devops up`"
         ),
         "{absent}"
     );
 }
 
 /// A chap-core elsewhere has no `chap` service here, so the way out is the
-/// chap-core itself and the URL varde has for it.
+/// chap-core itself and the URL chap-devops has for it.
 #[test]
 fn a_chap_core_elsewhere_that_is_not_answering_names_no_service() {
     let mut report = up(Vec::new(), &[], &[]);
     report.chap_core_elsewhere = true;
     let down = down_message(&report, "io: Connection refused", false, false);
-    assert!(!down.contains("varde logs"), "{down}");
+    assert!(!down.contains("chap-devops logs"), "{down}");
     assert!(
         down.ends_with(
             "; this deployment does not run it, so start it there, or set another URL with \
-             `varde components enable chap-core --url URL`"
+             `chap-devops components enable chap-core --url URL`"
         ),
         "{down}"
     );
@@ -150,7 +153,7 @@ fn a_component_line_says_read_only_and_names_the_proxy() {
         "chap-core   up   http://localhost:8000   2.3.1   auth: off\n\
              ocs         up   internal (proxy: https://ocs.example.org)   read-only\n\
              \n\
-             no models enabled; run `varde models enable ID` to add one\n"
+             no models enabled; run `chap-devops models enable ID` to add one\n"
     );
 
     // A writable instance says nothing, rather than `read-write`: the
@@ -165,7 +168,7 @@ fn a_component_line_says_read_only_and_names_the_proxy() {
     assert!(!text.contains("read-only"), "{text}");
 }
 
-/// The `dhis2` row a `varde dhis2 connect` has never been recorded for
+/// The `dhis2` row a `chap-devops dhis2 connect` has never been recorded for
 /// carries the hint under the verdict - but only while the row says `up`,
 /// because a DHIS2 that is not answering cannot be connected to anything.
 #[test]
@@ -191,26 +194,32 @@ fn the_verdict_names_the_connect_a_running_dhis2_still_needs() {
         "chap-core   up   http://localhost:8000   2.3.1   auth: off\n\
              dhis2       up   http://localhost:8080\n\
              \n\
-             no models enabled; run `varde models enable ID` to add one\n\
-             varde has not connected this DHIS2 to Chap; run `varde dhis2 connect`\n"
+             no models enabled; run `chap-devops models enable ID` to add one\n\
+             chap-devops has not connected this DHIS2 to Chap; run `chap-devops dhis2 connect`\n"
     );
 
     // Still starting is still not answering, which is the wait the command
     // would sit in; the line waits for the run where it can be acted on.
     report.components = vec![dhis2(ComponentState::Starting)];
     let starting = human(&report, &Out::default());
-    assert!(!starting.contains("varde dhis2 connect"), "{starting}");
+    assert!(
+        !starting.contains("chap-devops dhis2 connect"),
+        "{starting}"
+    );
 
     report.components = vec![dhis2(ComponentState::NotRunning)];
     let down = human(&report, &Out::default());
-    assert!(!down.contains("varde dhis2 connect"), "{down}");
+    assert!(!down.contains("chap-devops dhis2 connect"), "{down}");
 
     // And a deployment that has been through a connect is never asked
     // again, however the row reads.
     report.dhis2_needs_connecting = false;
     report.components = vec![dhis2(ComponentState::Up)];
     let recorded = human(&report, &Out::default());
-    assert!(!recorded.contains("varde dhis2 connect"), "{recorded}");
+    assert!(
+        !recorded.contains("chap-devops dhis2 connect"),
+        "{recorded}"
+    );
 }
 
 /// What OCS holds goes on its line when it could be had, and nothing takes
@@ -275,7 +284,7 @@ fn an_external_dhis2_is_named_with_the_command_that_asks_it() {
     let text = human(&report, &Out::default());
     assert!(
         text.contains(
-            "\ndhis2       elsewhere   https://dhis2.example.org   `varde dhis2 show` asks it\n"
+            "\ndhis2       elsewhere   https://dhis2.example.org   `chap-devops dhis2 show` asks it\n"
         ),
         "{text}"
     );
@@ -297,7 +306,7 @@ fn a_healthy_report_is_a_line_a_table_and_a_verdict() {
              chapkit-ewars-model  registered  port 5001  12s ago\n\
              \n\
              1 model registered\n\
-             hint: run `varde models test --all` to check it can run\n"
+             hint: run `chap-devops models test --all` to check it can run\n"
     );
 }
 
@@ -363,9 +372,9 @@ fn the_layout_names_every_state_once_and_hints_once_per_problem() {
              \n\
              2 of 3 models are not registered.\n\
              chapkit-rwanda-malaria-bym-model: restart it with \
-             `varde restart --all chapkit-rwanda-malaria-bym-model`\n\
-             auto-arima-chapkit: start Chap with `varde up`, \
-             then `varde logs auto-arima-chapkit`\n\
+             `chap-devops restart --all chapkit-rwanda-malaria-bym-model`\n\
+             auto-arima-chapkit: start Chap with `chap-devops up`, \
+             then `chap-devops logs auto-arima-chapkit`\n\
              hint: models without a host port are reachable through chap-core at \
              http://localhost:8000/v2/services/<id>/run/\n"
     );
@@ -399,7 +408,7 @@ fn a_project_with_no_models_still_says_something() {
     let text = human(&report, &Out::default());
     assert!(text.starts_with("chap-core   up   http://localhost:8000"));
     assert!(!text.contains("MODEL"), "no table for no rows:\n{text}");
-    assert!(text.ends_with("no models enabled; run `varde models enable ID` to add one\n"));
+    assert!(text.ends_with("no models enabled; run `chap-devops models enable ID` to add one\n"));
 }
 
 #[test]
@@ -430,7 +439,10 @@ fn a_down_api_prints_the_state_and_leaves_the_verdict_to_the_error_line() {
 
 #[test]
 fn the_never_started_line_replaces_the_whole_report() {
-    assert_eq!(NOT_RUNNING, "Chap is not running; start it with `varde up`");
+    assert_eq!(
+        NOT_RUNNING,
+        "Chap is not running; start it with `chap-devops up`"
+    );
 }
 
 /// One component row.
@@ -469,7 +481,7 @@ fn a_deployment_without_chap_core_is_never_told_that_chap_is_not_running() {
     let line = nothing_running_line(&report);
     assert_eq!(line, crate::status::NOTHING_RUNNING);
     assert!(!line.contains("Chap"), "{line}");
-    assert!(line.contains("`varde up`"), "{line}");
+    assert!(line.contains("`chap-devops up`"), "{line}");
 
     // The rows are recorded state, not something docker had to answer, so
     // they are printed even with nothing up: which components this
@@ -479,7 +491,7 @@ fn a_deployment_without_chap_core_is_never_told_that_chap_is_not_running() {
         "ocs   not running   http://localhost:9000\n\
              s3    not running   internal\n\
              \n\
-             nothing in this deployment is running; start it with `varde up`\n"
+             nothing in this deployment is running; start it with `chap-devops up`\n"
     );
 
     // chap-core in the set: the one line is the whole answer again, and it
@@ -493,7 +505,7 @@ fn a_deployment_without_chap_core_is_never_told_that_chap_is_not_running() {
 }
 
 /// Another deployment on the same port: its line is the whole answer, without
-/// a `start it with varde up` line that a held port makes fail.
+/// a `start it with chap-devops up` line that a held port makes fail.
 #[test]
 fn a_port_held_elsewhere_replaces_the_start_line() {
     let why = crate::status::answered_elsewhere("http://localhost:8700", 8700, None);
@@ -538,8 +550,8 @@ fn nothing_running_still_lists_the_components_a_deployment_has() {
 }
 
 /// The verdict of a deployment without chap-core is its components. Without
-/// it this is the one deployment shape `varde status` ended on nothing, and
-/// `closing_line` would name `varde models enable`, which it refuses.
+/// it this is the one deployment shape `chap-devops status` ended on nothing, and
+/// `closing_line` would name `chap-devops models enable`, which it refuses.
 #[test]
 fn a_components_only_report_ends_on_a_verdict_about_its_components() {
     use crate::status::ComponentState::{NotRunning, Up};
@@ -555,7 +567,7 @@ fn a_components_only_report_ends_on_a_verdict_about_its_components() {
              s3    up   internal\n\
              \n\
              both components are up\n\
-             hint: `varde open ocs` opens it\n"
+             hint: `chap-devops open ocs` opens it\n"
     );
     assert!(
         !text.contains("chap-core"),
@@ -566,7 +578,7 @@ fn a_components_only_report_ends_on_a_verdict_about_its_components() {
     report.components[1].state = NotRunning;
     let text = human(&report, &Out::default());
     assert!(
-        text.ends_with("1 of 2 components is not running; start it with `varde up`\n"),
+        text.ends_with("1 of 2 components is not running; start it with `chap-devops up`\n"),
         "{text}"
     );
 }
@@ -629,8 +641,8 @@ fn an_external_chap_core_names_the_log_and_hints_what_it_means() {
     let text = lines.text();
     assert!(
         text.contains(
-            "\nchapkit-ewars-model: if `varde logs chapkit-ewars-model` shows `App never became \
-             ready`, enable it again with a network: `varde models enable chapkit-ewars-model`"
+            "\nchapkit-ewars-model: if `chap-devops logs chapkit-ewars-model` shows `App never became \
+             ready`, enable it again with a network: `chap-devops models enable chapkit-ewars-model`"
         ),
         "{text}"
     );
@@ -655,7 +667,7 @@ fn an_instance_config_newer_than_its_container_is_named() {
     assert_eq!(
         edited_config_line("ocs"),
         "`ocs/climate-service.yaml` changed after the ocs container started, so ocs may still \
-         use the old settings; run `varde restart ocs` to apply it"
+         use the old settings; run `chap-devops restart ocs` to apply it"
     );
     assert!(edited_config_line("dhis2").starts_with("`dhis2/dhis.conf` changed"));
 }

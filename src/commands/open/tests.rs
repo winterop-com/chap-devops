@@ -38,24 +38,24 @@ fn a_model_opens_its_docs_on_its_port_or_through_chap_core() {
     project.state.components.chap_core.enabled = false;
     let err = url(&project, &model).unwrap_err().to_string();
     assert!(
-        err.contains("run `varde models expose chapkit_ewars_model`"),
+        err.contains("run `chap-devops models expose chapkit_ewars_model`"),
         "{err}"
     );
 }
 
 /// The three answers about the container each say something different, and
-/// only the one that knows nothing is running names `varde up`.
+/// only the one that knows nothing is running names `chap-devops up`.
 #[test]
 fn the_container_note_says_which_of_the_three_it_is() {
     assert_eq!(running_note(Running::Yes, Component::Dhis2), None);
     let no = running_note(Running::No, Component::Dhis2).expect("a note");
     assert!(no.contains("no dhis2 container is running"), "{no}");
-    assert!(no.contains("run `varde up`"), "{no}");
+    assert!(no.contains("run `chap-devops up`"), "{no}");
     let unknown = running_note(Running::Unknown, Component::Ocs).expect("a note");
     assert!(unknown.contains("docker could not be asked"), "{unknown}");
-    assert!(unknown.contains("run `varde doctor`"), "{unknown}");
+    assert!(unknown.contains("run `chap-devops doctor`"), "{unknown}");
     assert!(
-        !unknown.contains("varde up"),
+        !unknown.contains("chap-devops up"),
         "nothing was learned, so nothing is prescribed: {unknown}"
     );
 }
@@ -75,7 +75,7 @@ fn the_proxy_note_is_only_for_an_unpublished_instance() {
     assert_eq!(proxy_note(false, Component::Ocs), None);
     let note = proxy_note(true, Component::Ocs).expect("a note");
     assert!(
-        note.contains("`varde components enable ocs --port N`"),
+        note.contains("`chap-devops components enable ocs --port N`"),
         "{note}"
     );
 }
@@ -148,7 +148,7 @@ fn the_listing_closes_on_what_can_be_opened() {
     assert_eq!(
         text(&none),
         "nothing in this deployment has a web interface on this machine\n\
-         hint: `varde components list` says what it is made of\n"
+         hint: `chap-devops components list` says what it is made of\n"
     );
 
     let some = OpenListReport {
@@ -162,14 +162,14 @@ fn the_listing_closes_on_what_can_be_opened() {
     };
     assert_eq!(
         text(&some),
-        "1 of them can be opened: run `varde open NAME`\n\
-         hint: `varde status` shows what is running\n"
+        "1 of them can be opened: run `chap-devops open NAME`\n\
+         hint: `chap-devops status` shows what is running\n"
     );
     let table = human_list(&some, &Out::detect(false, true));
     assert!(table.starts_with("COMPONENT"), "{table}");
 }
 
-/// The closing lines of one `varde open NAME`.
+/// The closing lines of one `chap-devops open NAME`.
 fn said(report: &OpenReport) -> String {
     let mut lines = Report::default();
     say(report, &mut lines);
@@ -222,7 +222,7 @@ fn a_successful_open_reports_the_page_then_the_container() {
     assert_eq!(
         said(&report),
         "opening the DHIS2 user interface at http://localhost:18080\n\
-         hint: dhis2 answered at that address; `varde status` reports the rest of this \
+         hint: dhis2 answered at that address; `chap-devops status` reports the rest of this \
          deployment\n"
     );
 
@@ -236,7 +236,10 @@ fn a_successful_open_reports_the_page_then_the_container() {
         text.contains("warning: the dhis2 container is running and did not answer yet"),
         "{text}"
     );
-    assert!(text.contains("run `varde status` in a moment"), "{text}");
+    assert!(
+        text.contains("run `chap-devops status` in a moment"),
+        "{text}"
+    );
 }
 
 /// `--no-browser` says where the page is and nothing about an opener: none
@@ -323,9 +326,9 @@ fn the_listing_names_the_models_that_publish_a_host_port() {
     say_list(&report, &mut lines);
     assert_eq!(
         lines.text(),
-        "1 of them can be opened: run `varde open NAME`\n\
-         hint: `varde status` shows what is running\n\
-         hint: auto_arima publishes no host port; run `varde models expose auto_arima` to \
+        "1 of them can be opened: run `chap-devops open NAME`\n\
+         hint: `chap-devops status` shows what is running\n\
+         hint: auto_arima publishes no host port; run `chap-devops models expose auto_arima` to \
          publish one\n"
     );
     let table = human_list(&report, &Out::detect(false, true));

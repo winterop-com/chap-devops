@@ -195,7 +195,7 @@ pub fn dev_update_available(release: &Release, revision: &str) -> bool {
 /// The asset `target` should download from `release`.
 ///
 /// The asset name holds no version. A payload that lists no assets is taken
-/// at its word rather than refused, because varde can derive the name
+/// at its word rather than refused, because chap-devops can derive the name
 /// without the list. The error names the asset it looked for; the caller
 /// adds the way out, which depends on how the release was picked.
 pub fn pick_asset(release: &Release, target: &str) -> Result<String> {
@@ -204,7 +204,7 @@ pub fn pick_asset(release: &Release, target: &str) -> Result<String> {
         return Ok(name);
     }
     Err(anyhow::anyhow!(
-        "{} has no {name}, so varde cannot install it on {target}",
+        "{} has no {name}, so chap-devops cannot install it on {target}",
         release.tag
     ))
 }
@@ -257,14 +257,14 @@ pub fn is_newer_than_current(tag: &str) -> bool {
 }
 
 /// The running executable with links resolved: the file `self update`
-/// replaces, not the `vg` link to it.
+/// replaces, not the `cdx` link to it.
 pub fn running_binary() -> Option<std::path::PathBuf> {
     std::env::current_exe()
         .ok()
         .map(|exe| std::fs::canonicalize(&exe).unwrap_or(exe))
 }
 
-/// How this binary was installed, for `varde self version` and `varde doctor`.
+/// How this binary was installed, for `chap-devops self version` and `chap-devops doctor`.
 pub fn install_method(path: Option<&Path>) -> &'static str {
     install_method_of(path, super::RELEASE_BUILD)
 }
@@ -275,7 +275,7 @@ pub fn install_method(path: Option<&Path>) -> &'static str {
 /// came from a release archive wherever it is now. Otherwise it is a local
 /// build, and the path can tell more: `cargo install` puts it in
 /// `.cargo/bin`, and a `cargo build` leaves it in a checkout's `target/`.
-/// Any other path is a `local build`, because varde cannot tell more.
+/// Any other path is a `local build`, because chap-devops cannot tell more.
 pub fn install_method_of(path: Option<&Path>, release_build: bool) -> &'static str {
     if release_build {
         return "release archive";

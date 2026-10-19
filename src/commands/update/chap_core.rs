@@ -194,7 +194,7 @@ pub fn check_chap_tag(
                     Ok(true) => {}
                     Ok(false) => {
                         return Err(anyhow::anyhow!(
-                            "chap-core has no release {tag}; run `varde update --list-tags` to see \
+                            "chap-core has no release {tag}; run `chap-devops update --list-tags` to see \
                              the tags this deployment can move to"
                         ));
                     }
@@ -216,7 +216,7 @@ pub fn check_chap_tag(
 pub fn exact_pin_warning(tag: &str, dry_run: bool) -> String {
     format!(
         "{tag} is neither a chap-core release nor a moving tag, so it {} as an exact pin \
-         and `varde update` will never move it",
+         and `chap-devops update` will never move it",
         if dry_run {
             "would be recorded"
         } else {
@@ -265,7 +265,7 @@ pub fn check_chap_images(
     }
     Err(anyhow::anyhow!(
         "ghcr.io has no image {}, so the pull would fail; nothing was changed; pick another \
-         tag, for example a release from `varde update --list-tags`",
+         tag, for example a release from `chap-devops update --list-tags`",
         missing.join(" and ")
     ))
 }
@@ -278,7 +278,7 @@ pub fn check_chap_images(
 pub fn pull_failed_after_switch(old: &str, new: &str) -> String {
     format!(
         "the pull failed after the pins moved; chap-core is now pinned to {new}, and \
-         `varde update --chap-tag {old} --yes` puts it back"
+         `chap-devops update --chap-tag {old} --yes` puts it back"
     )
 }
 
@@ -291,7 +291,7 @@ pub fn pull_failed_after_switch(old: &str, new: &str) -> String {
 pub fn backwards_warning(old: &str, new: &str) -> String {
     format!(
         "moving chap-core from {old} to {new} can run an older schema against a database \
-         migrated by the newer one; run `varde backup create` first"
+         migrated by the newer one; run `chap-devops backup create` first"
     )
 }
 
@@ -299,16 +299,16 @@ pub fn backwards_warning(old: &str, new: &str) -> String {
 ///
 /// `--yes` is how a script says it meant it. A run nobody is watching -
 /// `--json`, or no terminal on stdin - refuses rather than assume, the way
-/// `varde down --volumes` does with the volumes it is about to destroy.
+/// `chap-devops down --volumes` does with the volumes it is about to destroy.
 pub(super) fn confirm_backwards(ctx: &Ctx, chap_core: &ChapCoreUpdate) -> Result<()> {
     use std::io::{BufRead, IsTerminal, Write};
 
     let how = match chap_core.requested {
         Some(_) => format!(
-            "run `varde update --chap-tag {} --yes` to confirm it",
+            "run `chap-devops update --chap-tag {} --yes` to confirm it",
             chap_core.new_tag
         ),
-        None => "run `varde update --pin-chap-core --yes` to confirm it".to_string(),
+        None => "run `chap-devops update --pin-chap-core --yes` to confirm it".to_string(),
     };
     if ctx.out.json {
         return Err(anyhow::anyhow!(
@@ -361,10 +361,10 @@ pub(super) fn apply_chap_core(
         )),
         Some(reference) => match chapcore::fetch_compose(&reference, timeout) {
             Ok(body) => {
-                let varde = project.varde_dir();
-                std::fs::create_dir_all(&varde)
-                    .map_err(|e| anyhow::anyhow!("creating {}: {e}", varde.display()))?;
-                let path = varde.join(cached_compose_file(&reference));
+                let chap_devops = project.chap_devops_dir();
+                std::fs::create_dir_all(&chap_devops)
+                    .map_err(|e| anyhow::anyhow!("creating {}: {e}", chap_devops.display()))?;
+                let path = chap_devops.join(cached_compose_file(&reference));
                 std::fs::write(&path, &body)
                     .map_err(|e| anyhow::anyhow!("writing {}: {e}", path.display()))?;
                 let source = ComposeSource::Fetched {
@@ -433,7 +433,7 @@ pub fn chap_core_line(c: &ChapCoreUpdate) -> String {
     }
     if c.moving {
         return format!(
-            "chap-core  {}  moving tag, re-pulled; pin it with `varde update --pin-chap-core`",
+            "chap-core  {}  moving tag, re-pulled; pin it with `chap-devops update --pin-chap-core`",
             c.old_tag
         );
     }

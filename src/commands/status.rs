@@ -1,4 +1,4 @@
-//! `varde status` — chap-core health and registered services.
+//! `chap-devops status` — chap-core health and registered services.
 
 use crate::cli::StatusArgs;
 use crate::commands::Ctx;
@@ -11,7 +11,7 @@ use std::time::Duration;
 
 /// What a project with no containers at all is told, instead of a table of
 /// rows that all say the same thing.
-const NOT_RUNNING: &str = "Chap is not running; start it with `varde up`";
+const NOT_RUNNING: &str = "Chap is not running; start it with `chap-devops up`";
 
 /// The name the chap-core line opens with, and the one the component lines are
 /// padded to line up with.
@@ -21,7 +21,7 @@ const CHAP_CORE_LABEL: &str = "chap-core";
 ///
 /// Exits non-zero when anything this deployment declares is not where it should
 /// be - the API down, a model not registered, a component not up - so
-/// `varde status` can gate a script or a CI step. [`exit_failure`] is that one
+/// `chap-devops status` can gate a script or a CI step. [`exit_failure`] is that one
 /// rule for every deployment shape. The rows have already named what is wrong,
 /// so the exit is silent; an API that is not answering gets the one error line
 /// it needs, because nothing else on the screen says why.
@@ -140,7 +140,7 @@ pub fn run(ctx: &Ctx, args: &StatusArgs) -> Result<()> {
     // How much data OCS holds is the caller's to fill in, as the unhealthy
     // containers are: it is read from inside the running container, and this
     // is the half that has docker. An instance that is not running is not
-    // measured here at all - `varde doctor` reads its volume instead, where
+    // measured here at all - `chap-devops doctor` reads its volume instead, where
     // the question is what a `down --volumes` would destroy.
     if running.contains(crate::compose::OCS_SERVICE)
         && let Some(row) = report
@@ -165,7 +165,7 @@ pub fn run(ctx: &Ctx, args: &StatusArgs) -> Result<()> {
     }
     let up = matches!(report.api, ApiHealth::Up { .. });
     // A chap-core that started moments ago is not down, it is starting: with no
-    // model depending on its healthcheck, `varde up` returns before it answers.
+    // model depending on its healthcheck, `chap-devops up` returns before it answers.
     let chap_starting = containers.as_deref().is_some_and(|containers| {
         containers.iter().any(|c| {
             c.service == crate::compose::API_SERVICE
@@ -175,7 +175,7 @@ pub fn run(ctx: &Ctx, args: &StatusArgs) -> Result<()> {
     });
     report.api_starting = chap_starting;
     // A chap-core of this deployment that has no container at all has no
-    // log to read either, so the error names `varde up` instead.
+    // log to read either, so the error names `chap-devops up` instead.
     let chap_absent = args.url.is_none()
         && project.state.components.chap_core_external.is_none()
         && containers.as_deref().is_some_and(|containers| {
@@ -253,7 +253,7 @@ pub(crate) fn edited_config_line(service: &str) -> String {
         .unwrap_or_else(|| "its config".to_string());
     format!(
         "`{file}` changed after the {service} container started, so {service} may still use \
-         the old settings; run `varde restart {service}` to apply it"
+         the old settings; run `chap-devops restart {service}` to apply it"
     )
 }
 
@@ -261,32 +261,32 @@ pub(crate) fn edited_config_line(service: &str) -> String {
 /// container said about why.
 ///
 /// `chap-core is not responding` is the symptom; the lines under it are the
-/// cause, which is otherwise a `varde logs chap` away and forty lines long.
+/// cause, which is otherwise a `chap-devops logs chap` away and forty lines long.
 /// When there are none, the line itself carries the way out: a chap-core that
 /// is still `starting` is waited for, anything else is read in its log.
 fn down_message(report: &StatusReport, error: &str, starting: bool, absent: bool) -> String {
     let mut text = format!("chap-core at {} is not responding: {error}", report.api_url);
     let lines = crate::diagnose::lines(&report.unhealthy);
     if report.chap_core_elsewhere {
-        // No container of this deployment runs it, so no `varde logs` can say
+        // No container of this deployment runs it, so no `chap-devops logs` can say
         // why; the way out is where it does run.
         text.push_str(
             "; this deployment does not run it, so start it there, or set another URL with \
-             `varde components enable chap-core --url URL`",
+             `chap-devops components enable chap-core --url URL`",
         );
     } else if starting {
         text.push_str(
-            "; its container started moments ago and is still starting, so run `varde status` \
+            "; its container started moments ago and is still starting, so run `chap-devops status` \
              again in a moment",
         );
     } else if absent {
         text.push_str(&format!(
-            "; this deployment has no `{}` container yet, so start it with `varde up`",
+            "; this deployment has no `{}` container yet, so start it with `chap-devops up`",
             crate::compose::API_SERVICE
         ));
     } else if lines.is_empty() {
         text.push_str(&format!(
-            "; `varde logs {}` says why",
+            "; `chap-devops logs {}` says why",
             crate::compose::API_SERVICE
         ));
     }
@@ -322,7 +322,7 @@ fn not_running_rows(report: &StatusReport, out: &Out) -> String {
 /// says what this deployment is made of and where each piece answers.
 ///
 /// Shared with [`not_running`], where these lines are the whole of what there
-/// is to say. The component set is recorded in `.varde/components.yaml`, so
+/// is to say. The component set is recorded in `.chap-devops/components.yaml`, so
 /// these rows exist whether anything is running or not.
 fn service_lines(report: &StatusReport, out: &Out) -> String {
     let chap_core = !matches!(report.api, ApiHealth::Off);
@@ -427,7 +427,7 @@ fn service_lines(report: &StatusReport, out: &Out) -> String {
         }
         text.push('\n');
     }
-    // A DHIS2 recorded with `varde dhis2 use` is part of the picture without
+    // A DHIS2 recorded with `chap-devops dhis2 use` is part of the picture without
     // being this deployment's to run or to ask: it is named, and the command
     // that asks it is named with it.
     if let Some(url) = &report.dhis2_external {
@@ -438,7 +438,7 @@ fn service_lines(report: &StatusReport, out: &Out) -> String {
             pad(name),
             state_pad(&elsewhere),
             out.value(url),
-            out.dim(&out.backticks("`varde dhis2 show` asks it"))
+            out.dim(&out.backticks("`chap-devops dhis2 show` asks it"))
         ));
     }
     text
@@ -544,7 +544,7 @@ fn state_cell(out: &Out, state: ModelState) -> String {
 ///
 /// `--json` keeps saying `internal` and `http://localhost:5001`, which is
 /// what a script already matches on; this is the column a human reads, and it
-/// says the same thing as `varde models list` and the browser.
+/// says the same thing as `chap-devops models list` and the browser.
 fn reach_cell(out: &Out, model: &ModelStatus) -> String {
     if let Some(port) = model.host_port {
         return out.key(&format!("port {port}"));

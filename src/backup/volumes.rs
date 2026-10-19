@@ -249,7 +249,7 @@ pub fn write_volume(volume: &str, src: &Path) -> Result<crate::docker::Piped> {
 }
 
 /// The start of the name of every container that reads or refills a volume.
-const THROWAWAY_PREFIX: &str = "varde-volume";
+const THROWAWAY_PREFIX: &str = "chap-devops-volume";
 
 /// Run `docker <args>` with its payload streams wired to files.
 ///

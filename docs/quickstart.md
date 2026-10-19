@@ -5,7 +5,7 @@
 After installing, run:
 
 ```sh
-varde doctor
+chap-devops doctor
 ```
 
 ```text
@@ -20,7 +20,7 @@ ok    network ghcr.io      reachable (HTTP 401)
 ok    network marketplace  reachable (HTTP 200)
 ok    network releases     reachable, newest chap-core is v2.4.0
 ok    github api           reachable, 60 of 60 requests left this hour (no token; set GITHUB_TOKEN for 5000)
-ok    varde                v0.100.1, aarch64-apple-darwin, release archive
+ok    chap-devops                v0.100.1, aarch64-apple-darwin, release archive
 
 11 checks: 10 ok, 1 warn, 0 fail
 ```
@@ -34,7 +34,7 @@ See [Doctor](./doctor.md).
 ## 1. Write the deployment directory
 
 ```sh
-varde init mychap --models chapkit_simple_multistep_model
+chap-devops init mychap --models chapkit_simple_multistep_model
 ```
 
 ```text
@@ -42,19 +42,19 @@ created a deployment in /srv/mychap
 components: chap-core
 chap-core: v2.4.0, API on http://localhost:8700
 enabled chapkit_simple_multistep_model v0.1.2 at http://localhost:8700/v2/services/chapkit-simple-multistep-model/run/
-run `cd /srv/mychap && varde up` to start the deployment
+run `cd /srv/mychap && chap-devops up` to start the deployment
 ```
 
-`init` writes the compose files, `.env` and the state in `.varde/`, and starts
+`init` writes the compose files, `.env` and the state in `.chap-devops/`, and starts
 nothing. With `-v`, it also names each file it wrote.
 
 Model services publish no host port. chap-core reaches them over the compose
 network, and you reach them through chap-core at the URL on the `enabled`
 line. That route accepts only GET (and HEAD) requests, for example
-`/api/v1/info`. For anything else, `varde models expose ID` publishes a port of
+`/api/v1/info`. For anything else, `chap-devops models expose ID` publishes a port of
 the model's own (step 5).
 
-`varde init mychap --with ocs` adds Open Climate Service beside chap-core, and
+`chap-devops init mychap --with ocs` adds Open Climate Service beside chap-core, and
 `--with ocs,s3` adds the object store with it. `--with dhis2` adds a demo or
 development DHIS2 and a PostgreSQL of its own; its first start takes minutes
 rather than seconds, and [DHIS2](./dhis2.md) says why and what else to know
@@ -63,11 +63,11 @@ first. See [Components](./components.md).
 `--models chapkit_simple_multistep_model` enables Simple Multistep on its
 `stable` channel, and `--models a,b` takes a list of marketplace ids. Without
 `--models`, `init` enables no model and says `no models are enabled; run
-\`varde models enable ID\` to add one`. `--interactive` opens the model
+\`chap-devops models enable ID\` to add one`. `--interactive` opens the model
 browser instead of reading `--models`.
 
 A model the marketplace does not list yet is added from its repository or
-image: `varde models add https://github.com/my-org/chapkit_dengue_model` (see
+image: `chap-devops models add https://github.com/my-org/chapkit_dengue_model` (see
 [Models outside the marketplace](./models.md#models-outside-the-marketplace)).
 
 chap-core itself is pinned to the newest release, `v2.4.0` in the run above,
@@ -75,15 +75,15 @@ and `init` takes the `compose.ghcr.yml` that release publishes as the base
 of the deployment. `--chap-tag` picks another tag; see [Updating](./updating.md).
 
 The deployment above has no authentication: anything that can reach the port can
-use the API. `varde init mychap --models chapkit_simple_multistep_model --api-token` generates a token
-and protects the API with it. `varde auth enable` does the same to a deployment
+use the API. `chap-devops init mychap --models chapkit_simple_multistep_model --api-token` generates a token
+and protects the API with it. `chap-devops auth enable` does the same to a deployment
 that already exists. See [Authentication](./auth.md).
 
 ## 2. Start it
 
 ```sh
 cd mychap
-varde up
+chap-devops up
 ```
 
 ```text
@@ -98,24 +98,24 @@ can take close to an hour (47 minutes in one test run). Compose shows
 the pull progress while it works. A second deployment uses the same images and
 starts in seconds.
 
-`up` renders the compose files from `.varde/` first, then checks that every
+`up` renders the compose files from `.chap-devops/` first, then checks that every
 host port Chap is about to publish is free, then calls
 `docker compose up -d`. The last line names the services it started; a
 recreated container counts as started. With `-v`, a hint also names the
 services it left alone.
 
 `up` returns when compose has started the containers, not when chap-core
-answers. `varde up --wait` returns only once chap-core, every model, OCS and
+answers. `chap-devops up --wait` returns only once chap-core, every model, OCS and
 DHIS2 answer. It also gives the models their configured models (step 3).
 
 Every command that operates on a deployment finds its directory the way git
 finds `.git`: from the current directory (or `-C DIR`) upwards to the nearest
-`.varde/`, so `varde up` works from any subdirectory of the deployment.
+`.chap-devops/`, so `chap-devops up` works from any subdirectory of the deployment.
 
 ## 3. Check it
 
 ```sh
-varde status
+chap-devops status
 ```
 
 ```text
@@ -125,15 +125,15 @@ MODEL                           STATE                       REACH          LAST 
 chapkit-simple-multistep-model  registered, not configured  via chap-core  1s ago
 
 1 model registered
-chapkit-simple-multistep-model: chap-core has no configured model for it, so nothing can run it; run `varde models configs sync`
+chapkit-simple-multistep-model: chap-core has no configured model for it, so nothing can run it; run `chap-devops models configs sync`
 ```
 
-`registered, not configured` is the normal state after a plain `varde up`.
+`registered, not configured` is the normal state after a plain `chap-devops up`.
 chap-core v2.4.0 makes no configured model when a model registers. A backtest
 and the Modeling App need one. Make them:
 
 ```sh
-varde models configs sync
+chap-devops models configs sync
 ```
 
 ```text
@@ -141,8 +141,8 @@ chapkit_simple_multistep_model: created configured model monthly_climate
 chapkit_simple_multistep_model: created configured model monthly_selfhistory
 ```
 
-`varde up --wait` does the same step for you. See
-[Configured models](./models.md#configured-models). Now `varde status` shows
+`chap-devops up --wait` does the same step for you. See
+[Configured models](./models.md#configured-models). Now `chap-devops status` shows
 the model as `registered`:
 
 ```text
@@ -159,7 +159,7 @@ command to try:
 
 ```text
 hint: models without a host port are reachable through chap-core at http://localhost:8700/v2/services/<id>/run/
-hint: run `varde models test --all` to check it can run
+hint: run `chap-devops models test --all` to check it can run
 ```
 
 A model can also be `running, not registered` or `not running`, and then
@@ -170,7 +170,7 @@ On a deployment whose containers do not exist at all, `status` skips the table
 and says so:
 
 ```text
-Chap is not running; start it with `varde up`
+Chap is not running; start it with `chap-devops up`
 ```
 
 [Status and output](./status.md) explains every column and every state.
@@ -178,7 +178,7 @@ Chap is not running; start it with `varde up`
 ## 4. Add a model
 
 ```sh
-varde ui
+chap-devops ui
 ```
 
 The browser shows the catalogue as one table, with a one-line summary of the
@@ -190,28 +190,28 @@ selected row under it. `space` enables or disables, `p` publishes a host port,
 The same thing without the browser:
 
 ```sh
-varde models search arima
-varde models info auto_arima_chapkit
-varde models enable auto_arima_chapkit --channel stable
+chap-devops models search arima
+chap-devops models info auto_arima_chapkit
+chap-devops models enable auto_arima_chapkit --channel stable
 ```
 
 `enable` changes only the files:
 
 ```text
 enabled auto_arima_chapkit v1.0.2 at http://localhost:8700/v2/services/auto-arima-chapkit/run/
-run `varde up` to apply
+run `chap-devops up` to apply
 ```
 
 The STATUS column of `search` tells you how ready a model is. No model in the
 marketplace is `production` yet. Simple Multistep is `limited data`: it shows
 promise, but needs careful evaluation. Auto-ARIMA is `experimental`. Read
-`varde models info` before you enable a model for real work.
+`chap-devops models info` before you enable a model for real work.
 
 Start the model:
 
 ```sh
-varde up
-varde status
+chap-devops up
+chap-devops status
 ```
 
 `up` says `started auto-arima-chapkit`. Right after it, the new
@@ -225,14 +225,14 @@ auto-arima-chapkit              running, not registered  via chap-core  -
 chapkit-simple-multistep-model  registered               via chap-core  1s ago
 
 1 of 2 models is not registered.
-auto-arima-chapkit: started under two minutes ago and registers once it is ready; run `varde status` again in a minute
+auto-arima-chapkit: started under two minutes ago and registers once it is ready; run `chap-devops status` again in a minute
 ```
 
 In the test run, the model registered within 10 seconds. Then it is
 `registered, not configured`, as in step 3. Give it its configured models:
 
 ```sh
-varde models configs sync
+chap-devops models configs sync
 ```
 
 ```text
@@ -240,7 +240,7 @@ auto_arima_chapkit: created configured model monthly
 chapkit_simple_multistep_model: chap-core has a configured model of it already
 ```
 
-`varde status` now shows both models as `registered`:
+`chap-devops status` now shows both models as `registered`:
 
 ```text
 chap-core   up   http://localhost:8700   2.4.0   auth: off
@@ -252,10 +252,10 @@ chapkit-simple-multistep-model  registered  via chap-core  6s ago
 all 2 models registered
 ```
 
-If you run `varde models configs sync` before the model registers, it says so
+If you run `chap-devops models configs sync` before the model registers, it says so
 and tells you to run it again later.
 
-`varde models list` shows the whole catalogue and what this deployment
+`chap-devops models list` shows the whole catalogue and what this deployment
 enabled:
 
 ```text
@@ -280,25 +280,25 @@ curl http://localhost:8700/v2/services/chapkit-simple-multistep-model/run/api/v1
 or give the model a port:
 
 ```sh
-varde models expose chapkit-simple-multistep-model
+chap-devops models expose chapkit-simple-multistep-model
 ```
 
 ```text
 exposed chapkit-simple-multistep-model on http://localhost:5001
-run `varde up` to apply
+run `chap-devops up` to apply
 ```
 
 ```sh
-varde up
+chap-devops up
 ```
 
 `up` recreates the model container to publish the port. The model needs up to
 a minute before it answers on `http://localhost:5001` and registers again.
-Until then, `varde status` shows it as `running, not registered`:
+Until then, `chap-devops status` shows it as `running, not registered`:
 
 ```text
 1 of 2 models is not registered.
-chapkit-simple-multistep-model: started under two minutes ago and registers once it is ready; run `varde status` again in a minute
+chapkit-simple-multistep-model: started under two minutes ago and registers once it is ready; run `chap-devops status` again in a minute
 ```
 
 See [Ports](./ports.md).
@@ -306,25 +306,25 @@ See [Ports](./ports.md).
 ## 6. Back it up
 
 ```sh
-varde backup create
+chap-devops backup create
 ```
 
 ```text
-wrote /srv/mychap/varde-backup-mychap-20261012-094057.tar.gz (19.0 KB gzipped, 195.6 KB of data)
+wrote /srv/mychap/chap-devops-backup-mychap-20261012-094057.tar.gz (19.0 KB gzipped, 195.6 KB of data)
 ```
 
 One `tar.gz` in the deployment directory holds the deployment files, a `pg_dump`
 of the chap-core database and one tar per model data volume. The time in the
 file name is UTC. The archive holds `.env` with the database password, so keep
-it private. `varde backup restore ARCHIVE` puts it back. See
+it private. `chap-devops backup restore ARCHIVE` puts it back. See
 [Backup and restore](./backup.md).
 
 ## 7. Move the pins forward
 
 ```sh
-varde update --dry-run    # the plan, writing nothing
-varde update              # move the pins, pull the images
-varde restart             # apply them to the services that are running
+chap-devops update --dry-run    # the plan, writing nothing
+chap-devops update              # move the pins, pull the images
+chap-devops restart             # apply them to the services that are running
 ```
 
 When nothing is newer, `update` gives one row per pin and one closing line:
@@ -339,8 +339,8 @@ already up to date
 `restart` then shows the compose progress, and its last line is
 `nothing needed a restart: every container matches its files`.
 
-`varde update` never touches a container. When a pin moved, its closing line
+`chap-devops update` never touches a container. When a pin moved, its closing line
 says what moved and which running services are now behind it, and
-`varde restart` recreates exactly those. On a deployment that is not running
-there is nothing to restart; with `-v`, a hint says that `varde up` starts it
+`chap-devops restart` recreates exactly those. On a deployment that is not running
+there is nothing to restart; with `-v`, a hint says that `chap-devops up` starts it
 with the new versions. See [Updating](./updating.md).

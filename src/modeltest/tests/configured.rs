@@ -148,7 +148,7 @@ fn the_configured_model_is_one_of_the_version_the_service_registered_with() {
     );
 }
 
-/// `--config NAME` is a variant name, as `varde models configs` shows it,
+/// `--config NAME` is a variant name, as `chap-devops models configs` shows it,
 /// among the live configured models of the registered version.
 #[test]
 fn a_variant_name_picks_a_live_configured_model_of_the_version() {

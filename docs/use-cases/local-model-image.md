@@ -1,10 +1,10 @@
 # A model image you built yourself
 
 For testing a model the way it will really run: build its image on this
-machine and run it in a varde deployment, registered with chap-core, without
+machine and run it in a chap-devops deployment, registered with chap-core, without
 publishing it anywhere first.
 
-For a new model, `varde models new` creates a project that builds in this
+For a new model, `chap-devops models new` creates a project that builds in this
 way, and its `README.md` has these commands with the names filled in. See
 [A new model project](../models.md#a-new-model-project).
 
@@ -34,35 +34,35 @@ grep -A1 'MLServiceInfo(' main.py
 Then make a deployment with chap-core, or use one that you have:
 
 ```sh
-varde init lab --models none
+chap-devops init lab --models none
 cd lab
 ```
 
 Add the image with that id as `--service-id`, and start it:
 
 ```sh
-varde models add my-model:dev --service-id chapkit-minimalist-example-py
-varde up --wait
-varde status
-varde models test my_model
+chap-devops models add my-model:dev --service-id chapkit-minimalist-example-py
+chap-devops up --wait
+chap-devops status
+chap-devops models test my_model
 ```
 
 Replace `chapkit-minimalist-example-py` with the id of your model. The model
-id, `my_model`, comes from the image name. `varde models add` prints:
+id, `my_model`, comes from the image name. `chap-devops models add` prints:
 
 ```text
 added my_model (chapkit-minimalist-example-py)
 enabled my_model dev at http://localhost:8700/v2/services/chapkit-minimalist-example-py/run/
-the service must register with chap-core as `chapkit-minimalist-example-py`; if its own MLServiceInfo.id differs, `varde status` shows it as unmanaged - run `varde models remove my_model`, then add it again with `--service-id <that id>`
-run `varde up` to apply
+the service must register with chap-core as `chapkit-minimalist-example-py`; if its own MLServiceInfo.id differs, `chap-devops status` shows it as unmanaged - run `chap-devops models remove my_model`, then add it again with `--service-id <that id>`
+run `chap-devops up` to apply
 ```
 
-`varde up --wait` returns when the model has registered, and it then
+`chap-devops up --wait` returns when the model has registered, and it then
 creates the configured model that chap-core needs to run it. A plain
-`varde up` returns when the containers start; `varde status` then says
+`chap-devops up` returns when the containers start; `chap-devops status` then says
 `running, not registered` for some seconds, and `registered, not
-configured` until `varde models configs sync` runs. After `varde up --wait`,
-`varde status` shows:
+configured` until `chap-devops models configs sync` runs. After `chap-devops up --wait`,
+`chap-devops status` shows:
 
 ```text
 chap-core   up   http://localhost:8700   2.4.0   auth: off
@@ -73,7 +73,7 @@ chapkit-minimalist-example-py  registered  via chap-core  3s ago
 1 model registered
 ```
 
-`varde models test my_model` runs `chapkit test` in the model's container:
+`chap-devops models test my_model` runs `chapkit test` in the model's container:
 
 ```text
 testing 1 model (model level; add --backtest to go through chap-core)
@@ -83,7 +83,7 @@ chapkit-minimalist-example-py    pass    9s   1 training, 1 prediction
 ```
 
 Without `--service-id`, the service id is the image name, here `my-model`.
-If the model registers under a different id, `varde status` shows its row as
+If the model registers under a different id, `chap-devops status` shows its row as
 `unmanaged` and names the commands that correct it:
 
 ```text
@@ -92,7 +92,7 @@ my-model                       running, not registered  via chap-core           
 chapkit-minimalist-example-py  unmanaged                http://a75691bfa55d:8000  10s ago
 
 1 of 1 model is not registered.
-my-model: its container registered as `chapkit-minimalist-example-py`, the unmanaged row above; run `varde models remove my_model`, then `varde models add my-model:dev --service-id chapkit-minimalist-example-py`
+my-model: its container registered as `chapkit-minimalist-example-py`, the unmanaged row above; run `chap-devops models remove my_model`, then `chap-devops models add my-model:dev --service-id chapkit-minimalist-example-py`
 ```
 
 A reference with no registry host (`my-model:dev`, `me/my-model:dev`) is read
@@ -102,13 +102,13 @@ as an image in the local image store:
   directory from the local image. If the image is missing, it refuses and
   gives the build command:
   `error: nope-model:dev is not in the local image store for linux/amd64; build it with ...`.
-- **It is never pulled.** The overlay says `pull_policy: never`, so `varde up`
-  starts what is in the store, and `varde update` shows it as
+- **It is never pulled.** The overlay says `pull_policy: never`, so `chap-devops up`
+  starts what is in the store, and `chap-devops update` shows it as
   `pinned, skipped`.
 - **`--platform linux/amd64`** matches the platform every model overlay pins.
   On an Apple Silicon Mac the build runs under emulation and takes longer.
-- **Rebuilding** with the same tag and running `varde restart` starts the new
-  build. `varde restart` prints `recreated chapkit-minimalist-example-py`.
+- **Rebuilding** with the same tag and running `chap-devops restart` starts the new
+  build. `chap-devops restart` prints `recreated chapkit-minimalist-example-py`.
 
 ## A local build of a marketplace model
 
@@ -124,30 +124,30 @@ docker build --platform linux/amd64 --build-arg GIT_REVISION=$(git rev-parse HEA
 Then, in the deployment:
 
 ```sh
-varde models disable chapkit_simple_multistep_model          # if it is enabled
-varde models add multistep:dev --service-id chapkit-simple-multistep-model
-varde up
+chap-devops models disable chapkit_simple_multistep_model          # if it is enabled
+chap-devops models add multistep:dev --service-id chapkit-simple-multistep-model
+chap-devops up
 ```
 
 The two cannot run at the same time. If the marketplace model is enabled,
-`varde models add` refuses:
+`chap-devops models add` refuses:
 
 ```text
-error: the marketplace model chapkit_simple_multistep_model is enabled as the compose service `chapkit-simple-multistep-model`; disable it with `varde models disable chapkit_simple_multistep_model` to run this local build in its place
+error: the marketplace model chapkit_simple_multistep_model is enabled as the compose service `chapkit-simple-multistep-model`; disable it with `chap-devops models disable chapkit_simple_multistep_model` to run this local build in its place
 ```
 
-In the same way, `varde models enable chapkit_simple_multistep_model` refuses while the
-local build holds the service, and names `varde models disable multistep`. To go
+In the same way, `chap-devops models enable chapkit_simple_multistep_model` refuses while the
+local build holds the service, and names `chap-devops models disable multistep`. To go
 back to the published image:
 
 ```sh
-varde models remove multistep
-varde models enable chapkit_simple_multistep_model
-varde up
+chap-devops models remove multistep
+chap-devops models enable chapkit_simple_multistep_model
+chap-devops up
 ```
 
-`varde models disable` and `varde models remove` keep the model's data volume
-and print the `docker volume rm` command that removes it. `varde down --volumes`
+`chap-devops models disable` and `chap-devops models remove` keep the model's data volume
+and print the `docker volume rm` command that removes it. `chap-devops down --volumes`
 also removes that volume, because it has the compose project label of the
 deployment. It warns about each volume with the deployment prefix that it did
 not remove.

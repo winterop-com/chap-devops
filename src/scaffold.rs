@@ -1,4 +1,4 @@
-//! The model projects that `varde models new` creates.
+//! The model projects that `chap-devops models new` creates.
 //!
 //! Two kinds, each on one of the chapkit base images:
 //!
@@ -216,7 +216,7 @@ pub struct Names {
     pub name: String,
     /// The id the service registers with chap-core under, and the image name.
     pub service_id: String,
-    /// The varde model id and the Python package name.
+    /// The chap-devops model id and the Python package name.
     pub model_id: String,
     /// The prefix of the config class in `main.py`.
     #[serde(skip)]
@@ -227,7 +227,7 @@ pub struct Names {
 ///
 /// The service id is lowercase letters, digits and `-`, and starts with a
 /// letter, which is what chapkit accepts. The model id is the same with `_`,
-/// which is the id `varde models add` gives the image.
+/// which is the id `chap-devops models add` gives the image.
 pub fn names(dir_name: &str) -> Result<Names> {
     let name = dir_name.trim();
     if let Some(bad) = name

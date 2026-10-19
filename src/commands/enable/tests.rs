@@ -33,7 +33,7 @@ fn project_with_ewars(host_port: Option<u16>) -> Project {
     }
 }
 
-/// What `--purge` calls a model that `.varde/models.yaml` no longer holds,
+/// What `--purge` calls a model that `.chap-devops/models.yaml` no longer holds,
 /// and therefore which volume it removes.
 #[test]
 fn a_purge_names_the_volume_by_the_marketplace_id() {
@@ -100,7 +100,7 @@ fn an_unchanged_enable_says_nothing_changed() {
         ),
         "{text}"
     );
-    assert!(!text.contains("varde up"), "{text}");
+    assert!(!text.contains("chap-devops up"), "{text}");
 }
 
 /// A change to the state that rendered no compose file differently, such as
@@ -120,7 +120,7 @@ fn an_update_that_wrote_no_compose_file_has_no_apply_step() {
         text.starts_with("updated chapkit_ewars_model v1.0.0"),
         "{text}"
     );
-    assert!(!text.contains("run `varde up` to apply"), "{text}");
+    assert!(!text.contains("run `chap-devops up` to apply"), "{text}");
 }
 
 #[test]
@@ -128,7 +128,7 @@ fn the_summary_ends_with_the_next_step() {
     let project = project_with_ewars(Some(5001));
     let text = render(|lines| summary(&enabled_report(&project), &[], &project, lines));
     assert!(text.contains("enabled chapkit_ewars_model v1.0.0 on http://localhost:5001"));
-    assert!(text.ends_with("run `varde up` to apply\n"));
+    assert!(text.ends_with("run `chap-devops up` to apply\n"));
 }
 
 #[test]
@@ -176,7 +176,7 @@ fn a_disable_summary_names_the_removed_file() {
     assert!(text.contains("disabled chapkit_ewars_model"));
     assert!(text.contains("hint: removed compose.chapkit-ewars-model.yml"));
     // Nothing is left for `up` to apply once a model is taken away.
-    assert!(text.ends_with("hint: `varde status` shows what runs now\n"));
+    assert!(text.ends_with("hint: `chap-devops status` shows what runs now\n"));
 }
 
 #[test]
@@ -195,7 +195,7 @@ fn a_port_change_says_what_happened_and_what_to_do_next() {
     let text = render(|lines| port_summary(&exposed, &project, &[], lines));
     assert!(text.starts_with("exposed chapkit-ewars-model on http://localhost:5001\n"));
     assert!(text.contains("hint: wrote compose.chapkit-ewars-model.yml\n"));
-    assert!(text.ends_with("run `varde up` to apply\n"));
+    assert!(text.ends_with("run `chap-devops up` to apply\n"));
     assert!(!text.contains("no change"));
 
     let internal = PortChange {
@@ -223,7 +223,7 @@ fn a_port_change_says_what_happened_and_what_to_do_next() {
         text.starts_with("chapkit-ewars-model was already unexposed; nothing changed"),
         "{text}"
     );
-    assert!(!text.contains("run `varde up` to apply"), "{text}");
+    assert!(!text.contains("run `chap-devops up` to apply"), "{text}");
 }
 
 /// A port that is already there and already published has no apply step.
@@ -255,16 +255,16 @@ fn an_applied_port_with_no_change_names_no_apply_step() {
     let text = render(|lines| port_summary(&pending, &project, &[], lines));
     assert!(
         text.ends_with(
-            "nothing changed\nhint: if its container is not running, `varde up` starts it\n"
+            "nothing changed\nhint: if its container is not running, `chap-devops up` starts it\n"
         ),
         "{text}"
     );
 }
 
 /// A no-op expose on a running container that does not publish the port yet
-/// names `varde up` as the step that applies it.
+/// names `chap-devops up` as the step that applies it.
 #[test]
-fn a_port_not_applied_on_a_running_container_names_varde_up() {
+fn a_port_not_applied_on_a_running_container_names_chap_devops_up() {
     let project = project_with_ewars(Some(5001));
     let change = PortChange {
         id: "chapkit_ewars_model".into(),
@@ -280,7 +280,7 @@ fn a_port_not_applied_on_a_running_container_names_varde_up() {
     assert_eq!(
         text,
         "chapkit-ewars-model is already exposed on http://localhost:5001; nothing changed\n\
-         its running container does not publish this port yet; run `varde up` to apply it\n"
+         its running container does not publish this port yet; run `chap-devops up` to apply it\n"
     );
 }
 

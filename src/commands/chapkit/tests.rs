@@ -13,9 +13,9 @@ fn migrate_and_init_are_not_refused() {
 }
 
 #[test]
-fn test_is_refused_with_the_varde_command() {
+fn test_is_refused_with_the_chap_devops_command() {
     let why = refused(&strings(&["test", "--url", "http://localhost:8000"])).expect("refused");
-    assert!(why.contains("`varde models test ID`"), "{why}");
+    assert!(why.contains("`chap-devops models test ID`"), "{why}");
 }
 
 #[test]
@@ -68,14 +68,17 @@ fn needs_lock_names_a_new_project_with_no_lock() {
 #[test]
 fn a_usage_error_names_the_help_of_the_command() {
     let hint = super::usage_hint(&strings(&["artifact"]));
-    assert!(hint.contains("`varde chapkit artifact --help`"), "{hint}");
+    assert!(
+        hint.contains("`chap-devops chapkit artifact --help`"),
+        "{hint}"
+    );
     let hint = super::usage_hint(&strings(&["mlproject", "migrate", "--nope"]));
     assert!(
-        hint.contains("`varde chapkit mlproject migrate --help`"),
+        hint.contains("`chap-devops chapkit mlproject migrate --help`"),
         "{hint}"
     );
     let hint = super::usage_hint(&strings(&["--nope"]));
-    assert!(hint.contains("`varde chapkit --help`"), "{hint}");
+    assert!(hint.contains("`chap-devops chapkit --help`"), "{hint}");
 }
 
 #[test]

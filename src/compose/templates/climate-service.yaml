@@ -1,4 +1,4 @@
-# Written once by varde when the ocs component was enabled; varde changes only the read_only and plugins_dir keys.
+# Written once by chap-devops when the ocs component was enabled; chap-devops changes only the read_only and plugins_dir keys.
 
 @EXAMPLE_NOTE@id: @ID@
 name: @NAME@

@@ -1,4 +1,4 @@
-//! `varde sync [--check]` — render the compose files from `.varde/`.
+//! `chap-devops sync [--check]` — render the compose files from `.chap-devops/`.
 
 use crate::cli::SyncArgs;
 use crate::commands::Ctx;
@@ -8,7 +8,7 @@ use crate::output::Report;
 use crate::project::Project;
 use std::path::Path;
 
-/// Render `.varde/models.yaml` into the compose files, or with `--check`
+/// Render `.chap-devops/models.yaml` into the compose files, or with `--check`
 /// report whether they are up to date and fail if they are not.
 pub fn run(ctx: &Ctx, args: &SyncArgs) -> Result<()> {
     let (mut project, _lock) = ctx.project_mut()?;
@@ -64,7 +64,7 @@ fn relative(dir: &Path, path: &Path) -> String {
     path.strip_prefix(dir).unwrap_or(path).display().to_string()
 }
 
-/// Print the one-line summary `varde up` shows when its sync changed
+/// Print the one-line summary `chap-devops up` shows when its sync changed
 /// something. Goes to stderr under `--json` so stdout stays docker's.
 pub fn announce(ctx: &Ctx, report: &SyncReport, project: &Project) {
     for warning in &report.warnings {

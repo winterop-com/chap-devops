@@ -16,15 +16,15 @@ use crate::project::Project;
 /// What `logs` and `docker ps` say for a project that has no containers at
 /// all. Both would otherwise print nothing whatsoever.
 pub(super) const NOTHING_RUNNING: &str =
-    "nothing is running for this deployment; start Chap with `varde up`";
+    "nothing is running for this deployment; start Chap with `chap-devops up`";
 
 /// What `restart` says when there is nothing to recreate. Recreating is not
-/// starting: a deployment that is down is `varde up`'s to bring up, the same
-/// answer `varde status` gives.
-const NOT_RUNNING: &str = "Chap is not running; start it with `varde up`";
+/// starting: a deployment that is down is `chap-devops up`'s to bring up, the same
+/// answer `chap-devops status` gives.
+const NOT_RUNNING: &str = "Chap is not running; start it with `chap-devops up`";
 
 /// The hint that closes a detached `up` and a `restart`.
-const AFTER_UP: &str = "run `varde status` to check that everything answers";
+const AFTER_UP: &str = "run `chap-devops status` to check that everything answers";
 
 /// Say what the wrapper did, now that docker has finished.
 ///
@@ -116,16 +116,16 @@ pub(super) fn report_what_changed(
 ///
 /// A deployment with a DHIS2 nothing has connected gets one more line under
 /// that, because this is the run the reader is about to wait minutes for and
-/// the line that named `varde dhis2 connect` scrolled past when the component
-/// was added. It comes off `.varde/components.yaml` alone - `up` asks DHIS2
-/// nothing, and there would be nothing to ask yet - so it says what varde has
+/// the line that named `chap-devops dhis2 connect` scrolled past when the component
+/// was added. It comes off `.chap-devops/components.yaml` alone - `up` asks DHIS2
+/// nothing, and there would be nothing to ask yet - so it says what chap-devops has
 /// recorded rather than what DHIS2 is. See [`dhis2_connect_hint`].
 ///
 /// Not on the run that started nothing at all: there is no deployment up to
 /// connect, and the warning already says to go and read the logs.
 ///
 /// `waited` is set after `--wait`, which has already checked what the hint
-/// about `varde status` would send the reader to check.
+/// about `chap-devops status` would send the reader to check.
 pub fn up_lines(
     before: &[docker::Container],
     after: &[docker::Container],
@@ -136,7 +136,9 @@ pub fn up_lines(
     let (started, unchanged) = docker::diff_containers(before, after);
     match (started.is_empty(), unchanged.is_empty()) {
         (true, true) => {
-            lines.warning("nothing is running after `varde up`; run `varde logs` to see why");
+            lines.warning(
+                "nothing is running after `chap-devops up`; run `chap-devops logs` to see why",
+            );
             return;
         }
         (true, false) => {
@@ -176,10 +178,10 @@ pub fn restart_lines(
     if recreated.is_empty() {
         lines.info("nothing needed a restart: every container matches its files");
         lines.hint(match named {
-            [] => "`varde restart --all` recreates every one anyway".to_string(),
-            [one] => format!("`varde restart --all {one}` recreates it anyway"),
+            [] => "`chap-devops restart --all` recreates every one anyway".to_string(),
+            [one] => format!("`chap-devops restart --all {one}` recreates it anyway"),
             many => format!(
-                "`varde restart --all {}` recreates them anyway",
+                "`chap-devops restart --all {}` recreates them anyway",
                 many.join(" ")
             ),
         });
@@ -230,7 +232,7 @@ pub(super) fn absent_services(named: &[String], containers: &[docker::Container]
 pub(super) fn no_container_message(absent: &[String]) -> String {
     let named: Vec<String> = absent.iter().map(|s| format!("`{s}`")).collect();
     format!(
-        "this deployment has no container for {}, so there is no log; start it with `varde up`",
+        "this deployment has no container for {}, so there is no log; start it with `chap-devops up`",
         named.join(", ")
     )
 }

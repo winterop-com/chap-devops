@@ -5,30 +5,30 @@ database, connected so the Modeling App in DHIS2 talks to this Chap. For
 development, demos and training.
 
 ```sh
-varde init mychap --models chapkit_simple_multistep_model --with dhis2
+chap-devops init mychap --models chapkit_simple_multistep_model --with dhis2
 cd mychap
-varde up                     # the first start of DHIS2 can take minutes
-varde status                 # wait until the dhis2 line says up, not starting
-varde dhis2 connect          # the route to chap-core, the apps, analytics
-varde open dhis2
+chap-devops up                     # the first start of DHIS2 can take minutes
+chap-devops status                 # wait until the dhis2 line says up, not starting
+chap-devops dhis2 connect          # the route to chap-core, the apps, analytics
+chap-devops open dhis2
 ```
 
-The first `varde up` on a machine pulls the images. The Chap images are about
+The first `chap-devops up` on a machine pulls the images. The Chap images are about
 6 GB to download (see [Quickstart](../quickstart.md)), and DHIS2 adds 1 to
 1.5 GB. When the images are on the machine, `up` returns in seconds. DHIS2 then
 restores the Laos demo database and migrates its schema. On an arm64 Mac, the
-`dhis2` line of `varde status` said `up` less than a minute after `up`
-returned. Under emulation, this can take 8 to 15 minutes. `varde logs dhis2`
+`dhis2` line of `chap-devops status` said `up` less than a minute after `up`
+returned. Under emulation, this can take 8 to 15 minutes. `chap-devops logs dhis2`
 shows the progress.
 
-`varde up` does not connect DHIS2 to Chap; `varde dhis2 connect` does. Until
+`chap-devops up` does not connect DHIS2 to Chap; `chap-devops dhis2 connect` does. Until
 it has run once, `up` ends with this line, and `status` shows a shorter form:
 
 ```text
-varde has not connected this DHIS2 to Chap; run `varde dhis2 connect` once DHIS2 answers
+chap-devops has not connected this DHIS2 to Chap; run `chap-devops dhis2 connect` once DHIS2 answers
 ```
 
-If DHIS2 is still starting, `varde dhis2 connect` waits for it, for at most 20
+If DHIS2 is still starting, `chap-devops dhis2 connect` waits for it, for at most 20
 minutes. It logs in as `admin` / `district`, makes the `chap` route, installs
 the two apps from the App Hub, and generates the analytics tables. That took
 about 30 seconds on the demo database:
@@ -39,7 +39,7 @@ repointed the `chap` route at http://chap:8000/**; chap-core answered through it
 installed Modeling App 7.2.0
 installed DHIS2 Climate App 1.16.2
 analytics finished in 25 seconds (job HXWd71zzX8L)
-the Modeling App can reach Chap; open DHIS2 with `varde open dhis2`
+the Modeling App can reach Chap; open DHIS2 with `chap-devops open dhis2`
 ```
 
 The demo database has a `chap` route already, so `connect` repoints it at this
@@ -47,8 +47,8 @@ chap-core. On an empty DHIS2, that line starts with `created` instead.
 
 It worked when:
 
-- `varde dhis2 connect` ends with `the Modeling App can reach Chap`.
-- `varde open dhis2` opens DHIS2 on `http://localhost:8780`. Log in with
+- `chap-devops dhis2 connect` ends with `the Modeling App can reach Chap`.
+- `chap-devops open dhis2` opens DHIS2 on `http://localhost:8780`. Log in with
   `admin` / `district`.
 - Typing `Modeling` in the app menu (the grid icon at the top right) finds
   **Modeling**, and its **Models** page lists the models.
@@ -57,35 +57,35 @@ Next, in the Modeling App: [Your first forecast in the Modeling
 App](../modeling-app.md) evaluates a model on the demo data and makes a
 forecast with it.
 
-To remove the deployment and its data, run `varde down --volumes --yes` in
+To remove the deployment and its data, run `chap-devops down --volumes --yes` in
 `mychap`.
 
 ## Another DHIS2 version
 
 ```sh
-varde init chap243 --models chapkit_simple_multistep_model --with dhis2 --dhis2-tag 2.43
-varde init chap241 --models chapkit_simple_multistep_model --with dhis2 --dhis2-tag 2.41
-varde init chapdev --models chapkit_simple_multistep_model --with dhis2 --dhis2-image dhis2/core-dev --dhis2-tag master
+chap-devops init chap243 --models chapkit_simple_multistep_model --with dhis2 --dhis2-tag 2.43
+chap-devops init chap241 --models chapkit_simple_multistep_model --with dhis2 --dhis2-tag 2.41
+chap-devops init chapdev --models chapkit_simple_multistep_model --with dhis2 --dhis2-image dhis2/core-dev --dhis2-tag master
 ```
 
 Each line makes a new deployment. If the directory already exists, `init`
-stops with `already contains a varde deployment; choose another directory, or use --force to overwrite it`. Use a
+stops with `already contains a chap-devops deployment; choose another directory, or use --force to overwrite it`. Use a
 different name.
 
 The deployments use the same ports (8700 and 8780), so only one of them can be
 up at a time. If another deployment is up, `init` tells you, for example:
 
 ```text
-warning: port 8780 is already in use on this machine (needed by dhis2); free it, or run `varde components enable dhis2 --port 8781`
+warning: port 8780 is already in use on this machine (needed by dhis2); free it, or run `chap-devops components enable dhis2 --port 8781`
 ```
 
-Before you start the new deployment, run `varde down` in the old one.
+Before you start the new deployment, run `chap-devops down` in the old one.
 
 The Laos climate demo database exists for 2.42 only, so these start with an
 empty DHIS2. `init` tells you so:
 
 ```text
-warning: varde knows no DHIS2 demo dump for 2.43, so `dhis2_db` starts empty; name one with `seed:` in `.varde/components.yaml` (a URL or a path) and run `varde sync`
+warning: chap-devops knows no DHIS2 demo dump for 2.43, so `dhis2_db` starts empty; name one with `seed:` in `.chap-devops/components.yaml` (a URL or a path) and run `chap-devops sync`
 ```
 
 An empty DHIS2 still has the `admin` / `district` login, and `dhis2 connect`

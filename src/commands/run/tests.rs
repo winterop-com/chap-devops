@@ -13,22 +13,22 @@ fn compose_is_quoted_by_its_error_line() {
 
 #[test]
 fn commands_named_inside_a_group_reach_it_with_dash_c() {
-    let dir = Path::new("/home/u/.local/share/varde/run/g");
+    let dir = Path::new("/home/u/.local/share/chap-devops/run/g");
     assert_eq!(
-        with_dir("run `varde models remove x` first", dir),
-        "run `varde -C /home/u/.local/share/varde/run/g models remove x` first"
+        with_dir("run `chap-devops models remove x` first", dir),
+        "run `chap-devops -C /home/u/.local/share/chap-devops/run/g models remove x` first"
     );
 
-    let err = anyhow::anyhow!("inner").context("x was added; run `varde models remove x`");
+    let err = anyhow::anyhow!("inner").context("x was added; run `chap-devops models remove x`");
     let out = for_group(err, true, dir);
     assert_eq!(
         out.to_string(),
-        "x was added; run `varde -C /home/u/.local/share/varde/run/g models remove x`"
+        "x was added; run `chap-devops -C /home/u/.local/share/chap-devops/run/g models remove x`"
     );
     assert_eq!(out.chain().nth(1).unwrap().to_string(), "inner");
 
     // A typed error keeps its type, which the exit code is read from.
-    let typed = anyhow::Error::from(ChapError::Usage("`varde x`".into()));
+    let typed = anyhow::Error::from(ChapError::Usage("`chap-devops x`".into()));
     let out = for_group(typed, true, dir);
     assert!(out.downcast_ref::<ChapError>().is_some());
 }
@@ -106,9 +106,12 @@ fn a_run_is_one_line_and_the_next_commands_are_hints() {
         lines[0],
         "running chapkit_ewars_model on http://localhost:5001 (answered in 41s)"
     );
-    assert_eq!(lines[1], "hint: `varde stop chapkit_ewars_model` stops it");
+    assert_eq!(
+        lines[1],
+        "hint: `chap-devops stop chapkit_ewars_model` stops it"
+    );
     assert!(
-        lines[2].starts_with("hint: `varde -C /data/run/g logs"),
+        lines[2].starts_with("hint: `chap-devops -C /data/run/g logs"),
         "{text}"
     );
     assert_eq!(lines.len(), 3, "{text}");
@@ -129,11 +132,11 @@ fn a_run_in_a_group_names_it() {
         "{text}"
     );
     assert!(
-        text.contains("hint: `varde ps` shows when it answers"),
+        text.contains("hint: `chap-devops ps` shows when it answers"),
         "{text}"
     );
     assert!(
-        text.contains("hint: `varde stop chapkit_ewars_model --group trial` stops it"),
+        text.contains("hint: `chap-devops stop chapkit_ewars_model --group trial` stops it"),
         "{text}"
     );
 }
@@ -160,7 +163,7 @@ fn registration_is_info_and_its_absence_a_warning() {
     );
 }
 
-/// An empty `varde ps` says so in one line; the next command is a hint.
+/// An empty `chap-devops ps` says so in one line; the next command is a hint.
 #[test]
 fn an_empty_ps_says_so() {
     let report = ps::PsReport { models: Vec::new() };
@@ -171,12 +174,12 @@ fn an_empty_ps_says_so() {
     };
     assert_eq!(
         said(&[], None),
-        "nothing has been started with `varde run` yet\nhint: `varde run <model>` starts one\n"
+        "nothing has been started with `chap-devops run` yet\nhint: `chap-devops run <model>` starts one\n"
     );
     assert_eq!(ps::ps_table(&report, &crate::output::Out::default()), "");
 }
 
-/// An empty `varde ps` claims only what it looked at: one deployment, one
+/// An empty `chap-devops ps` claims only what it looked at: one deployment, one
 /// group, or every group.
 #[test]
 fn an_empty_ps_names_the_scope_it_looked_at() {
@@ -190,11 +193,11 @@ fn an_empty_ps_names_the_scope_it_looked_at() {
     assert!(said(&[(None, dir.clone())], None).starts_with("no models are enabled here\n"));
     assert_eq!(
         said(&[], Some("nosuch")),
-        "there is no `varde run` group nosuch; `varde ps` lists every group\n\
-         hint: `varde run <model> --group nosuch` starts one\n"
+        "there is no `chap-devops run` group nosuch; `chap-devops ps` lists every group\n\
+         hint: `chap-devops run <model> --group nosuch` starts one\n"
     );
     let groups = [(Some("default".to_string()), dir.clone())];
-    assert!(said(&groups, None).starts_with("no model runs in a `varde run` group\n"));
+    assert!(said(&groups, None).starts_with("no model runs in a `chap-devops run` group\n"));
     let trial = [(Some("trial".to_string()), dir)];
     assert!(said(&trial, Some("trial")).starts_with("no model runs in group trial\n"));
 }
@@ -207,20 +210,20 @@ fn a_denied_image_says_what_denied_means_and_the_way_out() {
         "y",
         "ghcr.io/x/y:tag",
         Some("Error response from daemon: error from registry: denied"),
-        "varde run ghcr.io/x/y:tag",
+        "chap-devops run ghcr.io/x/y:tag",
     );
     assert_eq!(
         line,
         "y did not start: the registry answered `denied` for ghcr.io/x/y:tag, so the image does \
          not exist or is private; check the reference, or run `docker login ghcr.io`, then \
-         `varde run ghcr.io/x/y:tag` tries again"
+         `chap-devops run ghcr.io/x/y:tag` tries again"
     );
     // The Docker socket is not the registry.
     let socket = start_failure(
         "y",
         "ghcr.io/x/y:tag",
         Some("permission denied while trying to connect to the Docker daemon socket"),
-        "varde run y",
+        "chap-devops run y",
     );
     assert!(
         socket.starts_with("y did not start (permission denied"),

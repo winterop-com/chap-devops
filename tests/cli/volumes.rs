@@ -28,11 +28,11 @@ fn docker_volumes(prefix: &str) -> Vec<String> {
         .collect()
 }
 
-/// `varde models disable --purge` removes the volume docker really holds.
+/// `chap-devops models disable --purge` removes the volume docker really holds.
 ///
 /// Which is the whole reason the flag exists: the overlay that declared the
 /// volume is gone by then, so `down --volumes` cannot reach it and only its
-/// name can. The volume is created here rather than by `varde up`, which would
+/// name can. The volume is created here rather than by `chap-devops up`, which would
 /// pull the entire stack for one `docker volume rm`; compose creates it under
 /// exactly this name, and `live_up_then_purge_removes_the_model_volume`
 /// below is the same thing through a real deployment.
@@ -45,7 +45,7 @@ fn models_disable_purge_removes_the_volume_docker_holds() {
     let dir = sandbox.project();
     // A directory of its own: this asks docker about the compose project
     // name, which is derived from the directory the deployment lives in.
-    let dir = dir.with_file_name("varde-purged");
+    let dir = dir.with_file_name("chap-devops-purged");
     let mut init = sandbox.chap();
     init.arg("init")
         .arg(&dir)
@@ -87,7 +87,7 @@ fn models_disable_purge_removes_the_volume_docker_holds() {
         .stdout(predicates::str::contains("leftover volumes").not());
 }
 
-/// `varde doctor` warns about the volume of a model this deployment no longer
+/// `chap-devops doctor` warns about the volume of a model this deployment no longer
 /// enables, and names the command that removes it.
 #[test]
 fn doctor_warns_about_the_volume_of_a_disabled_model() {
@@ -95,7 +95,7 @@ fn doctor_warns_about_the_volume_of_a_disabled_model() {
         return;
     }
     let sandbox = Sandbox::new();
-    let dir = sandbox.project().with_file_name("varde-leftover");
+    let dir = sandbox.project().with_file_name("chap-devops-leftover");
     let mut init = sandbox.chap();
     init.arg("init")
         .arg(&dir)
@@ -129,11 +129,11 @@ fn doctor_warns_about_the_volume_of_a_disabled_model() {
             "leftover volumes from disabled models or components: {volume}"
         )))
         .stdout(predicates::str::contains(
-            "varde models disable <id> --purge",
+            "chap-devops models disable <id> --purge",
         ));
 }
 
-/// The live version: `varde up` creates the model's volume, and
+/// The live version: `chap-devops up` creates the model's volume, and
 /// `models disable --purge` takes it away again.
 ///
 /// Ignored by default because `up` pulls chap-core, PostgreSQL, Valkey and
@@ -150,7 +150,7 @@ fn live_up_then_purge_removes_the_model_volume() {
         return;
     }
     let sandbox = Sandbox::new();
-    let dir = sandbox.project().with_file_name("varde-live-purge");
+    let dir = sandbox.project().with_file_name("chap-devops-live-purge");
     let mut init = sandbox.chap();
     init.arg("init")
         .arg(&dir)
@@ -175,10 +175,11 @@ fn live_up_then_purge_removes_the_model_volume() {
     }
     impl Drop for Started {
         fn drop(&mut self) {
-            let mut down = Command::cargo_bin("varde").expect("the varde binary is built");
+            let mut down =
+                Command::cargo_bin("chap-devops").expect("the chap-devops binary is built");
             let _ = down
-                .env("VARDE_CACHE_DIR", &self.cache)
-                .env("VARDE_DATA_DIR", self.cache.join("data"))
+                .env("CHAP_DEVOPS_CACHE_DIR", &self.cache)
+                .env("CHAP_DEVOPS_DATA_DIR", self.cache.join("data"))
                 .current_dir(&self.dir)
                 .args(["--offline", "down", "--volumes", "--yes"])
                 .output();
@@ -240,9 +241,11 @@ fn a_volume_flag_after_down_says_which_flag_to_use() {
             .assert()
             // Clap's own code for a usage error, because that is what it is.
             .code(2)
-            .stderr(predicates::str::contains("varde's own --verbose flag"))
-            .stderr(predicates::str::contains("`varde down --volumes`"))
-            .stderr(predicates::str::contains("`varde -v down`"));
+            .stderr(predicates::str::contains(
+                "chap-devops's own --verbose flag",
+            ))
+            .stderr(predicates::str::contains("`chap-devops down --volumes`"))
+            .stderr(predicates::str::contains("`chap-devops -v down`"));
     }
 
     // And the verbose stop it could have meant is still a verbose stop: the
@@ -276,10 +279,10 @@ fn down_volumes_refuses_to_destroy_data_nobody_confirmed() {
         .stdout(predicates::str::contains("pass --yes"));
 }
 
-/// `varde down --volumes --yes` removes the volumes docker holds, and names
+/// `chap-devops down --volumes --yes` removes the volumes docker holds, and names
 /// them.
 ///
-/// The volume is created here rather than by `varde up`, which would pull the
+/// The volume is created here rather than by `chap-devops up`, which would pull the
 /// whole stack for one `docker volume rm`; compose declares the database
 /// under exactly this name, and `chap-db` is the one whose loss is the point
 /// of the flag.
@@ -291,7 +294,7 @@ fn down_volumes_removes_the_database_volume_docker_holds() {
     let sandbox = Sandbox::new();
     // A directory of its own: the volumes carry the compose project name,
     // which is derived from the directory the deployment lives in.
-    let dir = sandbox.project().with_file_name("varde-down-volumes");
+    let dir = sandbox.project().with_file_name("chap-devops-down-volumes");
     let mut init = sandbox.chap();
     init.arg("init")
         .arg(&dir)
@@ -327,7 +330,7 @@ fn down_volumes_removes_the_database_volume_docker_holds() {
     );
 }
 
-/// `down --volumes` also removes the volume of a model that `varde models
+/// `down --volumes` also removes the volume of a model that `chap-devops models
 /// remove` took out, when docker labels it with this deployment's compose
 /// project. A volume under the prefix without that label stays, named in a
 /// warning with the command that removes it.
@@ -337,7 +340,9 @@ fn down_volumes_removes_a_leftover_volume_of_this_compose_project() {
         return;
     }
     let sandbox = Sandbox::new();
-    let dir = sandbox.project().with_file_name("varde-down-leftover");
+    let dir = sandbox
+        .project()
+        .with_file_name("chap-devops-down-leftover");
     let mut init = sandbox.chap();
     init.arg("init")
         .arg(&dir)

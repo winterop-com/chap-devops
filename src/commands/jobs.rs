@@ -1,4 +1,4 @@
-//! `varde jobs` — what chap-core has been asked to compute, and how it went.
+//! `chap-devops jobs` — what chap-core has been asked to compute, and how it went.
 //!
 //! chap-core runs everything slow on a Celery worker: building a dataset,
 //! backtesting a model, making a prediction. The Modeling App starts them and
@@ -9,7 +9,7 @@
 //! a job description carries a status and nothing else, so a `FAILURE` says
 //! only that something went wrong. The message is in
 //! `GET /v1/jobs/{id}/logs`, mixed into the model's own output, which is why
-//! `varde jobs logs` is the command the failure line points at and why it
+//! `chap-devops jobs logs` is the command the failure line points at and why it
 //! digs the last error line out of the `--- stderr ---` section for a job that
 //! failed.
 //!
@@ -25,7 +25,7 @@ use crate::output::{self, Out};
 use crate::project::Project;
 use std::time::Duration;
 
-/// `varde jobs list`, and the bare `varde jobs`.
+/// `chap-devops jobs list`, and the bare `chap-devops jobs`.
 pub fn list(ctx: &Ctx, args: &JobsListArgs) -> Result<()> {
     let (_project, api) = connect(ctx)?;
     let mut query: Vec<String> = args
@@ -73,7 +73,7 @@ fn say_list(jobs: &[Job], lines: &mut output::Report) {
     }
 }
 
-/// `varde jobs show ID`.
+/// `chap-devops jobs show ID`.
 pub fn show(ctx: &Ctx, args: &JobsShowArgs) -> Result<()> {
     let (_project, api) = connect(ctx)?;
     let (id, jobs) = find(ctx, &api, &args.id)?;
@@ -164,12 +164,12 @@ fn human_show(
 fn next_step(job: &Job, status: &str, database_result: Option<i64>, lines: &mut output::Report) {
     let id = &job.id;
     match jobs::Outcome::of(status) {
-        jobs::Outcome::Failed => lines.info(format!("run `varde jobs logs {id}` to see why")),
+        jobs::Outcome::Failed => lines.info(format!("run `chap-devops jobs logs {id}` to see why")),
         jobs::Outcome::Running => lines.hint(format!(
-            "`varde jobs` shows when it finishes, and `varde jobs cancel {id}` stops it"
+            "`chap-devops jobs` shows when it finishes, and `chap-devops jobs cancel {id}` stops it"
         )),
         jobs::Outcome::Cancelled => {
-            lines.hint(format!("`varde jobs logs {id}` shows how far it got"))
+            lines.hint(format!("`chap-devops jobs logs {id}` shows how far it got"))
         }
         jobs::Outcome::Done => match database_result {
             // The collection the row is in follows the job type, so the line
@@ -177,11 +177,11 @@ fn next_step(job: &Job, status: &str, database_result: Option<i64>, lines: &mut 
             Some(row) => match collection_of(&job.kind) {
                 Some(collection) => lines.hint(format!(
                     "the result is row {row} in chap-core's database; \
-                     `varde api GET /v1/crud/{collection}/{row}` reads it"
+                     `chap-devops api GET /v1/crud/{collection}/{row}` reads it"
                 )),
                 None => lines.hint(format!("the result is row {row} in chap-core's database")),
             },
-            None => lines.hint(format!("`varde jobs logs {id}` shows what it did")),
+            None => lines.hint(format!("`chap-devops jobs logs {id}` shows what it did")),
         },
     };
 }
@@ -209,7 +209,7 @@ fn status_cell(out: &Out, status: &str) -> String {
     }
 }
 
-/// `varde jobs logs ID`.
+/// `chap-devops jobs logs ID`.
 ///
 /// stdout is the log and nothing else, so it can be piped into `grep` or
 /// `less`; which job it is, and the one line that says why it failed, go to
@@ -268,7 +268,7 @@ pub fn logs(ctx: &Ctx, args: &JobsLogsArgs) -> Result<()> {
     Ok(())
 }
 
-/// `varde jobs cancel ID`.
+/// `chap-devops jobs cancel ID`.
 pub fn cancel(ctx: &Ctx, args: &JobsCancelArgs) -> Result<()> {
     let (_project, api) = connect(ctx)?;
     let (id, _) = find(ctx, &api, &args.id)?;
@@ -282,11 +282,11 @@ pub fn cancel(ctx: &Ctx, args: &JobsCancelArgs) -> Result<()> {
     ctx.out.report(&value, |lines| {
         lines
             .info(message.as_str())
-            .hint("`varde jobs` shows whether it has stopped");
+            .hint("`chap-devops jobs` shows whether it has stopped");
     })
 }
 
-/// `varde jobs delete ID`.
+/// `chap-devops jobs delete ID`.
 pub fn delete(ctx: &Ctx, args: &JobsDeleteArgs) -> Result<()> {
     let (_project, api) = connect(ctx)?;
     let (id, _) = find(ctx, &api, &args.id)?;
@@ -296,7 +296,7 @@ pub fn delete(ctx: &Ctx, args: &JobsDeleteArgs) -> Result<()> {
     // with a 400. The verb that does apply is `cancel`, so name it.
     if answer.status == 400 {
         return Err(anyhow::anyhow!(
-            "job {id} is still running; cancel it first (`varde jobs cancel {id}`)"
+            "job {id} is still running; cancel it first (`chap-devops jobs cancel {id}`)"
         ));
     }
     if !answer.is_success() {
@@ -307,7 +307,7 @@ pub fn delete(ctx: &Ctx, args: &JobsDeleteArgs) -> Result<()> {
     ctx.out.report(&value, |lines| {
         lines
             .info(message.as_str())
-            .hint("`varde jobs` shows the jobs that are left");
+            .hint("`chap-devops jobs` shows the jobs that are left");
     })
 }
 
@@ -328,7 +328,7 @@ fn message_of(answer: &crate::api::Answer, verb: &str) -> String {
 /// This deployment and a client for its API.
 fn connect(ctx: &Ctx) -> Result<(Project, Api)> {
     let project = ctx.project()?;
-    crate::components::require_chap_core(&project.state.components, "`varde jobs`")?;
+    crate::components::require_chap_core(&project.state.components, "`chap-devops jobs`")?;
     let token = crate::api::token_for(Some(&project.dir));
     let api = Api::new(&project.api_url(), token, crate::api::DEFAULT_TIMEOUT);
     ctx.out
@@ -416,7 +416,7 @@ fn current_status(api: &Api, id: &str) -> Result<Option<String>> {
 /// The row a finished job wrote, from `GET /v1/jobs/{id}/database_result`.
 ///
 /// Best effort: the endpoint answers 400 while the job runs and 400 again for
-/// one that failed, and neither is something to stop `varde jobs show` over.
+/// one that failed, and neither is something to stop `chap-devops jobs show` over.
 fn database_result(api: &Api, id: &str, status: &str) -> Option<i64> {
     if jobs::Outcome::of(status) != jobs::Outcome::Done {
         return None;

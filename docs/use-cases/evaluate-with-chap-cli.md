@@ -2,7 +2,7 @@
 
 This guide goes from an empty machine to a comparison of two forecasting
 models on one dataset. It uses chap-core's own command line, `chap`, through
-`varde chap`. You do not install Python, uv or R: `varde chap` runs `chap` in
+`chap-devops chap`. You do not install Python, uv or R: `chap-devops chap` runs `chap` in
 a container.
 
 At the end you have:
@@ -26,7 +26,7 @@ user.
   | `ghcr.io/dhis2-chap/chap-core` | about 2.4 GB | 5 to 7, only if you have no `chap-worker` |
   | `ghcr.io/chap-models/auto_arima_chapkit` | about 6.2 GB | 6, the marketplace model |
 
-  varde says before each run when it must download an image first. varde
+  chap-devops says before each run when it must download an image first. chap-devops
   uses the tag of the newest chap-core release, `v2.5.0` when this guide was
   tested. On a slow network, download the images in advance:
 
@@ -40,26 +40,26 @@ images. On an Apple silicon Mac, Docker runs the images under emulation, so
 each step is slower than on Linux. After the first run, an evaluation of the
 example data takes less than a minute.
 
-## Step 1: Install varde
+## Step 1: Install chap-devops
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/winterop-com/varde/main/install.sh | sh
-varde --version
+curl -fsSL https://raw.githubusercontent.com/winterop-com/chap-devops/main/install.sh | sh
+chap-devops --version
 ```
 
-It worked when `varde --version` prints a version, for example `varde 0.100.1`.
+It worked when `chap-devops --version` prints a version, for example `chap-devops 0.100.1`.
 See [Install](../install.md) for other ways to install.
 
 ## Step 2: Check the machine
 
 ```sh
-varde doctor
+chap-devops doctor
 ```
 
 It worked when the `docker cli`, `docker daemon` and `docker compose` lines
 start with `ok`. A `warn` on the `os and arch` line of an Apple silicon Mac is
 correct: it only tells you that the images run under emulation. If a line
-starts with `fail`, do the fix that it names, then run `varde doctor` again.
+starts with `fail`, do the fix that it names, then run `chap-devops doctor` again.
 
 ## Step 3: Make a working directory and get data
 
@@ -97,7 +97,7 @@ Each `location` must be a feature in the GeoJSON. In the steps below, change
 This model is a small R model from chap-core's examples:
 
 ```sh
-varde chap eval \
+chap-devops chap eval \
   --model-name https://github.com/dhis2-chap/minimalist_example_r \
   --dataset-csv laos_subset.csv \
   --output-file minimalist_r.nc \
@@ -115,24 +115,24 @@ What the options do:
 | `--backtest-params.n-splits` | How many times the model trains and forecasts, each time from a later point in the data. |
 | `--backtest-params.n-periods` | How many periods (here months) each forecast goes ahead. |
 
-varde writes some lines of its own before chap starts:
+chap-devops writes some lines of its own before chap starts:
 
 ```text
 running `chap eval` in ghcr.io/dhis2-chap/chap-worker:v2.5.0; the first run pulls it, about 12 GB
 files: chap reads and writes in /home/me/chap-eval
 ```
 
-Then chap writes its own log lines. At the end, varde writes:
+Then chap writes its own log lines. At the end, chap-devops writes:
 
 ```text
 chap finished; it wrote minimalist_r.nc
-`varde chap plot-backtest minimalist_r.nc --output-file minimalist_r.html` plots it
+`chap-devops chap plot-backtest minimalist_r.nc --output-file minimalist_r.html` plots it
 ```
 
 It worked when you see `chap finished; it wrote minimalist_r.nc`.
 
-varde selected the large `chap-worker` image because a model from GitHub can
-need R. chap clones the model again for each run. varde keeps the R packages
+chap-devops selected the large `chap-worker` image because a model from GitHub can
+need R. chap clones the model again for each run. chap-devops keeps the R packages
 of a model in its cache, so the second run does not install them again. This
 small model has no packages to install, so each run takes about the same
 time: about 40 seconds on an Apple silicon Mac, when the image is there.
@@ -142,10 +142,10 @@ time: about 40 seconds on an Apple silicon Mac, when the image is there.
 Run the command that the last line of step 4 gave you:
 
 ```sh
-varde chap plot-backtest minimalist_r.nc --output-file minimalist_r.html
+chap-devops chap plot-backtest minimalist_r.nc --output-file minimalist_r.html
 ```
 
-It worked when varde writes `chap finished; it wrote minimalist_r.html`. Open
+It worked when chap-devops writes `chap finished; it wrote minimalist_r.html`. Open
 the file in a browser:
 
 ```sh
@@ -159,10 +159,10 @@ each location.
 ## Step 6: Evaluate a second model, from the marketplace
 
 A model from the [marketplace](../models.md) is a model service: a container
-with an HTTP API. Give its id to `--model-name`, and varde starts it for you:
+with an HTTP API. Give its id to `--model-name`, and chap-devops starts it for you:
 
 ```sh
-varde chap eval \
+chap-devops chap eval \
   --model-name auto_arima_chapkit \
   --dataset-csv laos_subset.csv \
   --output-file auto_arima.nc \
@@ -170,41 +170,41 @@ varde chap eval \
   --backtest-params.n-periods 3
 ```
 
-varde starts the model, waits until it answers, and then runs chap. After
+chap-devops starts the model, waits until it answers, and then runs chap. After
 the first line, Docker Compose writes the lines of the network, the volume
 and the containers that it makes:
 
 ```text
-starting auto-arima-chapkit (auto_arima_chapkit in /home/me/.local/share/varde/run/default)
+starting auto-arima-chapkit (auto_arima_chapkit in /home/me/.local/share/chap-devops/run/default)
 ...
 running `chap eval` in ghcr.io/dhis2-chap/chap-worker:v2.5.0
 files: chap reads and writes in /home/me/chap-eval
 model: auto_arima_chapkit at http://auto-arima-chapkit:8000 answers
 ...
 chap finished; it wrote auto_arima.nc
-`varde chap plot-backtest auto_arima.nc --output-file auto_arima.html` plots it
-auto_arima_chapkit keeps running for the next run; `varde stop auto_arima_chapkit` stops it, and `--stop` stops it after a run
+`chap-devops chap plot-backtest auto_arima.nc --output-file auto_arima.html` plots it
+auto_arima_chapkit keeps running for the next run; `chap-devops stop auto_arima_chapkit` stops it, and `--stop` stops it after a run
 ```
 
 It worked when you see `chap finished; it wrote auto_arima.nc`. The first
 time, Docker downloads the image of the model, which takes some minutes.
 
 chap only talks HTTP to a model service, so the smaller `chap-core` image is
-enough. varde uses an image that is already on this machine, so the run
+enough. chap-devops uses an image that is already on this machine, so the run
 downloads no chap image. After step 4, that is `chap-worker`. If the
-`chap-core` image at the same tag is also on this machine, varde uses
+`chap-core` image at the same tag is also on this machine, chap-devops uses
 `chap-core`, and the first line names it.
 
 The model keeps running, so a second evaluation of it starts at once.
-`varde ps` lists it. Find more ids with `varde models list`.
+`chap-devops ps` lists it. Find more ids with `chap-devops models list`.
 
 ## Step 7: Compare the two models
 
 ```sh
-varde chap export-metrics minimalist_r.nc auto_arima.nc --output-file comparison.csv
+chap-devops chap export-metrics minimalist_r.nc auto_arima.nc --output-file comparison.csv
 ```
 
-It worked when varde writes `chap finished; it wrote comparison.csv`. chap can
+It worked when chap-devops writes `chap finished; it wrote comparison.csv`. chap can
 write some `RuntimeWarning` lines about `log1p` before that. They do not stop
 the run.
 
@@ -223,10 +223,10 @@ of the columns:
 Stop the model service, and remove its data:
 
 ```sh
-varde stop auto_arima_chapkit --purge
+chap-devops stop auto_arima_chapkit --purge
 ```
 
-It worked when varde writes:
+It worked when chap-devops writes:
 
 ```text
 stopped auto_arima_chapkit
@@ -235,13 +235,13 @@ removed group default
 ```
 
 The number in the volume name is different on your machine. The group
-`default` held only this model, so varde removes it too.
+`default` held only this model, so chap-devops removes it too.
 
 Your `.nc`, `.html` and `.csv` files stay in `~/chap-eval`. To get the disk
-space of the caches back, delete varde's chap directory:
+space of the caches back, delete chap-devops's chap directory:
 
 ```sh
-rm -rf ~/.local/share/varde/chap
+rm -rf ~/.local/share/chap-devops/chap
 ```
 
 To remove the images too, list them, then remove each one with
@@ -255,27 +255,27 @@ docker image rm ghcr.io/dhis2-chap/chap-worker:v2.5.0
 
 ## If something goes wrong
 
-| varde writes | What to do |
+| chap-devops writes | What to do |
 | --- | --- |
 | `` `http://localhost:...` is this machine `` | Give the model id instead, as in step 6. |
-| `the model server at ... is not running` | The URL does not answer. Give a model id, and varde starts the model. |
-| `is not a model of the deployment` | In a deployment, add the model first with `varde models enable ID`. |
-| ``runs in docker (`docker_env` in its MLproject)`` | The model starts a container of its own. Run the same command with `varde chap --docker ...`. See [Models that run in docker](../chap-cli.md#models-that-run-in-docker). |
+| `the model server at ... is not running` | The URL does not answer. Give a model id, and chap-devops starts the model. |
+| `is not a model of the deployment` | In a deployment, add the model first with `chap-devops models enable ID`. |
+| ``runs in docker (`docker_env` in its MLproject)`` | The model starts a container of its own. Run the same command with `chap-devops chap --docker ...`. See [Models that run in docker](../chap-cli.md#models-that-run-in-docker). |
 | `FileNotFoundError: [Errno 2] No such file or directory` | chap cannot find an input file. Make sure that the CSV and the GeoJSON with the same name are there, then run again. |
 | `Rscript: not found` | The model needs R. Add `--image worker` after `chap`. |
 | `chap exited with status N` | chap stopped with an error. The cause is in chap's own lines above. |
-| `docker could not start ...` | Docker could not download or start the image. Run `varde doctor`. |
+| `docker could not start ...` | Docker could not download or start the image. Run `chap-devops doctor`. |
 
 More messages are in [Troubleshooting](../troubleshooting.md).
 
 ## Next
 
-- To evaluate the models of a [deployment](../concepts.md), run `varde chap`
+- To evaluate the models of a [deployment](../concepts.md), run `chap-devops chap`
   in a subdirectory of it (`mkdir eval && cd eval`), and give the model id:
-  `varde chap eval --model-name auto_arima_chapkit ...`. The deployment does
-  not need to run: varde starts only that model, without chap-core.
+  `chap-devops chap eval --model-name auto_arima_chapkit ...`. The deployment does
+  not need to run: chap-devops starts only that model, without chap-core.
 - To use another chap-core version, add `--tag`, for example
-  `varde chap --tag master eval ...`.
-- For chap's own options, run `varde chap eval --help`.
-- [The chap CLI](../chap-cli.md) tells how `varde chap` mounts your files,
+  `chap-devops chap --tag master eval ...`.
+- For chap's own options, run `chap-devops chap eval --help`.
+- [The chap CLI](../chap-cli.md) tells how `chap-devops chap` mounts your files,
   selects the image and keeps its caches.

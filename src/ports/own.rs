@@ -11,7 +11,7 @@ use std::collections::BTreeMap;
 /// A port one of them publishes is ours, not a conflict: `docker compose up`
 /// on a service that is already up leaves it where it is. A running service is
 /// not exempt for a port it does not publish now, though. A restored
-/// `.varde/components.yaml` can move a running DHIS2 from 8781 to 8780, and
+/// `.chap-devops/components.yaml` can move a running DHIS2 from 8781 to 8780, and
 /// compose then recreates it on 8780, so 8780 must be free.
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub struct OwnPorts(BTreeMap<String, Vec<u16>>);

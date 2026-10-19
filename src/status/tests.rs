@@ -59,7 +59,10 @@ fn a_model_registered_under_its_own_id_is_told_to_take_that_id() {
     );
     assert!(!said[0].contains("restart"), "{said:?}");
     // The one that is simply not registered keeps the restart hint.
-    assert!(said[1].contains("varde restart --all other"), "{said:?}");
+    assert!(
+        said[1].contains("chap-devops restart --all other"),
+        "{said:?}"
+    );
 }
 
 use super::components::parse_dataset_count;
@@ -355,7 +358,7 @@ fn a_401_is_about_the_token_and_not_about_who_answered() {
         error.contains("the API token in .env is not accepted"),
         "{error}"
     );
-    assert!(error.contains("varde auth show --reveal"), "{error}");
+    assert!(error.contains("chap-devops auth show --reveal"), "{error}");
     // Never the other verdict: the port is chap-core's, the token is wrong.
     assert!(!error.contains("not chap-core"), "{error}");
 
@@ -372,7 +375,7 @@ fn a_401_is_about_the_token_and_not_about_who_answered() {
         error.contains("it requires an API token and .env sets none"),
         "{error}"
     );
-    assert!(error.contains("varde auth enable"), "{error}");
+    assert!(error.contains("chap-devops auth enable"), "{error}");
     assert!(!error.contains("not chap-core"), "{error}");
     assert!(
         error.contains("/health is open even when CHAP_API_TOKEN is set"),
@@ -649,7 +652,7 @@ fn the_closing_line_counts_what_the_project_enables() {
     assert_eq!(closing_line(&one), "1 model registered");
     assert_eq!(
         closing_line(&[]),
-        "no models enabled; run `varde models enable ID` to add one"
+        "no models enabled; run `chap-devops models enable ID` to add one"
     );
 
     // A model run from its checkout is registered and not ours: it is
@@ -706,7 +709,7 @@ fn report(api: ApiHealth, missing: &[&str], components: Vec<ComponentStatus>) ->
     }
 }
 
-/// `varde status` is a health gate, so one rule covers every deployment
+/// `chap-devops status` is a health gate, so one rule covers every deployment
 /// shape: anything this deployment declares and does not have is non-zero.
 /// A component that died used to be the exception - the one answer a
 /// monitor must never get wrong.
@@ -769,7 +772,7 @@ fn the_exit_code_is_non_zero_for_anything_the_deployment_is_missing() {
 
 /// A deployment without chap-core has no models to count, so its verdict is
 /// its components - and it must never be the models line, which names
-/// `varde models enable`, the one command such a deployment refuses.
+/// `chap-devops models enable`, the one command such a deployment refuses.
 /// Without chap-core a model is asked itself: not running, running and
 /// silent, or up - and only a running one with a host port is asked.
 #[test]
@@ -806,7 +809,7 @@ fn standalone_models_are_judged_by_their_own_health() {
     let lines = standalone_closing_lines(&rows, &[]);
     assert_eq!(
         lines,
-        vec!["1 of 4 models is not running; start them with `varde up`"]
+        vec!["1 of 4 models is not running; start them with `chap-devops up`"]
     );
     let up = standalone_closing_lines(&rows[..1], &[]);
     assert_eq!(up, vec!["1 model up, answering on its own host port"]);
@@ -819,7 +822,7 @@ fn standalone_models_are_judged_by_their_own_health() {
     let silent = standalone_closing_lines(&rows[..2], &[]);
     assert!(silent[0].contains("not answering on /health"), "{silent:?}");
     assert!(
-        silent[0].contains(&format!("`varde logs {}`", rows[1].id)),
+        silent[0].contains(&format!("`chap-devops logs {}`", rows[1].id)),
         "{silent:?}"
     );
     assert!(!silent[0].contains("SERVICE"), "{silent:?}");
@@ -844,11 +847,13 @@ fn the_components_verdict_counts_what_is_not_up_and_never_mentions_models() {
     // The command that opens them is a hint, and only when all are up.
     assert_eq!(
         standalone_hints(&[], &[component(Up), component(Up), component(Up)]),
-        vec!["`varde open ocs` and `varde open ocs` and `varde open ocs` open them"]
+        vec![
+            "`chap-devops open ocs` and `chap-devops open ocs` and `chap-devops open ocs` open them"
+        ]
     );
     assert_eq!(
         standalone_hints(&[], &[component(Up)]),
-        vec!["`varde open ocs` opens it"]
+        vec!["`chap-devops open ocs` opens it"]
     );
     assert!(standalone_hints(&[], &[component(Up), component(NotRunning)]).is_empty());
 
@@ -861,26 +866,26 @@ fn the_components_verdict_counts_what_is_not_up_and_never_mentions_models() {
 
     assert_eq!(
         components_closing_line(&[component(Up), component(NotRunning)]),
-        "1 of 2 components is not running; start it with `varde up`"
+        "1 of 2 components is not running; start it with `chap-devops up`"
     );
     assert_eq!(
         components_closing_line(&[component(Up), component(NotRunning), component(NotRunning)]),
-        "2 of 3 components are not running; start them with `varde up`"
+        "2 of 3 components are not running; start them with `chap-devops up`"
     );
 
     // A container that is up but not answering yet is a wait, not a
-    // `varde up`: saying `up` again would recreate nothing.
+    // `chap-devops up`: saying `up` again would recreate nothing.
     let line = components_closing_line(&[component(Up), component(Starting)]);
     assert_eq!(
         line,
-        "1 of 2 components is still starting; run `varde status` again in a moment"
+        "1 of 2 components is still starting; run `chap-devops status` again in a moment"
     );
 
     // The empty deployment names both ways to put something in it.
     assert_eq!(
         components_closing_line(&[]),
-        "this deployment has no components and no models; add one with `varde models add URL`, \
-         `varde models enable ID` or `varde components enable NAME`"
+        "this deployment has no components and no models; add one with `chap-devops models add URL`, \
+         `chap-devops models enable ID` or `chap-devops components enable NAME`"
     );
 
     for rows in [
@@ -915,10 +920,13 @@ fn a_model_that_never_registers_elsewhere_is_told_how_to_find_why() {
     };
     assert!(external_registration_hints(&[renamed]).is_empty());
     assert!(
-        hints[0].contains("if `varde logs m` shows `App never became ready`"),
+        hints[0].contains("if `chap-devops logs m` shows `App never became ready`"),
         "{hints:?}"
     );
-    assert!(hints[0].contains("`varde models enable m`"), "{hints:?}");
+    assert!(
+        hints[0].contains("`chap-devops models enable m`"),
+        "{hints:?}"
+    );
     // What the log lines mean is the background, in a hint of its own.
     assert!(EXTERNAL_REGISTRATION_LOG.contains("App never became ready"));
     assert!(EXTERNAL_REGISTRATION_LOG.contains("registration.attempt_failed"));
@@ -936,10 +944,10 @@ fn every_problem_row_gets_its_own_hint() {
         hints(&rows, false, None, &[]),
         vec![
             "chapkit-rwanda-malaria-bym-model: restart it with \
-                 `varde restart --all chapkit-rwanda-malaria-bym-model`"
+                 `chap-devops restart --all chapkit-rwanda-malaria-bym-model`"
                 .to_string(),
-            "auto-arima-chapkit: start Chap with `varde up`, \
-                 then `varde logs auto-arima-chapkit`"
+            "auto-arima-chapkit: start Chap with `chap-devops up`, \
+                 then `chap-devops logs auto-arima-chapkit`"
                 .to_string(),
         ]
     );
@@ -958,7 +966,7 @@ fn every_problem_row_gets_its_own_hint() {
     assert!(hints(&rows, false, None, &[]).is_empty());
     assert!(hints(&rows, true, None, &[]).is_empty());
     assert_eq!(test_hint(&rows), Some(TEST_HINT_ONE));
-    assert!(TEST_HINT.contains("varde models test --all"));
+    assert!(TEST_HINT.contains("chap-devops models test --all"));
     assert!(TEST_HINT_ONE.contains("check it can run"));
 
     // Nothing enabled at all has nothing to test either, and a
@@ -991,7 +999,7 @@ fn a_misnamed_manual_model_is_told_the_exact_commands() {
         hints(&rows, false, None, &[]),
         vec![
             "my-model: its container registered as `chapkit-minimalist-example-py`, the \
-                 unmanaged row above; run `varde models remove my_model`, then `varde models \
+                 unmanaged row above; run `chap-devops models remove my_model`, then `chap-devops models \
                  add my-model:dev --service-id chapkit-minimalist-example-py`"
                 .to_string()
         ]
@@ -1012,7 +1020,7 @@ fn a_model_that_just_started_is_told_to_wait_not_to_restart() {
     let hint = &hints(&rows, true, None, &[])[0];
     assert!(hint.contains("started under two minutes ago"), "{hint}");
     assert!(
-        hint.contains("run `varde status` again in a minute"),
+        hint.contains("run `chap-devops status` again in a minute"),
         "{hint}"
     );
     assert!(!hint.contains("restart"), "{hint}");
@@ -1038,7 +1046,7 @@ fn a_protected_deployment_names_the_other_reason_a_model_never_registers() {
     assert!(
         hint.ends_with(
             "; if its log shows 401, chap-core is missing the registration key: \
-                 run `varde sync`, then `varde restart`"
+                 run `chap-devops sync`, then `chap-devops restart`"
         ),
         "{hint}"
     );
@@ -1244,14 +1252,14 @@ fn a_registered_model_chap_core_cannot_reach_is_a_problem_with_the_way_out() {
     );
     assert!(
         elsewhere[0].contains(
-            "`varde components enable chap-core --url http://localhost:8000 --models-host \
+            "`chap-devops components enable chap-core --url http://localhost:8000 --models-host \
              host.docker.internal`"
         ),
         "{elsewhere:?}"
     );
     let own = hints(&rows, false, None, &[]);
     assert!(
-        own[0].contains("`varde logs chapkit-ewars-model`"),
+        own[0].contains("`chap-devops logs chapkit-ewars-model`"),
         "{own:?}"
     );
     assert!(!own[0].contains("--models-host"), "{own:?}");
@@ -1335,8 +1343,8 @@ fn an_api_answering_while_this_chap_core_is_stopped_is_another_deployments() {
     name_elsewhere(&mut named, Some(&other));
     let line = named.api_elsewhere.expect("still set");
     assert!(line.contains("is first (/srv/first) answering"), "{line}");
-    assert!(line.contains("`varde -C /srv/first down`"), "{line}");
-    assert!(line.contains("`varde up --replace`"), "{line}");
+    assert!(line.contains("`chap-devops -C /srv/first down`"), "{line}");
+    assert!(line.contains("`chap-devops up --replace`"), "{line}");
 }
 
 /// The same answer with this deployment's `chap` running is its own, and

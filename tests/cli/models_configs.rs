@@ -1,5 +1,5 @@
-//! `varde models configs sync`, and the same step in `models test --backtest`
-//! and `varde status`, against a stand-in chap-core in the shape of 2.4.
+//! `chap-devops models configs sync`, and the same step in `models test --backtest`
+//! and `chap-devops status`, against a stand-in chap-core in the shape of 2.4.
 
 use crate::common::*;
 use serde_json::Value as Json;
@@ -49,8 +49,8 @@ fn configure_creates_the_configured_models_of_each_registered_model() {
     // The stand-in has no registration for the multistep model.
     assert!(
         text.contains(
-            "chapkit_simple_multistep_model: not registered with chap-core; run `varde models \
-             configs sync` again once `varde status` shows it registered"
+            "chapkit_simple_multistep_model: not registered with chap-core; run `chap-devops models \
+             configs sync` again once `chap-devops status` shows it registered"
         ),
         "{text}"
     );
@@ -116,11 +116,11 @@ fn configure_warns_and_fails_when_chap_core_refuses_a_template() {
     assert!(
         text.contains(
             "it reports no git revision, so running this again does not help; build its image \
-             again with `--build-arg GIT_REVISION=$(git rev-parse HEAD)`, then run `varde restart`"
+             again with `--build-arg GIT_REVISION=$(git rev-parse HEAD)`, then run `chap-devops restart`"
         ),
         "{text}"
     );
-    assert!(!text.contains("`varde models configs sync"), "{text}");
+    assert!(!text.contains("`chap-devops models configs sync"), "{text}");
 
     let port = state(&dir)["api_port"].as_u64().expect("the port");
     let url = format!("http://127.0.0.1:{port}");
@@ -138,14 +138,14 @@ fn configure_warns_and_fails_when_chap_core_refuses_a_template() {
     assert!(
         texts.iter().any(|t| t.starts_with(&format!(
             "{OLD_CHAPKIT_MODEL}: it reports no git revision, so chap-core stores no model \
-             template for it and `varde models configs sync` cannot configure it; build its image"
+             template for it and `chap-devops models configs sync` cannot configure it; build its image"
         ))),
         "{texts:?}"
     );
     assert!(
         !texts
             .iter()
-            .any(|t| t.ends_with("run `varde models configs sync`")),
+            .any(|t| t.ends_with("run `chap-devops models configs sync`")),
         "{texts:?}"
     );
 }
@@ -175,7 +175,7 @@ fn status_shows_a_model_that_has_no_configured_model() {
     assert!(
         texts.contains(
             &"chapkit-ewars-model: chap-core has no configured model for it, so nothing can run \
-              it; run `varde models configs sync`"
+              it; run `chap-devops models configs sync`"
         ),
         "{texts:?}"
     );
@@ -247,10 +247,10 @@ fn models_test_backtest_fails_when_every_model_was_skipped() {
         "{text}"
     );
     assert!(
-        text.contains("run `varde models configs sync auto_arima_chapkit`"),
+        text.contains("run `chap-devops models configs sync auto_arima_chapkit`"),
         "{text}"
     );
-    assert!(!text.contains("varde restart"), "{text}");
+    assert!(!text.contains("chap-devops restart"), "{text}");
     assert!(text.contains("0 pass, 1 skipped"), "{text}");
     assert!(
         stderr.contains("warning: auto_arima_chapkit: could not create its configured models"),
@@ -281,10 +281,12 @@ fn configure_takes_a_model_registered_from_outside_the_deployment() {
     .clone();
     let text = stdout_of(&output);
     assert!(
-        text.contains(&format!("run `varde models configs sync {HOST_RUN_MODEL}`")),
+        text.contains(&format!(
+            "run `chap-devops models configs sync {HOST_RUN_MODEL}`"
+        )),
         "{text}"
     );
-    assert!(!text.contains("varde restart"), "{text}");
+    assert!(!text.contains("chap-devops restart"), "{text}");
 
     let output = chap_in(
         &sandbox,

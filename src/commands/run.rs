@@ -1,14 +1,14 @@
-//! `varde run`, `ps` and `stop`: start one model and get its URL, without a
+//! `chap-devops run`, `ps` and `stop`: start one model and get its URL, without a
 //! deployment directory of your own.
 //!
 //! Inside a deployment the three work on it. Anywhere else they work on a
-//! *group*: a deployment varde keeps for this user under its data directory
-//! ([`crate::paths::data_dir`]), `run/<group>/`, which the first `varde run`
+//! *group*: a deployment chap-devops keeps for this user under its data directory
+//! ([`crate::paths::data_dir`]), `run/<group>/`, which the first `chap-devops run`
 //! into it creates - no chap-core, no components, model ports on `127.0.0.1`
 //! only. `--group` names one, `default` when it is left out, and each group is
 //! a compose project of its own. So a tool that only wants "start this model
 //! and tell me where it answers" has one code path, with or without
-//! `varde init`.
+//! `chap-devops init`.
 
 mod chap_core;
 mod foreground;
@@ -35,10 +35,10 @@ use std::net::{IpAddr, Ipv4Addr};
 use std::path::{Path, PathBuf};
 use std::time::Duration;
 
-/// The group a `varde run` outside a deployment lands in without `--group`.
+/// The group a `chap-devops run` outside a deployment lands in without `--group`.
 pub const DEFAULT_GROUP: &str = "default";
 
-/// Where `varde run` groups publish model ports: this machine only.
+/// Where `chap-devops run` groups publish model ports: this machine only.
 const RUN_BIND: IpAddr = IpAddr::V4(Ipv4Addr::LOCALHOST);
 
 /// Where the run family acts: a deployment the caller is inside, or a group.
@@ -94,7 +94,7 @@ pub(crate) fn target(ctx: &Ctx, group: Option<&str>) -> Result<Target> {
     if let Some(dir) = Project::find_root(&ctx.project_dir) {
         if group.is_some() {
             return Err(ChapError::Usage(format!(
-                "--group names a `varde run` group, and this runs inside the deployment at {}; \
+                "--group names a `chap-devops run` group, and this runs inside the deployment at {}; \
                  drop --group, or run it from outside a deployment",
                 dir.display()
             ))
@@ -114,7 +114,7 @@ pub(crate) fn target(ctx: &Ctx, group: Option<&str>) -> Result<Target> {
 ///
 /// Without `-C` the run family falls back to the groups. With it, the reader
 /// asked for one directory, and the groups are not that directory: the error
-/// is the one `varde logs` and `varde status` give for it.
+/// is the one `chap-devops logs` and `chap-devops status` give for it.
 fn refuse_named_dir(ctx: &Ctx) -> Result<()> {
     if ctx.project_dir == Path::new(".") {
         return Ok(());
@@ -123,14 +123,14 @@ fn refuse_named_dir(ctx: &Ctx) -> Result<()> {
     Err(ChapError::NotAProject(shown).into())
 }
 
-/// What `varde run` did, for `--json`.
+/// What `chap-devops run` did, for `--json`.
 #[derive(Debug, Serialize)]
 struct RunReport {
     #[serde(flatten)]
     model: ModelRef,
     /// The group it runs in; `null` inside a deployment of the caller's own.
     group: Option<String>,
-    /// The deployment the model runs in, for `varde -C <dir> logs`.
+    /// The deployment the model runs in, for `chap-devops -C <dir> logs`.
     project_dir: PathBuf,
     /// Whether this run enabled the model, or found it enabled already.
     enabled: bool,
@@ -167,7 +167,7 @@ pub fn run(ctx: &Ctx, args: &ModelRunArgs) -> Result<()> {
     }
 }
 
-/// A model `varde run` started for another command, `varde chap`.
+/// A model `chap-devops run` started for another command, `chap-devops chap`.
 pub(crate) struct Started {
     /// The id the model is enabled under.
     pub(crate) id: String,
@@ -214,8 +214,8 @@ fn start(ctx: &Ctx, args: &ModelRunArgs) -> Result<RunReport> {
     if let Some(url) = &args.chap_core {
         if group.is_none() {
             return Err(ChapError::Usage(format!(
-                "--chap-core sets the chap-core of a `varde run` group, and this runs in the \
-                 deployment at {}; set its chap-core with `varde components enable chap-core \
+                "--chap-core sets the chap-core of a `chap-devops run` group, and this runs in the \
+                 deployment at {}; set its chap-core with `chap-devops components enable chap-core \
                  --url {url}`",
                 dir.display()
             ))
@@ -243,7 +243,7 @@ fn start(ctx: &Ctx, args: &ModelRunArgs) -> Result<RunReport> {
             true,
         ),
     };
-    // Like `varde up`, one sync renders the compose files from `.varde/`
+    // Like `chap-devops up`, one sync renders the compose files from `.chap-devops/`
     // before compose reads them.
     let registry = super::registry_for(ctx, Some(&project))?;
     let synced = sync(&mut project, &registry, false)?;
@@ -265,7 +265,7 @@ fn start(ctx: &Ctx, args: &ModelRunArgs) -> Result<RunReport> {
     // waits here and finds it running.
     let was_running = docker::running_services(&project).contains(&service);
     let up_lock = lock_file(
-        &dir.join(crate::project::VARDE_DIR)
+        &dir.join(crate::project::CHAP_DEVOPS_DIR)
             .join(format!("up-{service}.lock")),
     )?;
     let piped = docker::run_compose_teed(&project, &args_up)?;
@@ -285,14 +285,14 @@ fn start(ctx: &Ctx, args: &ModelRunArgs) -> Result<RunReport> {
         // of its own as well: that would print it twice.
         let err = anyhow::Error::from(ChapError::DockerFailed(piped.code));
         // A model this run enabled and could not start is taken back out, so
-        // `varde ps` does not list it forever and the retry starts afresh; an
+        // `chap-devops ps` does not list it forever and the retry starts afresh; an
         // added definition stays.
         if enabled && let Err(undo) = stop_in(ctx, &dir, &id, false) {
             crate::output::warn(&format!("{id} stays enabled: {undo:#}"));
         }
         let again = match group.as_deref() {
-            Some(g) if g != DEFAULT_GROUP => format!("varde run {} --group {g}", args.source),
-            _ => format!("varde run {}", args.source),
+            Some(g) if g != DEFAULT_GROUP => format!("chap-devops run {} --group {g}", args.source),
+            _ => format!("chap-devops run {}", args.source),
         };
         let image = crate::compose::image_ref(&model.image, &model.image_tag);
         return Err(err.context(start_failure(&service, &image, said.as_deref(), &again)));
@@ -376,11 +376,11 @@ fn check_known(ctx: &Ctx, dir: &Path, source: &str) -> Result<()> {
         return Ok(());
     }
     Err(anyhow::anyhow!(
-        "there is no marketplace model `{source}`; `varde models search {source}` finds one"
+        "there is no marketplace model `{source}`; `chap-devops models search {source}` finds one"
     ))
 }
 
-/// An error from inside a group, with every `varde ...` it names given the
+/// An error from inside a group, with every `chap-devops ...` it names given the
 /// `-C <group dir>` that command needs to reach the group from here.
 fn for_group(err: anyhow::Error, grouped: bool, dir: &Path) -> anyhow::Error {
     if !grouped || err.downcast_ref::<ChapError>().is_some() {
@@ -406,11 +406,11 @@ fn for_group(err: anyhow::Error, grouped: bool, dir: &Path) -> anyhow::Error {
     }
 }
 
-/// `text` with every `varde ...` command in it given `-C <dir>`.
+/// `text` with every `chap-devops ...` command in it given `-C <dir>`.
 fn with_dir(text: &str, dir: &Path) -> String {
     text.replace(
-        "`varde ",
-        &format!("`varde -C {} ", shell_quote(&dir.to_string_lossy())),
+        "`chap-devops ",
+        &format!("`chap-devops -C {} ", shell_quote(&dir.to_string_lossy())),
     )
 }
 
@@ -484,7 +484,7 @@ fn say(report: &RunReport, attached: bool, lines: &mut Report) {
         )),
         None => lines
             .info(format!("started {}{place} on {url}", report.model.id))
-            .hint("`varde ps` shows when it answers"),
+            .hint("`chap-devops ps` shows when it answers"),
     };
     for warning in &report.warnings {
         lines.warning(warning.as_str());
@@ -505,7 +505,7 @@ fn say(report: &RunReport, attached: bool, lines: &mut Report) {
         return;
     }
     lines.hint(format!(
-        "`varde stop {}{}` stops it",
+        "`chap-devops stop {}{}` stops it",
         report.model.id,
         match report.group.as_deref() {
             Some(g) if g != DEFAULT_GROUP => format!(" --group {g}"),
@@ -522,9 +522,9 @@ fn logs_hint(dir: &Path, service: &str) -> String {
         .ok()
         .and_then(|cwd| Project::find_root(&cwd));
     match here.as_deref() == Some(dir) {
-        true => format!("`varde logs {service}` shows its log"),
+        true => format!("`chap-devops logs {service}` shows its log"),
         false => format!(
-            "`varde -C {} logs {service}` shows its log",
+            "`chap-devops -C {} logs {service}` shows its log",
             shell_quote(&dir.to_string_lossy())
         ),
     }

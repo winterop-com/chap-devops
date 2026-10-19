@@ -8,8 +8,8 @@ The catalogue is the YAML in the model-marketplace repository, read from
 https://raw.githubusercontent.com/dhis2-chap/model-marketplace/main/registry.yaml
 ```
 
-`--registry-url` points somewhere else, for a fork or a mirror. `varde init
---registry-url URL` records it as `registry_url` in `.varde/project.yaml`, and
+`--registry-url` points somewhere else, for a fork or a mirror. `chap-devops init
+--registry-url URL` records it as `registry_url` in `.chap-devops/project.yaml`, and
 every later command in that deployment uses the recorded one; typing the flag
 again overrides it for that one run. The
 marketplace has no JSON API, so the index is one request and each model file it
@@ -23,13 +23,13 @@ Resolution order for every command that needs the catalogue:
 3. a stale cached copy, when the network fails,
 4. the snapshot compiled into the binary.
 
-`varde registry show` prints which of those was used:
+`chap-devops registry show` prints which of those was used:
 
 ```text
   url     https://raw.githubusercontent.com/dhis2-chap/model-marketplace/main/registry.yaml
   source  cache (54 minutes old)
   models  6
-  cache   /home/me/.cache/varde/registries/https_raw_githubusercontent_com_dhis2_chap_model_marketplace_mai-f6e5270ab795f1bd
+  cache   /home/me/.cache/chap-devops/registries/https_raw_githubusercontent_com_dhis2_chap_model_marketplace_mai-f6e5270ab795f1bd
 
   chapkit_rwanda_malaria_bym_model
   chapkit_simple_multistep_model
@@ -44,23 +44,23 @@ Resolution order for every command that needs the catalogue:
 With `-v`, a hint names the next command:
 
 ```text
-hint: `varde models info ID` describes one
+hint: `chap-devops models info ID` describes one
 ```
 
-`varde registry update` forces a fetch and refreshes the cache, as does
-`varde update`. `--offline` never touches the network, so a laptop on a plane
+`chap-devops registry update` forces a fetch and refreshes the cache, as does
+`chap-devops update`. `--offline` never touches the network, so a laptop on a plane
 still resolves the catalogue from the cache or the embedded snapshot;
-`varde update` and `varde registry update` refuse to run that way, because a
+`chap-devops update` and `chap-devops registry update` refuse to run that way, because a
 refresh needs the network.
 
-The cache lives in `$VARDE_CACHE_DIR`, else `$XDG_CACHE_HOME/varde`, else
-`~/.cache/varde`; `--cache-dir` overrides it for one invocation. A private
+The cache lives in `$CHAP_DEVOPS_CACHE_DIR`, else `$XDG_CACHE_HOME/chap-devops`, else
+`~/.cache/chap-devops`; `--cache-dir` overrides it for one invocation. A private
 marketplace and the public one never share a cache entry, because the entry is
 keyed by the registry URL. Every cache read failure is a warning, never an
 error: a missing, truncated or hand-edited cache just means the fetch or the
 embedded snapshot answers instead.
 
-The embedded snapshot is the last resort, so `varde` works on a machine that
+The embedded snapshot is the last resort, so `chap-devops` works on a machine that
 has never had network access. It is refreshed with `make vendor`.
 
 ## Channels and versions
@@ -69,43 +69,43 @@ Each marketplace entry lists versions, and the channels `stable` and `latest`
 each point at one of them.
 
 ```sh
-varde models enable chapkit_simple_multistep_model                    # stable, the default
-varde models enable chapkit_simple_multistep_model --channel latest
-varde models enable chapkit_simple_multistep_model --version 0.1.1    # an exact pin
+chap-devops models enable chapkit_simple_multistep_model                    # stable, the default
+chap-devops models enable chapkit_simple_multistep_model --channel latest
+chap-devops models enable chapkit_simple_multistep_model --version 0.1.1    # an exact pin
 ```
 
 A model that follows a channel records both the channel and the version it
-resolved to, and `varde update` re-resolves the channel. A model enabled with
+resolved to, and `chap-devops update` re-resolves the channel. A model enabled with
 `--version` is listed as pinned by `update` and never moved. `--channel` and
 `--version` cannot be combined.
 
 Every version pins one commit of the model's own repository, and the image
 built from it; whether that commit is still the newest build the repository
-has published is what [`varde doctor`](./doctor.md#project-checks) reports as
+has published is what [`chap-devops doctor`](./doctor.md#project-checks) reports as
 one `registry pin <id>` line per enabled model, because a pin that lags is for
 the marketplace to move and not something a deployment can fix.
 
 ## Templates
 
 Entries with `kind: template` are scaffolding for writing your own model, not
-forecasting models. They are hidden from `varde models list` and from the
+forecasting models. They are hidden from `chap-devops models list` and from the
 browser by default, `--templates` and `--all` show them, and enabling one needs
 `--allow-template`.
 
 These are chapkit templates: the same word as in `chapkit init --template`,
 which starts a new model from one of them. They are not the "model templates"
 of chap-core, which is what a model service registers as. The `--template` of
-`varde models new` is a third meaning: the type of a new model project, as in
+`chap-devops models new` is a third meaning: the type of a new model project, as in
 [A new model project](#a-new-model-project).
 
 ## Looking at the catalogue
 
 ```sh
-varde models list                 # models enabled in this deployment are marked
-varde models list --enabled       # only this deployment's
-varde models list --all           # templates too
-varde models search malaria
-varde models info chapkit_simple_multistep_model
+chap-devops models list                 # models enabled in this deployment are marked
+chap-devops models list --enabled       # only this deployment's
+chap-devops models list --all           # templates too
+chap-devops models search malaria
+chap-devops models info chapkit_simple_multistep_model
 ```
 
 ```text
@@ -144,7 +144,7 @@ column to read before enabling anything:
 
 `--json` keeps emitting the colour as `assessed_status`, so a script that
 matches on `orange` goes on working, and adds the words above as
-`assessed_status_label`. `varde models info ID` prints the colour and the
+`assessed_status_label`. `chap-devops models info ID` prints the colour and the
 whole sentence:
 
 ```text
@@ -152,7 +152,7 @@ whole sentence:
                 configuration and careful evaluation
 ```
 
-`varde models info ID` prints everything the marketplace says about one entry:
+`chap-devops models info ID` prints everything the marketplace says about one entry:
 its image and runtime, the period types and forecast horizon it supports, the
 covariates it requires and defaults to, the channels and the version table,
 the maintainers and the attribution, and any named configurations. For a model
@@ -167,19 +167,19 @@ and the DNS name).
 ## Enabling and disabling
 
 ```sh
-varde models enable ID [--channel stable|latest | --version X]
+chap-devops models enable ID [--channel stable|latest | --version X]
                        [--port N|auto] [--bind ADDR] [--data-dir PATH]
                        [--user USER:GROUP] [--allow-template]
-varde models disable ID [--purge]
-varde models expose ID [--port N|auto] [--bind ADDR]
-varde models unexpose ID
-varde up                            # apply any of them
+chap-devops models disable ID [--purge]
+chap-devops models expose ID [--port N|auto] [--bind ADDR]
+chap-devops models unexpose ID
+chap-devops up                            # apply any of them
 ```
 
 `--bind ADDR` sets the host address of the model port; see
 [Which address a model port is published on](./ports.md#which-address-a-model-port-is-published-on).
 
-`enable` and `disable` edit `.varde/models.yaml` and then re-render the compose
+`enable` and `disable` edit `.chap-devops/models.yaml` and then re-render the compose
 files; `expose` and `unexpose` only rewrite the overlay's `ports:`, so they
 never re-resolve the version and are safe on a deployment running a build you
 do not want moved. The browser is the same: moving a port there keeps the
@@ -192,14 +192,14 @@ before the definition goes away, and says so:
 ```text
 disabled chapkit_simple_multistep_model
 stopped and removed 2 containers (chapkit-simple-multistep-model, chapkit-simple-multistep-model-init); host port 5001 is free again
-kept volume mychap-1ab2c3_ck_chapkit_simple_multistep_model_data; remove it with `varde models disable chapkit_simple_multistep_model --purge` or `docker volume rm mychap-1ab2c3_ck_chapkit_simple_multistep_model_data`
+kept volume mychap-1ab2c3_ck_chapkit_simple_multistep_model_data; remove it with `chap-devops models disable chapkit_simple_multistep_model --purge` or `docker volume rm mychap-1ab2c3_ck_chapkit_simple_multistep_model_data`
 ```
 
-The port is therefore free straight away, rather than at the next `varde up`,
+The port is therefore free straight away, rather than at the next `chap-devops up`,
 which would have removed the container as an orphan but only once it was run.
-There is nothing left for `varde up` to apply. With `-v`, two hints follow:
+There is nothing left for `chap-devops up` to apply. With `-v`, two hints follow:
 the overlay that was removed (`removed compose.chapkit-simple-multistep-model.yml`) and
-`` `varde status` shows what runs now ``.
+`` `chap-devops status` shows what runs now ``.
 
 ### The data volume
 
@@ -209,13 +209,13 @@ again finds everything it had. That is why the line above names it - when
 docker has it: a model that was never started has no volume, and then there
 is no line, because nothing was kept. Nothing
 else does any more - the overlay that declared the volume has just been
-removed, so `varde down --volumes` no longer knows about it, and a volume
+removed, so `chap-devops down --volumes` no longer knows about it, and a volume
 nobody names again is kept for as long as the machine lasts.
 
 `--purge` is how the data goes with the model:
 
 ```sh
-varde models disable chapkit_simple_multistep_model --purge
+chap-devops models disable chapkit_simple_multistep_model --purge
 ```
 
 ```text
@@ -239,7 +239,7 @@ chapkit_simple_multistep_model is not enabled here, so only its data volume was 
 removed volume mychap-1ab2c3_ck_chapkit_simple_multistep_model_data
 ```
 
-`varde doctor`'s `volumes` line finds the ones that were forgotten: a volume
+`chap-devops doctor`'s `volumes` line finds the ones that were forgotten: a volume
 under this deployment's name that belongs to no enabled model and no enabled
 component is reported as a leftover, with the same two ways to remove it. See
 [Doctor](./doctor.md).
@@ -248,16 +248,16 @@ component is reported as a leftover, with the same two ways to remove it. See
 
 ```text
 exposed chapkit-simple-multistep-model on http://localhost:5001
-run `varde up` to apply
+run `chap-devops up` to apply
 ```
 
 ```text
 unexposed chapkit-simple-multistep-model; it stays registered with chap-core and reachable at http://localhost:8700/v2/services/chapkit-simple-multistep-model/run/
-run `varde up` to apply
+run `chap-devops up` to apply
 ```
 
 If the model is already where the command puts it, nothing changes, and there
-is no `varde up` line:
+is no `chap-devops up` line:
 
 ```text
 chapkit-simple-multistep-model is already exposed on http://localhost:5001; nothing changed
@@ -271,7 +271,7 @@ names the step:
 
 ```text
 chapkit-simple-multistep-model is already exposed on http://localhost:5001; nothing changed
-its running container does not publish this port yet; run `varde up` to apply it
+its running container does not publish this port yet; run `chap-devops up` to apply it
 ```
 
 ```text
@@ -299,28 +299,28 @@ in brackets after the model name: `<model name> [<variant name>]`. chap-core
 stores it after the template: `<service id>:<variant name>`, and the bare
 service id for the variant name `default`.
 
-`varde models configs` is the command group for the configured models:
+`chap-devops models configs` is the command group for the configured models:
 
 | Command | What it does |
 | --- | --- |
-| `varde models configs [list] [ID]` | Lists the configured models that chap-core has. |
-| `varde models configs add ID` | Adds a configured model. |
-| `varde models configs update ID NAME` | Gives a configured model new values. |
-| `varde models configs archive ID NAME` | Archives a configured model. |
-| `varde models configs export [ID]` | Writes the configured models in the marketplace format. |
-| `varde models configs sync [ID..]` | Creates the configured models of the marketplace entry. |
+| `chap-devops models configs [list] [ID]` | Lists the configured models that chap-core has. |
+| `chap-devops models configs add ID` | Adds a configured model. |
+| `chap-devops models configs update ID NAME` | Gives a configured model new values. |
+| `chap-devops models configs archive ID NAME` | Archives a configured model. |
+| `chap-devops models configs export [ID]` | Writes the configured models in the marketplace format. |
+| `chap-devops models configs sync [ID..]` | Creates the configured models of the marketplace entry. |
 
 In each command, `ID` is the marketplace id or the service id of an enabled
 model, and `NAME` is the variant name. Each command asks chap-core, so
 chap-core must run. If chap-core does not answer, the command stops and names
-`varde status`.
+`chap-devops status`.
 
 ### Listing
 
 ```sh
-varde models configs                                      # every enabled model
-varde models configs list chapkit_simple_multistep_model  # one model
-varde models configs --all                                # with the archived ones
+chap-devops models configs                                      # every enabled model
+chap-devops models configs list chapkit_simple_multistep_model  # one model
+chap-devops models configs --all                                # with the archived ones
 ```
 
 ```text
@@ -348,13 +348,13 @@ gives every field, with the option values whole. If chap-core has no
 configured model of a model, the line names the way out:
 
 ```text
-auto_arima_chapkit: chap-core has no configured model of it; `varde models configs sync auto_arima_chapkit` creates them
+auto_arima_chapkit: chap-core has no configured model of it; `chap-devops models configs sync auto_arima_chapkit` creates them
 ```
 
 ### Adding
 
 ```sh
-varde models configs add chapkit_simple_multistep_model --name short_lags \
+chap-devops models configs add chapkit_simple_multistep_model --name short_lags \
   --set n_target_lags=3 --set rf_max_depth=5 --covariates rainfall
 ```
 
@@ -368,7 +368,7 @@ created configured model short_lags of chapkit_simple_multistep_model
   and `false`. `null` is a value only where the option allows it.
 - `--covariates` gives the additional covariates, separated by commas.
 
-varde checks each key against the options of the template, and each value
+chap-devops checks each key against the options of the template, and each value
 against the kind of the option, before it asks chap-core. chap-core does not
 check the values of a chapkit model, and chapkit accepts keys that it does
 not know. So a mistake would otherwise show only when a run fails. A bad key
@@ -379,15 +379,15 @@ error: `lag` is not an option of chapkit_simple_multistep_model; its options are
 error: `two` is not a value of `n_target_lags`, which takes an integer, such as `3`
 ```
 
-varde also checks the covariates. A required covariate is refused, because
+chap-devops also checks the covariates. A required covariate is refused, because
 every run gets it. A model that does not allow free covariates takes only the
 defaults of its marketplace entry.
 
-varde refuses a variant name that a configured model has and that is not
+chap-devops refuses a variant name that a configured model has and that is not
 archived. chap-core would show the new configured model and hide the old one,
 and give no message.
 
-With no options at a terminal, `add` opens the form of `varde ui`: one field
+With no options at a terminal, `add` opens the form of `chap-devops ui`: one field
 for the variant name, one field for each option with its kind, default and
 description, and one field for the covariates. An empty field uses the
 default. Esc closes the form and writes nothing:
@@ -400,23 +400,23 @@ Without a terminal (in a pipe or with `--json`), `add` with no options stops
 with exit code 2 and names `--name` and `--set`.
 
 `--from FILE` adds every configuration in a file of the marketplace format:
-an [export](#exporting), or a complete marketplace entry. varde checks all of
+an [export](#exporting), or a complete marketplace entry. chap-devops checks all of
 them before it creates the first. chap-core sets `prediction_periods` for
-each run, so varde does not store the value in the file.
+each run, so chap-devops does not store the value in the file.
 
 ### Changing
 
 ```sh
-varde models configs update chapkit_simple_multistep_model short_lags --set rf_max_depth=8
-varde models configs update chapkit_simple_multistep_model short_lags --unset rf_max_depth
-varde models configs update chapkit_simple_multistep_model short_lags   # the form
+chap-devops models configs update chapkit_simple_multistep_model short_lags --set rf_max_depth=8
+chap-devops models configs update chapkit_simple_multistep_model short_lags --unset rf_max_depth
+chap-devops models configs update chapkit_simple_multistep_model short_lags   # the form
 ```
 
 ```text
 updated configured model short_lags of chapkit_simple_multistep_model; chap-core keeps the old values as an archived configured model
 ```
 
-chap-core has no request that changes a configured model. varde creates a
+chap-core has no request that changes a configured model. chap-devops creates a
 configured model with the same variant name and the new values, then archives
 the old one. chap-core keeps the old row for the backtests and predictions
 that use it, but it does not list it again, so `list --all` does not show the
@@ -427,7 +427,7 @@ old values.
 - `--covariates` replaces the old list.
 
 With no options at a terminal, `update` opens the form with the current
-values. If the new values are the same as the current values, varde writes
+values. If the new values are the same as the current values, chap-devops writes
 nothing:
 
 ```text
@@ -435,12 +435,12 @@ configured model short_lags of chapkit_simple_multistep_model has these values a
 ```
 
 If the archive step fails, the new values are live, and a warning gives the
-`varde api DELETE` command that archives the old row.
+`chap-devops api DELETE` command that archives the old row.
 
 ### Archiving
 
 ```sh
-varde models configs archive chapkit_simple_multistep_model short_lags
+chap-devops models configs archive chapkit_simple_multistep_model short_lags
 ```
 
 ```text
@@ -453,21 +453,21 @@ shows it, and the Modeling App shows it as Archived. If you add the same
 variant name with the same values again, chap-core makes the archived row
 live again.
 
-You can also archive a configuration of the marketplace entry. `varde models
+You can also archive a configuration of the marketplace entry. `chap-devops models
 configs sync` creates the marketplace configurations of a model only when
 chap-core has no live configured model of the version the model runs. While
 another one is live, `sync` does not change the model. When you archive the
-last one, varde says so:
+last one, chap-devops says so:
 
 ```text
-chapkit_simple_multistep_model has no other configured model now, so `varde models configs sync` and `varde up --wait` create its configured models again
+chapkit_simple_multistep_model has no other configured model now, so `chap-devops models configs sync` and `chap-devops up --wait` create its configured models again
 ```
 
 ### Exporting
 
 ```sh
-varde models configs export chapkit_simple_multistep_model > configurations.yaml
-varde models configs export chapkit_simple_multistep_model --out configurations.yaml
+chap-devops models configs export chapkit_simple_multistep_model > configurations.yaml
+chap-devops models configs export chapkit_simple_multistep_model --out configurations.yaml
 ```
 
 The output is the `configurations:` block of a marketplace entry. For each
@@ -490,31 +490,31 @@ configurations:
       rf_max_depth: 8
 ```
 
-chap-core does not store `prediction_periods`. varde takes it from the
-marketplace configuration with the same name. If there is none, varde takes
+chap-core does not store `prediction_periods`. chap-devops takes it from the
+marketplace configuration with the same name. If there is none, chap-devops takes
 the default from the config schema of the service, and else the chapkit
 default of 3. `-v` says which source each value comes from. The keys of
 `config` are in alphabetical order.
 
 An export is for one model, because the block goes under one marketplace
 entry. If the deployment runs more than one model, give the ID. With `--out`,
-varde reports the file:
+chap-devops reports the file:
 
 ```text
 wrote 3 configurations of chapkit_simple_multistep_model to configurations.yaml
 ```
 
-To use the configurations in another deployment, run `varde models configs
+To use the configurations in another deployment, run `chap-devops models configs
 add ID --from configurations.yaml` there. To publish them, put the block in
 the marketplace entry of the model.
 
 ### Sync
 
 Up to chap-core 2.3, a registration made a configured model. chap-core 2.4
-and later makes none. A model that varde starts registers, and without a
+and later makes none. A model that chap-devops starts registers, and without a
 configured model nothing can run it.
 
-`varde models configs sync` does what `chap-admin install` does after a model
+`chap-devops models configs sync` does what `chap-admin install` does after a model
 service has registered:
 
 1. It stores the model template from the service
@@ -525,13 +525,13 @@ service has registered:
    `covariates.defaults` when the config has none. `prediction_periods` is
    removed, because chap-core sets it for each run.
 3. A marketplace entry without configurations gets one configured model,
-   `default`. A model added with `varde models add`, or a model that runs an
+   `default`. A model added with `chap-devops models add`, or a model that runs an
    image other than its marketplace entry, also gets one `default` with the
    defaults of the service.
 
 ```sh
-varde models configs sync                                 # every model this deployment enables
-varde models configs sync chapkit_simple_multistep_model  # one model, by marketplace id or service id
+chap-devops models configs sync                                 # every model this deployment enables
+chap-devops models configs sync chapkit_simple_multistep_model  # one model, by marketplace id or service id
 ```
 
 ```text
@@ -543,40 +543,40 @@ The command is idempotent for each registered version. A model that has a
 configured model of the version it registered with is left alone, so a second
 run adds nothing. An older chap-core that still makes configured models itself
 gets no second set. A model that chap-core has not registered yet gets a line
-that says so. Directly after `varde up`, expect this line for a few seconds:
+that says so. Directly after `chap-devops up`, expect this line for a few seconds:
 
 ```text
-chapkit_simple_multistep_model: not registered with chap-core; run `varde models configs sync` again once `varde status` shows it registered
+chapkit_simple_multistep_model: not registered with chap-core; run `chap-devops models configs sync` again once `chap-devops status` shows it registered
 ```
 
 A model that could not be configured gets a warning with the reason, and the
 command exits non-zero.
 
-You do not usually run the command yourself. `varde up --wait`, `varde dhis2
-connect` and `varde models test --backtest` do the same step, and say which
+You do not usually run the command yourself. `chap-devops up --wait`, `chap-devops dhis2
+connect` and `chap-devops models test --backtest` do the same step, and say which
 configured models they created:
 
 ```text
 created configured models in chap-core for chapkit_simple_multistep_model (monthly_climate, monthly_selfhistory)
 ```
 
-`varde status` shows a model without a configured model as `registered, not
+`chap-devops status` shows a model without a configured model as `registered, not
 configured`, and adds a line with the way out:
 
 ```text
-auto-arima-chapkit: chap-core has no configured model for it, so nothing can run it; run `varde models configs sync`
+auto-arima-chapkit: chap-core has no configured model for it, so nothing can run it; run `chap-devops models configs sync`
 ```
 
 ### Testing a configuration
 
-`varde models test --backtest` runs a backtest of one configured model of each
+`chap-devops models test --backtest` runs a backtest of one configured model of each
 model. To test a configured model that you added, give its variant name with
 `--config`:
 
 ```sh
-varde models configs add chapkit_simple_multistep_model --name short_lags \
+chap-devops models configs add chapkit_simple_multistep_model --name short_lags \
   --set n_target_lags=3 --set rf_max_depth=5 --covariates rainfall
-varde models test chapkit_simple_multistep_model --backtest --config short_lags
+chap-devops models test chapkit_simple_multistep_model --backtest --config short_lags
 ```
 
 ```text
@@ -597,7 +597,7 @@ of that name, the test skips it and names the ones that it has:
 
 ```text
 chapkit-simple-multistep-model    skip       0s   chap-core has no configured model weekly for chapkit-simple-multistep-model 0.1.2; it has monthly_climate, monthly_selfhistory, short_lags
-  run `varde models configs list chapkit_simple_multistep_model` to see its configured models
+  run `chap-devops models configs list chapkit_simple_multistep_model` to see its configured models
 ```
 
 With `--all` or more than one id, `--config` applies to each model. A model
@@ -607,18 +607,18 @@ with exit code 2.
 
 ## Testing a model
 
-`varde status` and `varde doctor` can both be entirely green while a model
+`chap-devops status` and `chap-devops doctor` can both be entirely green while a model
 cannot produce a single prediction. Registration is a heartbeat: it says the
 service is alive and talking to chap-core, not that its runtime works, that the
 account it runs as can write, or that the covariates it declares are the ones
-it reads. `varde models test` is the check neither of them can make, because it
+it reads. `chap-devops models test` is the check neither of them can make, because it
 is the only one that makes the model do the work.
 
 ```sh
-varde models test ID..                 # one or more, by marketplace id or service id
-varde models test --all                # every model this deployment enables
-varde models test --all --backtest     # the whole way round, through chap-core
-varde models test SERVICE_ID --backtest  # a model registered from outside, such as one run from its checkout
+chap-devops models test ID..                 # one or more, by marketplace id or service id
+chap-devops models test --all                # every model this deployment enables
+chap-devops models test --all --backtest     # the whole way round, through chap-core
+chap-devops models test SERVICE_ID --backtest  # a model registered from outside, such as one run from its checkout
 ```
 
 The model level needs no chap-core, so it also tests a model in a deployment
@@ -632,7 +632,7 @@ warning.
 
 ### The model level
 
-The default. For each model, `varde` runs chapkit's own end-to-end test inside
+The default. For each model, `chap-devops` runs chapkit's own end-to-end test inside
 that model's container:
 
 ```text
@@ -665,7 +665,7 @@ of the stderr chapkit quotes back:
 
 ```text
 chapkit-rwanda-malaria-bym-model    FAIL   14s   predict: Error in file(file, "rb") : cannot open file 'model.rds': Permission denied
-  run `varde models test chapkit_rwanda_malaria_bym_model -vv` for the full output, and `varde logs chapkit-rwanda-malaria-bym-model` for the service's own
+  run `chap-devops models test chapkit_rwanda_malaria_bym_model -vv` for the full output, and `chap-devops logs chapkit-rwanda-malaria-bym-model` for the service's own
 ```
 
 `-vv` prints the whole output of `chapkit test`. `-v` shows only the hints.
@@ -680,11 +680,11 @@ years of monthly data, or 1 year of weekly data. Some models need more:
 - A model with a long context window, for example many lags, needs a long
   history for each prediction.
 
-For these models, give more rows. varde gives the options to `chapkit test`:
+For these models, give more rows. chap-devops gives the options to `chapkit test`:
 
 ```sh
-varde models test chapkit_simple_multistep_model --rows 600 --predict-rows 300
-varde models test chapkit_simple_multistep_model --configs 2 --trainings 2
+chap-devops models test chapkit_simple_multistep_model --rows 600 --predict-rows 300
+chap-devops models test chapkit_simple_multistep_model --configs 2 --trainings 2
 ```
 
 With `--configs 2 --trainings 2`, each config trains twice, and each trained
@@ -705,7 +705,7 @@ way out:
 ```text
 testing 1 model (model level; add --backtest to go through chap-core)
 auto-arima-chapkit    skip    0s   its container is not running
-  run `varde up`
+  run `chap-devops up`
 
 0 pass, 1 skipped
 warning: no model was tested, because every one was skipped; the line under each row says why
@@ -713,18 +713,18 @@ warning: no model was tested, because every one was skipped; the line under each
 
 | Skip | What to do |
 | --- | --- |
-| `its container is not running` | `varde up`. |
-| ``the image has no `chapkit test`; the service reports chapkit 1.0.0`` | The image predates the command. `varde update` moves the pin; `--backtest` tests it through chap-core instead. |
-| ``an MLproject service has no `chapkit test` `` | The image serves an `MLproject` file with `chapkit mlproject run`, and chapkit has `chapkit test` only in a chapkit service project. Use `--backtest`, or make the model a chapkit service with [`varde chapkit mlproject migrate`](./chapkit-cli.md#migrate-an-mlproject-model). |
-| `chap-core has no configured model for <service> <version>` | `--backtest` only. Run `varde models configs sync ID`, then the test again. |
-| `chap-core has no configured model NAME for <service> <version>; it has ...` | `--config` only. Use one of the names, or add the configured model with `varde models configs add ID`. |
-| `chap-core did not list its configured models, so varde cannot find --config NAME` | `--config` only. Run `varde status`. |
+| `its container is not running` | `chap-devops up`. |
+| ``the image has no `chapkit test`; the service reports chapkit 1.0.0`` | The image predates the command. `chap-devops update` moves the pin; `--backtest` tests it through chap-core instead. |
+| ``an MLproject service has no `chapkit test` `` | The image serves an `MLproject` file with `chapkit mlproject run`, and chapkit has `chapkit test` only in a chapkit service project. Use `--backtest`, or make the model a chapkit service with [`chap-devops chapkit mlproject migrate`](./chapkit-cli.md#migrate-an-mlproject-model). |
+| `chap-core has no configured model for <service> <version>` | `--backtest` only. Run `chap-devops models configs sync ID`, then the test again. |
+| `chap-core has no configured model NAME for <service> <version>; it has ...` | `--config` only. Use one of the names, or add the configured model with `chap-devops models configs add ID`. |
+| `chap-core did not list its configured models, so chap-devops cannot find --config NAME` | `--config` only. Run `chap-devops status`. |
 | `no answer in 5m` | The model is wedged or genuinely slow. The line under the row names `--timeout` with twice the limit. The same number is handed to chapkit as its per-job deadline. |
 
 ### The backtest level
 
 `--backtest` goes the whole way round, the path the Modeling App takes. For
-each model, `varde` fetches sample data from the model itself through
+each model, `chap-devops` fetches sample data from the model itself through
 chap-core's proxy (`GET .../api/v1/ml/$generate-sample-data?kind=train`,
 36 periods over 5 org units, in the period type the service declares),
 transposes that frame into chap-core observations, posts it as a dataset,
@@ -732,7 +732,7 @@ waits for the dataset job, runs a small rolling backtest over it (3 periods, 2
 splits, stride 1) and reads the scores off the result.
 
 Before the first model, `--backtest` creates the configured models that the
-models of this deployment do not have yet, as [`varde models
+models of this deployment do not have yet, as [`chap-devops models
 configs sync`](#configured-models) does. A model registered from outside the
 deployment is not configured by this step.
 
@@ -748,18 +748,18 @@ models of the old version, but chap-core does not run them. Without
 3. A `<service>:test_config_...` that an earlier test left behind.
 
 `--config NAME` names the configured model to backtest. NAME is the variant
-name, as `varde models configs` shows it, or the full name `<service>:<variant>`.
+name, as `chap-devops models configs` shows it, or the full name `<service>:<variant>`.
 See [Testing a configuration](#testing-a-configuration).
 
 The backtest first creates the configured models that the marketplace entry
-gives, as `varde models configs sync` does. A service that still has no live
+gives, as `chap-devops models configs sync` does. A service that still has no live
 configured model of its version is skipped, not backtested. The skip names
-the version, and the line under it names `varde models configs sync`. It has
+the version, and the line under it names `chap-devops models configs sync`. It has
 this form:
 
 ```text
 SERVICE    skip    0s   chap-core has no configured model for SERVICE VERSION
-  it is registered, and chap-core has nothing to run it with; run `varde models configs sync ID`, then `varde models test ID --backtest`
+  it is registered, and chap-core has nothing to run it with; run `chap-devops models configs sync ID`, then `chap-devops models test ID --backtest`
 ```
 
 That configured model's `additionalContinuousCovariates` are the columns the
@@ -781,7 +781,7 @@ have been perfectly happy with no geometry at all. Real polygons are never
 worse: a model that ignores geometry ignores these too. chapkit puts each
 location's id in `properties.id` and nothing at the top level, and chap-core
 matches org units on the feature's top-level `id` and silently drops the ones
-it cannot match, so `varde` sets it before posting.
+it cannot match, so `chap-devops` sets it before posting.
 
 ```text
 testing 2 models (through chap-core: a dataset, a backtest and its scores)
@@ -807,12 +807,12 @@ and that a real forecast comes back with scores on it. The three printed are
 chap-core's `crps`, `mae` and `rmse`; `--json` hands back all fourteen.
 
 A job that fails prints chap-core's own reason - the same line
-[`varde jobs logs`](./jobs.md) digs out of the `--- stderr ---` section - and
+[`chap-devops jobs logs`](./jobs.md) digs out of the `--- stderr ---` section - and
 the command that shows the whole log:
 
 ```text
 chapkit-ghr-model    FAIL   1m 12s   Error in predict_chap() : the inla program crashed
-  run `varde jobs logs 9a84e02f-6a0e-4a3b-9a63-1f2b5a1f3f21`
+  run `chap-devops jobs logs 9a84e02f-6a0e-4a3b-9a63-1f2b5a1f3f21`
 ```
 
 Scores are not a verdict on the model: a two-split backtest over generated data
@@ -826,7 +826,7 @@ Both levels put something in a database, and both delete it again unless
 | Level | What it creates | What is deleted |
 | --- | --- | --- |
 | model | one config named `test_config_<ulid>` and a few artifacts, in the **model service's own** database | The service's configs and artifacts are listed before the run and again after it, and exactly what appeared is deleted. Deleting a config cascades to the artifacts linked to it. |
-| `--backtest` | one dataset and one backtest row in **chap-core's** database, plus the jobs that made them. From chap-core v2.5.0, also one backtest for each built-in baseline | The backtests first, then the dataset, and nothing else. The jobs stay, because that is the record of what was run; they show up in [`varde jobs`](./jobs.md). |
+| `--backtest` | one dataset and one backtest row in **chap-core's** database, plus the jobs that made them. From chap-core v2.5.0, also one backtest for each built-in baseline | The backtests first, then the dataset, and nothing else. The jobs stay, because that is the record of what was run; they show up in [`chap-devops jobs`](./jobs.md). |
 
 chap-core's model proxy is read-only by design, so a delete cannot go through
 it: the model level lists through the proxy and deletes with the `curl` every
@@ -836,27 +836,27 @@ what was left, so it can be removed by hand.
 
 `--keep` keeps it, and says what was kept. At the model level the line names
 the config; it goes away with the volume of the model
-(`varde models disable ID --purge`):
+(`chap-devops models disable ID --purge`):
 
 ```text
-chapkit-simple-multistep-model: kept test_config_01M4CVD3GTBZGX2GGQS7131PXQ and 3 artifacts in its database; remove it with `varde docker exec chapkit-simple-multistep-model curl -fsS -X DELETE http://127.0.0.1:8000/api/v1/configs/01M4CVD3GTBZGX2GGQS7131PXQ`
+chapkit-simple-multistep-model: kept test_config_01M4CVD3GTBZGX2GGQS7131PXQ and 3 artifacts in its database; remove it with `chap-devops docker exec chapkit-simple-multistep-model curl -fsS -X DELETE http://127.0.0.1:8000/api/v1/configs/01M4CVD3GTBZGX2GGQS7131PXQ`
 ```
 
 With `--backtest`, the line names the two deletes:
 
 ```text
-kept backtest 8 and dataset 7; remove them with `varde api DELETE /v1/crud/backtests/8` then `varde api DELETE /v1/crud/datasets/7`
+kept backtest 8 and dataset 7; remove them with `chap-devops api DELETE /v1/crud/backtests/8` then `chap-devops api DELETE /v1/crud/datasets/7`
 ```
 
 From chap-core v2.5.0, a backtest also starts one `run_baseline` job for each
 built-in baseline, and each job writes a backtest on the same dataset.
 chap-core leaves these out of the backtest lists, but it does not delete a
-dataset while they point at it. So varde waits up to a minute for the
+dataset while they point at it. So chap-devops waits up to a minute for the
 baselines of the run, and deletes their backtests with the backtest of the
 model, in one request. The line then names them all:
 
 ```text
-kept backtests 25, 26, 27 and 28 and dataset 7; remove them with `varde api DELETE '/v1/crud/backtests?ids=25,26,27,28'` then `varde api DELETE /v1/crud/datasets/7`
+kept backtests 25, 26, 27 and 28 and dataset 7; remove them with `chap-devops api DELETE '/v1/crud/backtests?ids=25,26,27,28'` then `chap-devops api DELETE /v1/crud/datasets/7`
 ```
 
 Both lines are closing lines of the command. They go to stdout, and `--json`
@@ -877,7 +877,7 @@ chap-core's, not the test's, so it is left alone.
 
 | Flag | What it does |
 | --- | --- |
-| `--all` | Test every model in `.varde/models.yaml`. Cannot be combined with an id. |
+| `--all` | Test every model in `.chap-devops/models.yaml`. Cannot be combined with an id. |
 | `--backtest` | Run the backtest level instead of the model level. |
 | `--config NAME` | Backtest the configured model with this variant name. Needs `--backtest`. With more than one model, it applies to each model. |
 | `--seed N` | Seed the generated data, so two runs compare. Without it every run is fresh data. |
@@ -890,19 +890,19 @@ chap-core's, not the test's, so it is left alone.
 
 ## A new model project
 
-`varde models new DIR` creates a model project in a new directory. The project
-builds into an image that `varde models add` and `varde run` take. Python, uv
+`chap-devops models new DIR` creates a model project in a new directory. The project
+builds into an image that `chap-devops models add` and `chap-devops run` take. Python, uv
 and the chapkit CLI are not necessary on the machine: the templates are in
-varde, and the build runs in Docker.
+chap-devops, and the build runs in Docker.
 
 ```sh
-varde models new dengue-lags
-varde models new rain-model --template mlproject-r
+chap-devops models new dengue-lags
+chap-devops models new rain-model --template mlproject-r
 ```
 
 ```text
 created dengue-lags in dengue-lags (fn-py template, service id dengue-lags)
-next: build the image as `dengue-lags/README.md` says, then run `varde run dengue-lags:dev`
+next: build the image as `dengue-lags/README.md` says, then run `chap-devops run dengue-lags:dev`
 ```
 
 With `-v`, two hints follow: the files it wrote, and the base image.
@@ -961,9 +961,9 @@ The names come from the directory name:
 - The **service id** is the name in lowercase, with `-` between the words, such
   as `dengue-lags`. The model registers with chap-core under this id. It is
   the `id` in `main.py`, or the `name` in `MLproject`. The README uses it as
-  the image name too, so `varde models add` needs no `--service-id`.
+  the image name too, so `chap-devops models add` needs no `--service-id`.
 - The **model id** is the same with `_`, such as `dengue_lags`. This is the id
-  that `varde models add` gives the image.
+  that `chap-devops models add` gives the image.
 
 A name can have letters, digits, spaces, `-`, `_` and `.`. A name that starts
 with a digit gets `model-` in front of its service id.
@@ -992,37 +992,37 @@ build get the same versions.
 Then, in a deployment with chap-core:
 
 ```sh
-varde models add dengue-lags:dev
-varde up --wait
-varde models test dengue_lags --backtest
-varde models configs add dengue_lags --name long --set window=6
-varde models test dengue_lags --backtest --config long
+chap-devops models add dengue-lags:dev
+chap-devops up --wait
+chap-devops models test dengue_lags --backtest
+chap-devops models configs add dengue_lags --name long --set window=6
+chap-devops models test dengue_lags --backtest --config long
 ```
 
-A model-level test (`varde models test` without `--backtest`) runs
+A model-level test (`chap-devops models test` without `--backtest`) runs
 `chapkit test` in the container. An MLproject image does not have it, and the
 row says `skip` with ``an MLproject service has no `chapkit test` ``. To make an
-MLproject a chapkit service, use `varde chapkit mlproject migrate DIR`; see
+MLproject a chapkit service, use `chap-devops chapkit mlproject migrate DIR`; see
 [The chapkit CLI](./chapkit-cli.md#migrate-an-mlproject-model).
 
 After a change, raise the version (`version` in `main.py`, or in `MLproject`)
 before you build again. chap-core stores each version of a model only once,
 and refuses a new git revision under a version it has. Then build, run
-`varde restart`, and test again. See
+`chap-devops restart`, and test again. See
 [`is stored from revision ..., but its source now reports revision ...`](./troubleshooting.md#is-stored-from-revision--but-its-source-now-reports-revision-).
 
-To run the model service alone, with no deployment: `varde run dengue-lags:dev`.
+To run the model service alone, with no deployment: `chap-devops run dengue-lags:dev`.
 
 ## Models outside the marketplace
 
 A model the catalogue does not list - a new one, a private one, a fork of your
-own - is added to one deployment with `varde models add`:
+own - is added to one deployment with `chap-devops models add`:
 
 ```sh
-varde models add https://github.com/my-org/chapkit_dengue_model
-varde models add ghcr.io/my-org/chapkit_dengue_model:sha-1eb8cf1
-varde models add ghcr.io/my-org/chapkit_dengue_model@sha256:31163f6a...
-varde models add my-dengue-model:dev        # built on this machine, never pulled
+chap-devops models add https://github.com/my-org/chapkit_dengue_model
+chap-devops models add ghcr.io/my-org/chapkit_dengue_model:sha-1eb8cf1
+chap-devops models add ghcr.io/my-org/chapkit_dengue_model@sha256:31163f6a...
+chap-devops models add my-dengue-model:dev        # built on this machine, never pulled
 ```
 
 A reference with no registry host is an image in the local image store, such as
@@ -1034,32 +1034,32 @@ model is disabled. See
 
 The two forms differ in one thing, and it is the important one:
 
-- A **repository URL** follows the default branch. `varde models add` asks
+- A **repository URL** follows the default branch. `chap-devops models add` asks
   GitHub for that branch and its newest commits, and ghcr for the newest of
   those commits that has a published `sha-<short commit>` build - which is the
-  tag the model repositories' publish workflow writes. `varde update` moves the
+  tag the model repositories' publish workflow writes. `chap-devops update` moves the
   pin to whatever the newest published build is then.
 - An **image reference** pins exactly what it names, tag or `@sha256:` digest,
-  and `varde update` reports it as pinned and leaves it alone.
+  and `chap-devops update` reports it as pinned and leaves it alone.
 
 Either way the entry is a full definition, so everything else treats it like a
 marketplace model: it is enabled by the same write path, rendered into the same
 kind of overlay, listed by `models list`, described by `models info`, moved (or
-not) by `varde update`, seen by `varde doctor` and shown in the browser.
+not) by `chap-devops update`, seen by `chap-devops doctor` and shown in the browser.
 
 ```text
-$ varde -v models add https://github.com/my-org/chapkit_dengue_model --port 5001
+$ chap-devops -v models add https://github.com/my-org/chapkit_dengue_model --port 5001
 added chapkit_dengue_model (chapkit-dengue-model)
 hint: source: https://github.com/my-org/chapkit_dengue_model
 hint: image: ghcr.io/my-org/chapkit_dengue_model:sha-b1d6c31
 hint: pin: sha-b1d6c31 (commit b1d6c31)
-hint: follows: main (`varde update` moves the pin)
+hint: follows: main (`chap-devops update` moves the pin)
 hint: data dir: /work/data (from the image config)
 hint: user: 10001:10001 (from a docker probe)
 enabled chapkit_dengue_model sha-b1d6c31 on http://localhost:5001
 hint: chapkit_dengue_model is in `compose.chapkit-dengue-model.yml`
-the service must register with chap-core as `chapkit-dengue-model`; if its own MLServiceInfo.id differs, `varde status` shows it as unmanaged - run `varde models remove chapkit_dengue_model`, then add it again with `--service-id <that id>`
-run `varde up` to apply
+the service must register with chap-core as `chapkit-dengue-model`; if its own MLServiceInfo.id differs, `chap-devops status` shows it as unmanaged - run `chap-devops models remove chapkit_dengue_model`, then add it again with `--service-id <that id>`
+run `chap-devops up` to apply
 ```
 
 Every line says where its answer came from, because none of them came from a
@@ -1068,18 +1068,18 @@ reviewed catalogue entry:
 | Value | Where it comes from |
 | --- | --- |
 | id | `--id`, else the repository or image name in snake_case. Not `persistence`, `global_median` or `seasonal_median`: chap-core v2.5.0 and later has models of these names, and refuses a service that uses one. |
-| service | `--service-id`, else the id with hyphens. Not one of the names varde uses itself - `chap`, `worker`, `redis`, `postgres`, `ocs`, `s3`, `s3-init`, `dhis2`, `dhis2-db`, `dhis2-prep`, `varde`, `marketplace` - which a model would be merged into or written over; `models add` and `sync` refuse them. |
+| service | `--service-id`, else the id with hyphens. Not one of the names chap-devops uses itself - `chap`, `worker`, `redis`, `postgres`, `ocs`, `s3`, `s3-init`, `dhis2`, `dhis2-db`, `dhis2-prep`, `chap-devops`, `marketplace` - which a model would be merged into or written over; `models add` and `sync` refuse them. |
 | name | `--name`, else the repository or image name. |
 | pin | The newest published `sha-` build of the branch, or the tag or digest that was named. |
 | data dir | `--data-dir`, else `<WorkingDir>/data` from the image config, else `/work/data`. A `--data-dir` is an absolute path of letters, digits, `/`, `.`, `_` and `-`: it goes into the rendered YAML and the init container's `chown` as it is. |
-| user | `--user` (a name or an id, with a group after a `:`, such as `1000:1000`), else the image's own `User` when it is numeric or an account `varde` knows, else the numbers a `docker run ... id -u` probe reads out of the image, else the name with a warning. |
+| user | `--user` (a name or an id, with a group after a `:`, such as `1000:1000`), else the image's own `User` when it is numeric or an account `chap-devops` knows, else the numbers a `docker run ... id -u` probe reads out of the image, else the name with a warning. |
 | amd64 | Whether ghcr publishes the image for amd64 alone; `--runtime-amd64` records it either way. |
 
 The data directory and the user are resolved the same way for a marketplace
 model, and from the same two fields of the same image config; see
 [Data directories and users](#data-directories-and-users). The difference is
-only where the answer is recorded: `.varde/models-manual.yaml` holds a manual
-model's definition, `.varde/models.yaml` holds every enabled model's.
+only where the answer is recorded: `.chap-devops/models-manual.yaml` holds a manual
+model's definition, `.chap-devops/models.yaml` holds every enabled model's.
 
 `--port N|auto` and `--bind ADDR` publish a host port, exactly as on
 `models enable`, and are the flags about the deployment rather than about the
@@ -1092,14 +1092,14 @@ a model's page usually names one it does. Without `--id`, such a source is
 enabled as the marketplace model, with the catalogue's reviewed pin:
 
 ```sh
-varde models add https://github.com/chap-models/chapkit_simple_multistep_model
-varde models add ghcr.io/chap-models/chapkit_simple_multistep_model:sha-6c1d9ee   # the same, pinned to 0.1.1
+chap-devops models add https://github.com/chap-models/chapkit_simple_multistep_model
+chap-devops models add ghcr.io/chap-models/chapkit_simple_multistep_model:sha-6c1d9ee   # the same, pinned to 0.1.1
 ```
 
 ```text
 https://github.com/chap-models/chapkit_simple_multistep_model is the marketplace model chapkit_simple_multistep_model; enabling that (pass `--id <other>` to add it beside it instead)
 enabled chapkit_simple_multistep_model v0.1.2 at http://localhost:8700/v2/services/chapkit-simple-multistep-model/run/
-run `varde up` to apply
+run `chap-devops up` to apply
 ```
 
 A repository URL matches the entry with that `repository` (case, a trailing
@@ -1109,7 +1109,7 @@ other tag of the same image is a build the catalogue has not reviewed, so it is
 refused:
 
 ```text
-error: the marketplace already lists chapkit_simple_multistep_model (Simple Multistep); run `varde models enable chapkit_simple_multistep_model`, or pass `--id auto` (or `--id <other>`) to add this one beside it
+error: the marketplace already lists chapkit_simple_multistep_model (Simple Multistep); run `chap-devops models enable chapkit_simple_multistep_model`, or pass `--id auto` (or `--id <other>`) to add this one beside it
 ```
 
 A local image (`my-model:dev`) is never matched:
@@ -1121,15 +1121,15 @@ with the lowest free `_2`, `_3`, ... suffix when the marketplace or an earlier
 `models add` already uses it.
 
 ```text
-$ varde models add https://github.com/chap-models/chapkit_simple_multistep_model --id auto
+$ chap-devops models add https://github.com/chap-models/chapkit_simple_multistep_model --id auto
 added chapkit_simple_multistep_model_2 (chapkit-simple-multistep-model-2)
 enabled chapkit_simple_multistep_model_2 sha-10b2bc7 at http://localhost:8700/v2/services/chapkit-simple-multistep-model-2/run/
-run `varde up` to apply
-warning: this is the image of the marketplace model chapkit_simple_multistep_model, which registers with chap-core as `chapkit-simple-multistep-model`, so `chapkit-simple-multistep-model-2` may never register; to run chapkit_simple_multistep_model, run `varde models remove chapkit_simple_multistep_model_2`, then `varde models enable chapkit_simple_multistep_model`
+run `chap-devops up` to apply
+warning: this is the image of the marketplace model chapkit_simple_multistep_model, which registers with chap-core as `chapkit-simple-multistep-model`, so `chapkit-simple-multistep-model-2` may never register; to run chapkit_simple_multistep_model, run `chap-devops models remove chapkit_simple_multistep_model_2`, then `chap-devops models enable chapkit_simple_multistep_model`
 ```
 
 `--id auto` changes the id and the service id here, not the code in the
-image. The image above still registers as `chapkit-simple-multistep-model`, so `varde
+image. The image above still registers as `chapkit-simple-multistep-model`, so `chap-devops
 status` never shows `chapkit-simple-multistep-model-2` as registered. Any `--id` on the
 repository or an image of a marketplace model gives the same warning. `--service-id chapkit-simple-multistep-model` is
 refused, because the marketplace model uses that name. Use `--id` for a fork
@@ -1138,22 +1138,22 @@ that sets its own `MLServiceInfo.id`.
 The **service id has to match the id the service registers with chap-core**
 (chapkit's `MLServiceInfo.id`). It is the Compose service name, the DNS name
 and the name the registration resolves to, all at once. Where a model's own id
-differs from its repository name, pass `--service-id`; `varde status` shows the
+differs from its repository name, pass `--service-id`; `chap-devops status` shows the
 mismatch as a registered service nobody manages next to a model that never
 arrived.
 
 The uid probe is the one step that needs Docker: an image that runs as an
 account name (`USER app`) says nothing about what that name resolves to, and
 the overlay's init container chowns the data volume from busybox, which
-resolves no names at all. So `varde models add` pulls the image once and asks
+resolves no names at all. So `chap-devops models add` pulls the image once and asks
 it. Pass `--user <uid>:<gid>` to skip that.
 
 ### Where it is recorded
 
-The definition goes in `.varde/models-manual.yaml`, beside the enabled set:
+The definition goes in `.chap-devops/models-manual.yaml`, beside the enabled set:
 
 ```yaml
-# Managed by varde; change it with the varde commands, not by hand.
+# Managed by chap-devops; change it with the chap-devops commands, not by hand.
 chapkit_dengue_model:
   service_id: chapkit-dengue-model
   display_name: chapkit_dengue_model
@@ -1168,12 +1168,12 @@ chapkit_dengue_model:
   added: 2026-09-24
 ```
 
-That file is the definition; `.varde/models.yaml` still says which models are
-on. So `varde models disable chapkit_dengue_model` keeps the definition and
-`varde models enable chapkit_dengue_model` brings the model back at the recorded
+That file is the definition; `.chap-devops/models.yaml` still says which models are
+on. So `chap-devops models disable chapkit_dengue_model` keeps the definition and
+`chap-devops models enable chapkit_dengue_model` brings the model back at the recorded
 tag, data directory and user, without asking the network anything. The host
 port is not in the definition: if the model had one, give `--port` again. It is
-carried over by `varde init --force` and included in `varde backup create`.
+carried over by `chap-devops init --force` and included in `chap-devops backup create`.
 A deployment that has added nothing has no such file.
 
 Both listings mark these entries, because a local definition is not a reviewed
@@ -1185,8 +1185,8 @@ chapkit_simple_multistep_model    chapkit-simple-multistep-model    Simple Multi
 chapkit_simple_multistep_model_2  chapkit-simple-multistep-model-2  chapkit_simple_multistep_model  not for use   sha-10b2bc7  sha-10b2bc7  via chap-core  manual
 ```
 
-`varde models info chapkit_simple_multistep_model_2` says the same in its own words - a
-`kind` of `manual`, a `source` line naming `varde models add` and the day it
+`chap-devops models info chapkit_simple_multistep_model_2` says the same in its own words - a
+`kind` of `manual`, a `source` line naming `chap-devops models add` and the day it
 was added, and a `follows` line naming the branch or reading
 `nothing (pinned)` - and leaves out every field a
 marketplace entry would have filled in (the horizon, the covariates, the
@@ -1196,7 +1196,7 @@ browser shows `manual` in its `KIND` column.
 ### Removing one
 
 ```sh
-varde models remove ID [--purge]
+chap-devops models remove ID [--purge]
 ```
 
 `remove` is the way back: it disables the model if it is enabled - stopping its
@@ -1206,16 +1206,16 @@ same thing here as it does there. A marketplace model has no local definition
 to remove, and says so:
 
 ```text
-error: chapkit_ghr_model is a marketplace model, so there is no local definition to remove; run `varde models disable chapkit_ghr_model`
+error: chapkit_ghr_model is a marketplace model, so there is no local definition to remove; run `chap-devops models disable chapkit_ghr_model`
 ```
 
 ### What it needs, and what it refuses
 
-`varde models add` reads GitHub's REST API and ghcr; both are public for the
+`chap-devops models add` reads GitHub's REST API and ghcr; both are public for the
 Chap model repositories, so neither needs a credential. GitHub allows 60
-requests an hour to an address that sends none, and `varde` sends
+requests an hour to an address that sends none, and `chap-devops` sends
 `GITHUB_TOKEN` (or `GH_TOKEN`) where the environment names one, for 5000 an
-hour instead - it is never stored and never printed, and `varde doctor`'s
+hour instead - it is never stored and never printed, and `chap-devops doctor`'s
 `github api` line says how much of the hour is left. The
 repository form cannot work under `--offline` and says so, naming the image
 reference to pass instead. The image form works offline as long as the image's
@@ -1233,7 +1233,7 @@ it is removed or renamed.
 
 ## The browser
 
-`varde ui` opens two pages: **models**, the marketplace catalogue, and
+`chap-devops ui` opens two pages: **models**, the marketplace catalogue, and
 **components**, what this deployment is made of. `Tab` goes to the next page
 and `shift-Tab` back; one `s` saves both and leaves the browser, so the two
 are a single sitting rather than two commands.
@@ -1242,7 +1242,7 @@ The models page is the catalogue as one table across the width of the terminal,
 with a one-line summary of the row under the cursor under it:
 
 ```text
-varde · models                                               registry: cache · 59 min   6 models · 1 enabled · 0 pending
+chap-devops · models                                               registry: cache · 59 min   6 models · 1 enabled · 0 pending
 ╭ Marketplace ─────────────────────────────────────────────────────────────────────────────────────────────────────────╮
 │     MODEL                  ID                                 STATUS         VERSION  PORT                           │
 │──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────│
@@ -1269,8 +1269,8 @@ have switched off. `STATUS` is the author's own chapkit assessment, the same
 five words [the table above](#what-the-status-column-means) explains; `VERSION`
 is what the row's channel resolves to; and `PORT` is how the model is reached.
 A `KIND` column appears when the list holds something that is not a plain
-marketplace model: a template, or an entry `varde models add` created. The
-rows are in the same maturity order `varde models list` uses, with templates
+marketplace model: a template, or an entry `chap-devops models add` created. The
+rows are in the same maturity order `chap-devops models list` uses, with templates
 last when `t` shows them; nothing done in the browser reorders them, so the
 cursor stays on the row it was on.
 
@@ -1328,7 +1328,7 @@ of `e` starts with the current values. An empty field uses the default.
 - `Enter` saves the form.
 - `Esc` closes the form and writes nothing.
 
-varde writes nothing to chap-core until you answer `y` to the question. For
+chap-devops writes nothing to chap-core until you answer `y` to the question. For
 `d`, the question says that chap-core keeps the configured model, and that the
 Modeling App shows it as Archived.
 
@@ -1336,7 +1336,7 @@ The page needs a chap-core that runs and a model that the deployment runs.
 If chap-core does not answer, the page says:
 
 ```text
-chap-core at http://localhost:8700 is not running; start it with `varde up`, then press r
+chap-core at http://localhost:8700 is not running; start it with `chap-devops up`, then press r
 ```
 
 If the model is not enabled, or the deployment has no chap-core, the footer
@@ -1364,7 +1364,7 @@ model in the list is already asking for - keeps the dialog up with the reason
 in it, as above, so the number is corrected rather than typed again. The two
 checks only a save can make - a port another compose file claims, and a port
 something on this machine is listening on - happen when the selection is
-applied, exactly as they do for `varde models expose`. `P` takes the port away
+applied, exactly as they do for `chap-devops models expose`. `P` takes the port away
 without the dialog.
 
 ### Picking a channel
@@ -1399,10 +1399,10 @@ channel.
 ### The components page
 
 `Tab` from the models page opens what this deployment is made of, with the same
-columns [`varde components list`](./components.md) prints:
+columns [`chap-devops components list`](./components.md) prints:
 
 ```text
-varde · components                                             registry: embedded   4 components · 2 enabled · 0 pending
+chap-devops · components                                             registry: embedded   4 components · 2 enabled · 0 pending
 ╭ Components ──────────────────────────────────────────────────────────────────────────────────────────────────────────╮
 │     COMPONENT    STATE    REACH                    WHAT IT IS                                                        │
 │──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────│
@@ -1414,7 +1414,7 @@ varde · components                                             registry: embedd
 │                                                                                                                      │
 │                                                                                                                      │
 │──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────│
-│ chap-core  enabled here  http://localhost:8700  compose.yml + compose.varde.yml  Chap itself: chap-co~  i for details│
+│ chap-core  enabled here  http://localhost:8700  compose.yml + compose.chap-devops.yml  Chap itself: chap-co~  i for details│
 ╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
  [j/k] move  [tab] page  [space] toggle  [i] info  [o] open  [p] port  [s] save  [ctrl+k] commands  [?] help  [q] quit
 ```
@@ -1431,7 +1431,7 @@ rendered into, and what it is, with the same `i for details` held at the
 right-hand edge.
 
 ```text
-varde · components                                             registry: embedded   4 components · 3 enabled · 1 pending
+chap-devops · components                                             registry: embedded   4 components · 3 enabled · 1 pending
 ╭ Components ──────────────────────────────────────────────────────────────────────────────────────────────────────────╮
 │     COMPONENT    STATE    REACH                    WHAT IT IS                                                        │
 │──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────│
@@ -1474,7 +1474,7 @@ the S3 API and serves no interface a browser is useful for. It opens what this
 deployment publishes **now**, so a port changed in this session and not yet
 saved is not the port it opens. `Open web interface` in the palette does the
 same thing. It is the same command as
-[`varde open`](./components.md#reaching-a-component-from-a-browser), which is
+[`chap-devops open`](./components.md#reaching-a-component-from-a-browser), which is
 the one that can also say whether the container is running.
 
 `i` opens the details, which say where the component's compose file and data
@@ -1487,14 +1487,14 @@ not edit:
 │                                                                                                             │
 │ state       enabled                                                                                         │
 │ reach       http://localhost:8790                                                                           │
-│ compose     compose.ocs.yml · rendered from .varde/components.yaml by `varde sync`                          │
+│ compose     compose.ocs.yml · rendered from .chap-devops/components.yaml by `chap-devops sync`                          │
 │ volume      ocs_data · kept when the component is disabled                                                  │
-│ config      ocs/climate-service.yaml · yours to edit; varde changes only its read_only and plugins_dir keys │
+│ config      ocs/climate-service.yaml · yours to edit; chap-devops changes only its read_only and plugins_dir keys │
 │                                                                                                             │
 │ not on this page:                                                                                           │
-│   `varde components enable ocs --base-url URL`                                                              │
+│   `chap-devops components enable ocs --base-url URL`                                                              │
 │     the public origin OCS builds its STAC and openEO links from                                             │
-│   `varde components enable ocs --read-only`                                                                 │
+│   `chap-devops components enable ocs --read-only`                                                                 │
 │     refuse ingestion over HTTP (--read-write allows it again)                                               │
 ╰─────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
 ```
@@ -1516,23 +1516,23 @@ most that cannot be seen from its row:
 │                                                                                    │
 │ state       enabled                                                                │
 │ reach       http://localhost:8780                                                  │
-│ compose     compose.dhis2.yml · rendered from .varde/components.yaml by `varde     │
+│ compose     compose.dhis2.yml · rendered from .chap-devops/components.yaml by `chap-devops     │
 │             sync`                                                                  │
 │ volume      dhis2_home, dhis2_db, dhis2_dump · kept when the component is disabled │
 │ config      dhis2/dhis.conf · yours to edit, and DHIS2 will not start without it   │
 │ seed        https://databases.dhis2.org/climate/laos/2.42/laos.sql.gz · restored   │
-│             once, into the database the first `varde up` creates                   │
+│             once, into the database the first `chap-devops up` creates                   │
 │ cache       dhis2_dump holds the downloaded dump rather than data; the dhis2-dump  │
 │             one-shot fetches it again when the volume is empty                     │
 │ first start minutes, not seconds: DHIS2 migrates its schema on the way up, and     │
-│             `varde logs dhis2` is where that shows                                 │
+│             `chap-devops logs dhis2` is where that shows                                 │
 │                                                                                    │
 │ not on this page:                                                                  │
-│   `varde components enable dhis2 --seed SPEC`                                      │
+│   `chap-devops components enable dhis2 --seed SPEC`                                      │
 │     the dump a database being created is restored from: default, none, a URL, or a │
 │     path in the deployment directory                                               │
-│   `v` on this row, or `varde components enable dhis2 --tag TAG`                    │
-│     the DHIS2 version, 2.42 here; it migrates a schema forward only, so run `varde │
+│   `v` on this row, or `chap-devops components enable dhis2 --tag TAG`                    │
+│     the DHIS2 version, 2.42 here; it migrates a schema forward only, so run `chap-devops │
 │     backup create` first                                                           │
 ╰────────────────────────────────────────────────────────────────────────────────────╯
 ```
@@ -1543,11 +1543,11 @@ cache rather than data. What the database will be restored from, and that a
 restore only ever happens to a database being created - so changing the seed on
 a deployment that has already started means removing the volume. And that the
 first start takes minutes, which is the difference between reading the first
-`varde status` as slow or as broken.
+`chap-devops status` as slow or as broken.
 
-The two settings at the bottom are a key in `.varde/components.yaml` and a
-`varde sync`. No flag changes the seed after `init`: it is a one-chance setting.
-The image tag also has `--tag` on `varde components enable dhis2`, and `v` on
+The two settings at the bottom are a key in `.chap-devops/components.yaml` and a
+`chap-devops sync`. No flag changes the seed after `init`: it is a one-chance setting.
+The image tag also has `--tag` on `chap-devops components enable dhis2`, and `v` on
 the `dhis2` row picks it, since DHIS2 is the one component with versions to
 choose between. See
 [Changing the DHIS2 version](./dhis2.md#changing-the-dhis2-version).
@@ -1615,10 +1615,10 @@ the channel, the template filter and `Open the repository of <model>`.
 
 It offers everything the keys do, plus three the keys do not: refreshing the
 catalogue from the marketplace without leaving the browser, the way
-`varde registry update` does, opening this documentation - the chapter for the
+`chap-devops registry update` does, opening this documentation - the chapter for the
 page you are on - and `Save a screenshot (SVG)`, which writes the frame the
-palette just closed over to `varde-ui-<date>-<time>.svg` in the directory
-`varde ui` was started in and names the file on the status line. The two port
+palette just closed over to `chap-devops-ui-<date>-<time>.svg` in the directory
+`chap-devops ui` was started in and names the file on the status line. The two port
 commands are separate, so "set a host port" never takes one away.
 
 Every component is also in the palette by name, from either page - `Turn the
@@ -1632,44 +1632,44 @@ cursor to it, without moving the page you are on.
 With something unsaved, the summary strip lists what saving would write, one
 line per change, and the key bar grows a filled `[s] save N changes` and a
 `[u] discard` next to it. Both pages are in that count and in that one save:
-`s` writes the model changes through the same path as `varde models enable` and
-the component changes through the same path as `varde components enable`. Then
+`s` writes the model changes through the same path as `chap-devops models enable` and
+the component changes through the same path as `chap-devops components enable`. Then
 the browser closes and prints what changed:
 
 ```text
 updated chapkit_simple_multistep_model v0.1.2 on http://localhost:5001
 enabled the s3 component
-run `varde up` to apply
+run `chap-devops up` to apply
 ```
 
-A save writes the files and starts nothing: run `varde up` to apply it. The
-help line of `s` says `` save the changes; `varde up` applies them ``, and the
-palette entry says `` Save the changes; `varde up` applies them ``. With nothing pending, `s` prints `no
+A save writes the files and starts nothing: run `chap-devops up` to apply it. The
+help line of `s` says `` save the changes; `chap-devops up` applies them ``, and the
+palette entry says `` Save the changes; `chap-devops up` applies them ``. With nothing pending, `s` prints `no
 changes to save` and closes the browser.
 
 Nothing is written until you save, and quitting with unsaved changes asks
 first, on either page and for either kind of change: `Quit anyway? y / n`.
-`varde ui` owns the terminal, so it rejects `--json`.
+`chap-devops ui` owns the terminal, so it rejects `--json`.
 
-`varde init --interactive` opens the same browser to pick the initial model
+`chap-devops init --interactive` opens the same browser to pick the initial model
 set instead of reading `--models`.
 
 ## How a model overlay looks
 
 Each marketplace model is a [chapkit](https://github.com/dhis2-chap/chapkit)
 container listening on port 8000 with `/health` and `/api/v1/info`. This is the
-overlay `varde` writes for Simple Multistep. The file carries two header lines
+overlay `chap-devops` writes for Simple Multistep. The file carries two header lines
 and nothing else by way of explanation: what it does is below.
 
 ```yaml
-# Generated by varde from .varde/; edit there and run `varde sync`.
+# Generated by chap-devops from .chap-devops/; edit there and run `chap-devops sync`.
 # chapkit_simple_multistep_model 0.1.2 (https://github.com/chap-models/chapkit_simple_multistep_model)
 services:
   chapkit-simple-multistep-model:
     labels:
-      com.winterop.varde.role: model
-      com.winterop.varde.model: "chapkit_simple_multistep_model"
-      com.winterop.varde.kind: init
+      com.winterop.chap-devops.role: model
+      com.winterop.chap-devops.model: "chapkit_simple_multistep_model"
+      com.winterop.chap-devops.kind: init
     restart: unless-stopped
     image: ghcr.io/chap-models/chapkit_simple_multistep_model:${CHAPKIT_SIMPLE_MULTISTEP_MODEL_IMAGE_TAG:-sha-10b2bc7}
     platform: linux/amd64
@@ -1702,9 +1702,9 @@ services:
 
   chapkit-simple-multistep-model-init:
     labels:
-      com.winterop.varde.role: model
-      com.winterop.varde.model: "chapkit_simple_multistep_model"
-      com.winterop.varde.kind: init
+      com.winterop.chap-devops.role: model
+      com.winterop.chap-devops.model: "chapkit_simple_multistep_model"
+      com.winterop.chap-devops.kind: init
     image: busybox:1.38
     command: ["sh", "-c", "chown -R 1001:1001 /app/data"]
     user: "0:0"
@@ -1723,7 +1723,7 @@ volumes:
 The overlay does seven things.
 
 - **Labels both containers** with their role, the marketplace id and the
-  deployment's kind, so `docker ps --filter label=com.winterop.varde.model`
+  deployment's kind, so `docker ps --filter label=com.winterop.chap-devops.model`
   finds every model on the machine. See
   [Container labels](./concepts.md#container-labels).
 - **Pins the image.** `image: <repo>:${<ID>_IMAGE_TAG:-sha-<commit>}`, where the
@@ -1788,19 +1788,19 @@ already exists carries whoever owned it last. If a model that ran as
 `1000:1000` now runs as root (a new image, or a `--user` override), its volume
 is owned by 1000, and the model cannot write to it: the overlay drops every
 capability, and `CAP_DAC_OVERRIDE` is the one that lets root ignore the
-permission bits. One busybox one-shot costs a second on `varde up` and repairs
+permission bits. One busybox one-shot costs a second on `chap-devops up` and repairs
 that change, which is worth more than the line it saves.
 
 The container has a second job: because it mounts the same named volume at the
-same path as the model itself, `varde backup` reads and writes model data
+same path as the model itself, `chap-devops backup` reads and writes model data
 through it, whether the model is running, stopped, or brought down entirely.
 See [Backup and restore](./backup.md).
 
 ## Data directories and users
 
 Both differ per image, and both are read off the image itself when the model
-is enabled - `varde models enable`, `varde init --models`, the browser's
-toggle. The answers go into `.varde/models.yaml`, so `varde sync` renders the
+is enabled - `chap-devops models enable`, `chap-devops init --models`, the browser's
+toggle. The answers go into `.chap-devops/models.yaml`, so `chap-devops sync` renders the
 overlay from what is recorded and never asks the network: the same state
 renders the same bytes on any machine.
 
@@ -1809,7 +1809,7 @@ renders the same bytes on any machine.
 | data dir | `--data-dir`, else `<WorkingDir>/data` from the image config, else the built-in table, else `/work/data`. |
 | user | `--user`, else `config.User` from the image config on ghcr, else the same field from an image already pulled here (`docker image inspect --platform linux/amd64`), else the built-in table. |
 
-`varde models info <id>` and the browser's details overlay name which of those
+`chap-devops models info <id>` and the browser's details overlay name which of those
 answered: `image config`, `docker probe`, `--user` or `table`. A run that could
 reach neither ghcr nor a local copy says so, because the table is a snapshot
 this binary was built with and an image can change what it runs as.
@@ -1835,23 +1835,23 @@ why the image is asked rather than assumed: 0.1.2 rebuilt it to run as
 
 The init container needs an account name as numbers: `chapkit` is uid/gid 1000
 and `chap` is 1001. GHRmodel's `app` is not one of them, so enabling it pulls
-the image once and asks it, exactly as `varde models add` does. A `--user` that
+the image once and asks it, exactly as `chap-devops models add` does. A `--user` that
 is already numeric is passed through, and a name nothing could resolve falls
-back to `1000:1000` with a warning from `varde sync`. `--data-dir` and `--user` override everything above, for an image
+back to `1000:1000` with a warning from `chap-devops sync`. `--data-dir` and `--user` override everything above, for an image
 whose config says something the deployment has to contradict.
 
-`varde doctor` re-checks each enabled model against the image on this machine
+`chap-devops doctor` re-checks each enabled model against the image on this machine
 and warns when the two have drifted apart, which is what a marketplace model
 moved to a new tag by hand looks like.
 
-A model added with `varde models add` is resolved the same way at the moment it
-is added, and carries its answers in `.varde/models-manual.yaml`. See
+A model added with `chap-devops models add` is resolved the same way at the moment it
+is added, and carries its answers in `.chap-devops/models-manual.yaml`. See
 [Models outside the marketplace](#models-outside-the-marketplace).
 
 ## The amd64 pin, and why
 
 The overlay of every marketplace model pins `platform: linux/amd64`, and the
-overlay of a model added with `varde models add` pins it only when its image is
+overlay of a model added with `chap-devops models add` pins it only when its image is
 published for amd64 alone (or `--runtime-amd64` says so). The marketplace images are
 published for amd64, as is chap-core itself, so an arm64 host such as Apple
 silicon pulls that variant and runs it under emulation instead of failing with
