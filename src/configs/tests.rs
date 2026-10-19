@@ -174,3 +174,54 @@ fn the_role_comes_from_the_marketplace_entry() {
     let source = sync::Source::Marketplace(Box::new(entry));
     assert_eq!(role_of(Some(&source)), Some("comparison"));
 }
+
+/// A chap-core that answers every request with one 409 body.
+fn refusing_chap_core(detail: &'static str) -> String {
+    use std::io::{BufRead, BufReader, Read, Write};
+    let listener =
+        std::net::TcpListener::bind((std::net::Ipv4Addr::LOCALHOST, 0)).expect("a loopback port");
+    let port = listener.local_addr().expect("the bound address").port();
+    std::thread::spawn(move || {
+        for stream in listener.incoming() {
+            let Ok(mut stream) = stream else { break };
+            let mut reader = BufReader::new(stream.try_clone().expect("a second handle"));
+            let mut length = 0;
+            loop {
+                let mut line = String::new();
+                if reader.read_line(&mut line).unwrap_or(0) == 0 || line == "\r\n" {
+                    break;
+                }
+                if let Some(value) = line.to_ascii_lowercase().strip_prefix("content-length:") {
+                    length = value.trim().parse().unwrap_or(0);
+                }
+            }
+            let mut body = vec![0; length];
+            let _ = reader.read_exact(&mut body);
+            let answer = format!(r#"{{"detail":"{detail}"}}"#);
+            let _ = write!(
+                stream,
+                "HTTP/1.1 409 Conflict\r\nContent-Type: application/json\r\n\
+                 Content-Length: {}\r\nConnection: close\r\n\r\n{answer}",
+                answer.len()
+            );
+        }
+    });
+    format!("http://127.0.0.1:{port}")
+}
+
+#[test]
+fn a_template_with_no_revision_gives_the_way_out_of_who_runs_the_model() {
+    let base = refusing_chap_core(
+        "Model template 'm' version '0.1.0' is stored from revision None, but its source now \
+         reports revision None",
+    );
+    let api = Api::new(&base, None, std::time::Duration::from_secs(5));
+    let managed = template_of_service(&api, "m", "m", None, true).unwrap_err();
+    assert!(managed.ends_with(sync::NO_REVISION_WAY_OUT), "{managed}");
+    let outside = template_of_service(&api, "m", "m", None, false).unwrap_err();
+    assert!(
+        outside.ends_with(sync::UNMANAGED_NO_REVISION_WAY_OUT),
+        "{outside}"
+    );
+    assert!(!outside.contains("chap-devops restart"), "{outside}");
+}

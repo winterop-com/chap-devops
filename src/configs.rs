@@ -216,11 +216,14 @@ pub fn role_of(source: Option<&sync::Source>) -> Option<&str> {
 /// model, so a configuration of the running version starts from the template
 /// that `from-service` stores or returns. It is what `chap-admin install`
 /// calls, and it changes nothing for a version that is stored already.
+/// `managed` says whether this deployment runs the service: its image is
+/// built again, while a service from outside is started again where it runs.
 pub fn template_of_service(
     api: &Api,
     model: &str,
     service_id: &str,
     role: Option<&str>,
+    managed: bool,
 ) -> std::result::Result<Template, String> {
     let body = from_service_body(service_id, role);
     let answer = api
@@ -237,7 +240,10 @@ pub fn template_of_service(
             return Err(format!(
                 "chap-core refuses the template of {model}: {}; {}",
                 answer.detail(),
-                sync::NO_REVISION_WAY_OUT
+                match managed {
+                    true => sync::NO_REVISION_WAY_OUT,
+                    false => sync::UNMANAGED_NO_REVISION_WAY_OUT,
+                }
             ));
         }
         409 => {
