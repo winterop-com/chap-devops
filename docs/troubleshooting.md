@@ -1764,15 +1764,16 @@ not read the model's `MLproject` (for example, under `--offline`). Add
 ## `needs chap-core v2.5.0 or later, and this run uses`
 
 ```text
-error: built-in models need chap-core v2.5.0 or later, and this run uses v2.4.0; give a newer tag, such as `--tag master`
+error: built-in models need chap-core v2.5.0 or later, and this run uses v2.4.0; give a newer tag, such as `--tag v2.5.0`
 ```
 
 Built-in models (`builtin:NAME`), `--run-config.as-chapkit` and
 `chap simulate` are new in chap-core v2.5.0. Outside a deployment,
-`varde chap` uses the newest release; in a deployment, the tag of the
+`varde chap` uses the newest release, unless this machine has only older
+images and cannot look the release up; in a deployment, the tag of the
 deployment. varde stops before the run, because chap at an older tag ends in
-a traceback. Add `--tag master` until v2.5.0 is released, or `--tag v2.5.0`
-after.
+a traceback. Add `--tag v2.5.0`. In a deployment, `varde update` moves it to
+the newest release.
 
 ## `Rscript: not found` from `varde chap`
 

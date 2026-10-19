@@ -284,7 +284,7 @@ pub fn too_old(args: &[String], kind: &ModelKind, tag: &str) -> Option<String> {
     (version < FIRST_WITH_V2_5).then(|| {
         format!(
             "{what} chap-core v2.5.0 or later, and this run uses {tag}; give a newer \
-             tag, such as `--tag master`"
+             tag, such as `--tag v2.5.0`"
         )
     })
 }
