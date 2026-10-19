@@ -800,11 +800,9 @@ It worked when the last lines say `chapkit finished; it wrote ...` and
 is a warning that chap-devops could not write `uv.lock`, the build fails; show them
 the warning.
 
-If chapkit stops with `No Python (.py) or R (.r/.R) scripts at the project
-root`, the scripts are in a subdirectory. Run the command again with
-`--base-image chapkit-py` for Python. For R, use `chapkit-r`,
-`chapkit-r-tidyverse` or `chapkit-r-inla`. A project from `chap-devops models new`
-names the value in its `README.md`.
+If chapkit stops with `No Python (.py) or R (.r/.R) scripts`, run the command
+again with `--base-image chapkit-py` for Python. For R, use `chapkit-r`,
+`chapkit-r-tidyverse` or `chapkit-r-inla`.
 
 Then build the image and test it:
 

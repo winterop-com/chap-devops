@@ -108,18 +108,6 @@ impl Template {
         self.base() == Base::RInla
     }
 
-    /// The `--base-image` of `chapkit mlproject migrate`: chapkit picks it
-    /// from scripts at the project root only, and the scripts are in
-    /// `scripts/`.
-    pub fn migrate_base(self) -> &'static str {
-        match self.base() {
-            Base::Py => "chapkit-py",
-            Base::R => "chapkit-r",
-            Base::RTidyverse => "chapkit-r-tidyverse",
-            Base::RInla => "chapkit-r-inla",
-        }
-    }
-
     /// The base image. A chapkit service installs its own chapkit with
     /// `uv sync`; an MLproject uses the `-cli` image, which has chapkit. A
     /// Python MLproject uses `chapkit-py-data-cli`, which also has numpy,
@@ -406,7 +394,6 @@ fn context(
         has_pyproject => !(template.is_mlproject() && is_r),
         amd64_only => template.amd64_only(),
         base_image => template.base_image(),
-        migrate_base => template.migrate_base(),
         chapkit_requirement => CHAPKIT_REQUIREMENT,
         language => if is_r { "R" } else { "Python" },
         run => if is_r { "Rscript" } else { "python" },

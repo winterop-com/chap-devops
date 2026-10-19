@@ -16,20 +16,14 @@ Each argument after `chapkit` goes to chapkit unchanged. To read chapkit's own
 help, run `chap-devops chapkit` with no arguments. `chap-devops chapkit --help` shows only
 the options of chap-devops itself.
 
-Up to chapkit 2.4.0, which is in chap-core v2.5.0 and older, chapkit's help
-lists the `mlproject` commands (`run`, `migrate`, `export`) only in a
-directory with an `MLproject` file. With such a tag, chap-devops adds a line
-after the help: `chap-devops chapkit mlproject --help` shows them. chapkit
-2.4.1 lists them everywhere.
-
 ## Which image
 
 chapkit is a dependency of chap-core, so the chap-core image has the chapkit
 CLI. chap-devops runs it in that image, and there is no other image to pin or to
 update. The chap-core image v2.4.0 has chapkit 2.1.0. From v2.5.0 it has
 chapkit 2.4.0, which adds `chapkit mlproject export` and writes the full
-MLproject contract with `migrate`. In a deployment on an older tag, add
-`--tag v2.5.0` for these.
+MLproject contract with `migrate`; v2.5.1 has chapkit 2.4.1. In a deployment
+on an older tag, add `--tag v2.5.1` for these.
 
 The version follows the rules of `chap-devops chap`: in a deployment, the
 deployment's chap-core tag; outside a deployment, the newest chap-core
@@ -81,25 +75,27 @@ chap-devops run my-model:dev
 chap-devops -C ~/.local/share/chap-devops/run/default models test my_model
 ```
 
-chapkit selects the base image of the service from the scripts at the root of
-`DIR`: R scripts give an R image, Python scripts give `chapkit-py`. If the
-scripts are in a subdirectory, as in the `mlproject-*` templates of
-`chap-devops models new`, chapkit stops with `No Python (.py) or R (.r/.R) scripts at
-the project root; cannot pick a base image.` Then give the image:
+chapkit selects the base image of the service from the scripts: the ones at
+the root of `DIR`, and the ones that the train and predict commands name, such
+as `scripts/train.py` in the `mlproject-*` templates. R scripts give an R
+image, Python scripts give `chapkit-py`. If it finds none, chapkit stops with
+`No Python (.py) or R (.r/.R) scripts at the project root or in the entry-point
+commands`. Then give the image:
 
 ```sh
 chap-devops chapkit mlproject migrate my-model --yes --base-image chapkit-py
 ```
 
 The values are `chapkit-py`, `chapkit-r`, `chapkit-r-tidyverse` and
-`chapkit-r-inla`. The `README.md` of a project from an `mlproject-*` template
-gives the command with the correct value.
+`chapkit-r-inla`. chap-core v2.5.0 and older (chapkit 2.4.0) look at the root
+only, so there the `mlproject-*` templates need `--base-image`.
 
 On chap-core `master` before v2.5.0 (chapkit 2.4.0), these models were
 migrated, built, and passed the model-level test with 1 training and 1
 prediction: `minimalist_configurable_model` and `mean` from chap-models, and
 the `mlproject-py` and `mlproject-r` templates with `--base-image`. On
-v2.5.0, the `mlproject-py` template passed again.
+v2.5.0, the `mlproject-py` template passed again. On v2.5.1, the `mlproject-r`
+template was migrated with no `--base-image`, built, and passed.
 
 ## Export a service as an MLproject
 
@@ -127,11 +123,6 @@ The exported `MLproject` gives the train and predict commands a fixed
 `chap-devops chapkit mlproject run`, and with `chap-devops chap --run-config.as-chapkit`.
 Without `--run-config.as-chapkit`, chap does not write `config.yml`, and the
 train command stops with `No such file or directory: 'config.yml'`.
-
-chapkit 2.4.0 also writes a warning that the `author_note` of the
-`MLproject` and of the service are not the same, when `main.py` has a
-`description` and no `author_note`. The `MLproject` is correct, and you can
-ignore the warning.
 
 ## Serve an MLproject model
 

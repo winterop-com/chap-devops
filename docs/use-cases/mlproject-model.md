@@ -163,15 +163,15 @@ model directory:
 
 ```sh
 cd rain-model
-chap-devops chapkit mlproject migrate . --yes --base-image chapkit-r-tidyverse
+chap-devops chapkit mlproject migrate . --yes
 docker build --platform linux/amd64 --build-arg GIT_REVISION=$(git rev-parse HEAD) -t rain-model:dev .
 chap-devops run rain-model:dev
 chap-devops -C ~/.local/share/chap-devops/run/default models test rain_model
 ```
 
-It worked when the last line says `1 of 1 model passes`. The templates keep
-the scripts in `scripts/`, so `--base-image` is necessary; `README.md` gives
-the correct value. A model with its scripts at the root does not need it. See
+It worked when the last line says `1 of 1 model passes`. chapkit finds the
+scripts in `scripts/` through the train and predict commands, and picks the
+base image from them. chap-core v2.5.0 and older need `--base-image`. See
 [Migrate an MLproject model](../chapkit-cli.md#migrate-an-mlproject-model).
 
 ## And back to an MLproject

@@ -164,12 +164,12 @@ fn the_readme_gives_the_commands_for_this_project() {
 }
 
 #[test]
-fn an_mlproject_readme_serves_and_migrates_with_the_base_image() {
-    for (template, base) in [
-        (Template::MlprojectPy, "chapkit-py"),
-        (Template::MlprojectR, "chapkit-r"),
-        (Template::MlprojectRTidyverse, "chapkit-r-tidyverse"),
-        (Template::MlprojectRInla, "chapkit-r-inla"),
+fn an_mlproject_readme_serves_and_migrates_it() {
+    for template in [
+        Template::MlprojectPy,
+        Template::MlprojectR,
+        Template::MlprojectRTidyverse,
+        Template::MlprojectRInla,
     ] {
         let files = rendered(template, false);
         let readme = file(&files, "README.md");
@@ -178,11 +178,10 @@ fn an_mlproject_readme_serves_and_migrates_with_the_base_image() {
             "{template:?}"
         );
         assert!(
-            readme.contains(&format!(
-                "chap-devops chapkit mlproject migrate . --yes --base-image {base}\n"
-            )),
+            readme.contains("chap-devops chapkit mlproject migrate . --yes\n"),
             "{template:?}"
         );
+        assert!(!readme.contains("--base-image"), "{template:?}");
     }
     let files = rendered(Template::ShellPy, false);
     assert!(!file(&files, "README.md").contains("mlproject migrate"));

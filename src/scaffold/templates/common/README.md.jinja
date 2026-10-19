@@ -85,12 +85,12 @@ To change the model to a chapkit service with a `main.py`, commit first, then
 run this here:
 
 ```sh
-chap-devops chapkit mlproject migrate . --yes --base-image {{ migrate_base }}
+chap-devops chapkit mlproject migrate . --yes
 ```
 
 chapkit moves `MLproject` and the files the service does not need to `_old/`.
-It looks for the scripts at the project root only, so `--base-image` is
-necessary for the scripts in `scripts/`.
+It finds the scripts that the train and predict commands name, in `scripts/`,
+and picks the base image from them.
 {% endif %}
 
 ## After a change

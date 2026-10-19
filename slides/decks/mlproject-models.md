@@ -271,15 +271,15 @@ the `name` in `MLproject`, with the commit that chap-devops gave chapkit.
 Commit first: the migration moves files to `_old/`. In the model directory:
 
 ```text
-$ chap-devops chapkit mlproject migrate . --yes --base-image chapkit-r-tidyverse
-running `chapkit mlproject migrate` in ghcr.io/dhis2-chap/chap-core:master
+$ chap-devops chapkit mlproject migrate . --yes
+running `chapkit mlproject migrate` in ghcr.io/dhis2-chap/chap-core:v2.5.1
 chapkit finished; it wrote .dockerignore, .gitignore, CHAPKIT.md, Dockerfile,
   Makefile, README.md, _old/.dockerignore, _old/.gitignore, and 6 more
 wrote uv.lock with `uv lock` in the same image, so `docker build` works
 ```
 
-The templates keep the scripts in `scripts/`, so `--base-image` is
-necessary. `README.md` gives the correct value.
+chapkit finds the scripts in `scripts/` through the train and predict
+commands. chap-core v2.5.0 and older need `--base-image`.
 
 ---
 
@@ -365,7 +365,7 @@ install**.
 
 | chap-devops or chapkit says | What to do |
 | --- | --- |
-| `No Python (.py) or R (.r/.R) scripts at the project root` | Give `--base-image`, as `README.md` says |
+| `No Python (.py) or R (.r/.R) scripts` | Give `--base-image`, such as `chapkit-py` |
 | `Only ShellModelRunner services can be exported` | Move the model to scripts, as in `shell-py` |
 | `No such file or directory: 'config.yml'` | Add `--run-config.as-chapkit`, or use `mlproject run` |
 | `could not write DIR/uv.lock` | Run the migration again on a new copy; `uv lock` needs the network |

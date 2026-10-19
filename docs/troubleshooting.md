@@ -239,13 +239,15 @@ service to test. Use `chap-devops models test ID`: it runs `chapkit test` in the
 model's own container. For a model image that you built, start it first with
 `chap-devops run IMAGE`.
 
-## `No Python (.py) or R (.r/.R) scripts at the project root; cannot pick a base image.`
+## `No Python (.py) or R (.r/.R) scripts at the project root or in the entry-point commands; cannot pick a base image.`
 
 `chapkit mlproject migrate` selects the base image from the scripts at the root
-of the model directory, and found none there. The `mlproject-*` templates of
-`chap-devops models new` keep the scripts in `scripts/`. Give the image with
-`--base-image`: `chapkit-py`, `chapkit-r`, `chapkit-r-tidyverse` or
-`chapkit-r-inla`. The `README.md` of the project gives the command. See
+of the model directory and the scripts that the train and predict commands
+name, and found none. Give the image with `--base-image`: `chapkit-py`,
+`chapkit-r`, `chapkit-r-tidyverse` or `chapkit-r-inla`. chap-core v2.5.0 and
+older look at the root only, and say `No Python (.py) or R (.r/.R) scripts at
+the project root`; there, the `mlproject-*` templates need `--base-image`, or
+`--tag v2.5.1`. See
 [Migrate an MLproject model](./chapkit-cli.md#migrate-an-mlproject-model).
 
 ## `Only ShellModelRunner services can be exported`
