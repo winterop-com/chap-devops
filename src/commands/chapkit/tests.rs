@@ -1,4 +1,4 @@
-use super::{command_name, mlproject_hidden, refused, serve_arguments};
+use super::{command_name, refused, serve_arguments};
 
 fn strings(args: &[&str]) -> Vec<String> {
     args.iter().map(|arg| arg.to_string()).collect()
@@ -111,30 +111,4 @@ fn the_command_name_has_the_command_of_a_group() {
     );
     assert_eq!(command_name(&strings(&["init", "my-model"])), "init");
     assert_eq!(command_name(&[]), "--help");
-}
-
-#[test]
-fn the_hidden_mlproject_group_is_named_after_the_top_level_help_only() {
-    let tmp = tempfile::tempdir().unwrap();
-    assert!(mlproject_hidden(&[], tmp.path(), "v2.5.0"));
-    assert!(mlproject_hidden(
-        &strings(&["--help"]),
-        tmp.path(),
-        "v2.4.0"
-    ));
-    assert!(!mlproject_hidden(
-        &strings(&["mlproject", "--help"]),
-        tmp.path(),
-        "v2.5.0"
-    ));
-    assert!(!mlproject_hidden(
-        &strings(&["--version"]),
-        tmp.path(),
-        "v2.5.0"
-    ));
-    // chapkit 2.4.1 lists the group everywhere.
-    assert!(!mlproject_hidden(&[], tmp.path(), "v2.5.1"));
-    assert!(!mlproject_hidden(&[], tmp.path(), "master"));
-    std::fs::write(tmp.path().join("MLproject"), "name: m\n").unwrap();
-    assert!(!mlproject_hidden(&[], tmp.path(), "v2.5.0"));
 }
