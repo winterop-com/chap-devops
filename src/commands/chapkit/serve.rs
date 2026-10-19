@@ -138,7 +138,7 @@ pub(super) fn list(ctx: &Ctx) -> Result<()> {
 }
 
 /// The file names chapkit looks for in an MLproject directory.
-const MLPROJECT_FILES: &[&str] = &["MLproject", "MLproject.yaml", "MLproject.yml"];
+pub(super) const MLPROJECT_FILES: &[&str] = &["MLproject", "MLproject.yaml", "MLproject.yml"];
 
 /// The port the service listens on in the container.
 const SERVICE_PORT: u16 = 8000;

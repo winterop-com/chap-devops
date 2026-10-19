@@ -72,6 +72,16 @@ Each entry names where it was seen, what happens, and what would fix it.
 
 - It prints `servicekit version 3.0.0`; the chapkit version is 2.4.0.
 
+### `chapkit --help` hides `mlproject` where `export` is used
+
+- `chapkit --help` lists `mlproject` only when the current directory has an
+  `MLproject` file (`hidden=not _has_mlproject()` in `cli/cli.py`). But
+  `mlproject export` runs in a chapkit service directory, which has a
+  `main.py` and no `MLproject`, and `mlproject run DIR` and `migrate DIR` take
+  a directory elsewhere. So the help does not show them where people need
+  them. chap-devops now adds a line after the help that names
+  `chapkit mlproject --help`.
+
 ### `chapkit mlproject export` warns about `author_note` on every service
 
 - A service with a `description` and no `author_note` gets `WARNING:

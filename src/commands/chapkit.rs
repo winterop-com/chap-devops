@@ -128,6 +128,11 @@ pub fn run(ctx: &Ctx, args: &ChapkitArgs) -> Result<()> {
                 for dir in needs_lock(&written) {
                     lock(&spec, &dir, &cwd);
                 }
+            } else if mlproject_hidden(&chapkit_args, &cwd) {
+                output::notice(
+                    "chapkit lists `mlproject` (run, migrate, export) only in a directory with an \
+                     MLproject file; `chap-devops chapkit mlproject --help` shows it",
+                );
             }
             Ok(())
         }
@@ -209,6 +214,19 @@ fn command_name(args: &[String]) -> String {
         },
         Some(first) => first.to_string(),
     }
+}
+
+/// Whether chapkit's own help leaves out the `mlproject` group: chapkit
+/// hides it from its top-level help unless the current directory has an
+/// MLproject file, though `mlproject export` is for a directory without one.
+fn mlproject_hidden(args: &[String], cwd: &Path) -> bool {
+    let top_level = args
+        .iter()
+        .all(|arg| matches!(arg.as_str(), "--help" | "-h"));
+    top_level
+        && !serve::MLPROJECT_FILES
+            .iter()
+            .any(|name| cwd.join(name).is_file())
 }
 
 /// The arguments with `--help` added after a group with nothing after it,
