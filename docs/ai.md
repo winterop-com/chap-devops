@@ -284,8 +284,10 @@ chap-devops status
 chap-devops models test --all
 ```
 
-It worked when `chap-devops status` ends with `all 5 models registered` (one per
-marketplace model) and `chap-devops models test --all` ends with `5 of 5 models pass`.
+It worked when `chap-devops status` ends with `all 4 models registered` (one per
+marketplace model; `all` leaves out the two templates) and
+`chap-devops models test --all` ends with `4 of 4 models pass`. When the
+marketplace has more models, the numbers are higher.
 The tests take one to two minutes. If some models say `not registered`, wait
 a minute and run `chap-devops status` again.
 
