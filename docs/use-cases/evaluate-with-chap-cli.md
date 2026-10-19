@@ -27,11 +27,11 @@ user.
   | `ghcr.io/chap-models/auto_arima_chapkit` | about 6.2 GB | 6, the marketplace model |
 
   varde says before each run when it must download an image first. varde
-  uses the tag of the newest chap-core release, `v2.4.0` when this guide was
+  uses the tag of the newest chap-core release, `v2.5.0` when this guide was
   tested. On a slow network, download the images in advance:
 
   ```sh
-  docker pull --platform linux/amd64 ghcr.io/dhis2-chap/chap-worker:v2.4.0
+  docker pull --platform linux/amd64 ghcr.io/dhis2-chap/chap-worker:v2.5.0
   ```
 - A connection to the internet for the first run.
 
@@ -118,7 +118,7 @@ What the options do:
 varde writes some lines of its own before chap starts:
 
 ```text
-running `chap eval` in ghcr.io/dhis2-chap/chap-worker:v2.4.0; the first run pulls it, about 12 GB
+running `chap eval` in ghcr.io/dhis2-chap/chap-worker:v2.5.0; the first run pulls it, about 12 GB
 files: chap reads and writes in /home/me/chap-eval
 ```
 
@@ -177,7 +177,7 @@ and the containers that it makes:
 ```text
 starting auto-arima-chapkit (auto_arima_chapkit in /home/me/.local/share/varde/run/default)
 ...
-running `chap eval` in ghcr.io/dhis2-chap/chap-worker:v2.4.0
+running `chap eval` in ghcr.io/dhis2-chap/chap-worker:v2.5.0
 files: chap reads and writes in /home/me/chap-eval
 model: auto_arima_chapkit at http://auto-arima-chapkit:8000 answers
 ...
@@ -250,7 +250,7 @@ To remove the images too, list them, then remove each one with
 ```sh
 docker image ls 'ghcr.io/dhis2-chap/*'
 docker image ls 'ghcr.io/chap-models/*'
-docker image rm ghcr.io/dhis2-chap/chap-worker:v2.4.0
+docker image rm ghcr.io/dhis2-chap/chap-worker:v2.5.0
 ```
 
 ## If something goes wrong

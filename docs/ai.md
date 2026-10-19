@@ -821,8 +821,7 @@ More: [The chapkit CLI](./chapkit-cli.md).
 ### 22. Serve my MLproject model, with no build
 
 They have a model directory with an `MLproject` file. Do not install Python,
-R or uv for them. Until chap-core v2.5.0 is released, add `--tag master` to
-`varde chap`. In the directory above the model:
+R or uv for them. In the directory above the model:
 
 ```sh
 varde chapkit mlproject run my-model
@@ -839,7 +838,7 @@ list. Then run the command again with `--image NAME`.
 To evaluate it, give the same port at `host.docker.internal`:
 
 ```sh
-varde chap --tag master eval --model-name http://host.docker.internal:PORT \
+varde chap eval --model-name http://host.docker.internal:PORT \
   --dataset-csv laos_subset.csv --output-file my-model.nc
 ```
 

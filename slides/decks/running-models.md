@@ -349,7 +349,7 @@ starts it in a group, as `varde run` does:
 
 ```text
 starting auto-arima-chapkit (auto_arima_chapkit in /home/me/.local/share/varde/run/default)
-running `chap eval` in ghcr.io/dhis2-chap/chap-core:v2.4.0
+running `chap eval` in ghcr.io/dhis2-chap/chap-core:v2.5.0
 model: auto_arima_chapkit at http://auto-arima-chapkit:8000 answers
 chap finished; it wrote arima.nc
 auto_arima_chapkit keeps running for the next run; `varde stop auto_arima_chapkit`

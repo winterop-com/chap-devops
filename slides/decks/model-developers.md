@@ -460,7 +460,7 @@ varde chap plot-backtest mine.nc --output-file mine.html
 - One row for each model: `crps`, `mae`, `rmse`, the interval coverage and
   more.
 - A baseline: `--model-name builtin:seasonal_median`. It needs chap-core
-  v2.5.0, or `--tag master` until v2.5.0 is released.
+  v2.5.0 or later.
 
 ---
 

@@ -206,8 +206,7 @@ varde chap eval --model-name builtin:seasonal_median \
 
 The names are `persistence`, `global_median` and `seasonal_median`. A
 built-in model runs in chap itself, so varde starts no model and uses either
-image. An older tag does not have these models. Until v2.5.0 is released, use `--tag
-master`.
+image. An older tag does not have these models, and varde refuses them there.
 
 ## An MLproject as a chapkit service
 
@@ -216,7 +215,7 @@ directory or a GitHub repository as a chapkit service in the container. chap
 then talks to it over HTTP, as it does to a deployed model:
 
 ```sh
-varde chap --tag master eval --model-name ./my_model --run-config.as-chapkit \
+varde chap eval --model-name ./my_model --run-config.as-chapkit \
   --dataset-csv laos_subset.csv --output-file my_model.nc
 ```
 

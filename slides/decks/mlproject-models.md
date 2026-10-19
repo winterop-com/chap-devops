@@ -36,11 +36,10 @@ image to build. You need Docker. Python, uv, R and chapkit are not necessary.
 ## Versions
 
 - `varde chapkit mlproject run` uses chapkit images of its own. It works
-  with chap-core v2.4.0 and `master`. Both were tested.
+  with chap-core v2.4.0 and later.
 - `mlproject export`, `--run-config.as-chapkit` and the built-in models need
-  chap-core v2.5.0.
-- Until v2.5.0 is released, give `--tag master` for them.
-- v2.4.0 is the newest release of chap-core.
+  chap-core v2.5.0, the newest release.
+- In a deployment on an older tag, `varde update` moves it to v2.5.0.
 
 ---
 
@@ -152,7 +151,7 @@ Then do one of these:
 In a second terminal, while the service runs:
 
 ```sh
-varde chap --tag master eval --model-name http://host.docker.internal:5001 \
+varde chap eval --model-name http://host.docker.internal:5001 \
   --dataset-csv laos_subset.csv --output-file rain-model.nc
 ```
 
@@ -193,7 +192,7 @@ With `--run-config.as-chapkit`, chap serves the directory with chapkit in
 its container, and installs what `uv_env` or `renv_env` names:
 
 ```sh
-varde chap --tag master eval --model-name ./rain-model --run-config.as-chapkit \
+varde chap eval --model-name ./rain-model --run-config.as-chapkit \
   --dataset-csv laos_subset.csv --output-file rain-model.nc
 ```
 
@@ -261,7 +260,7 @@ the `name` in `MLproject`, with the commit that varde gave chapkit.
 
 - An evaluation runs as for any other model.
 - `rain-model` has no covariates, so map only **Disease cases**.
-- Tested: Modeling App 7.2.0, DHIS2 2.42.6, chap-core `master`.
+- Tested: Modeling App 7.3.0, DHIS2 2.42.6, chap-core v2.5.0.
 - 18 provinces of Laos, 2019 to 2024, 7 splits: 19 seconds.
 - chap-core also ran its three baselines on the same data.
 
@@ -272,7 +271,7 @@ the `name` in `MLproject`, with the commit that varde gave chapkit.
 Commit first: the migration moves files to `_old/`. In the model directory:
 
 ```text
-$ varde chapkit --tag master mlproject migrate . --yes --base-image chapkit-r-tidyverse
+$ varde chapkit mlproject migrate . --yes --base-image chapkit-r-tidyverse
 running `chapkit mlproject migrate` in ghcr.io/dhis2-chap/chap-core:master
 chapkit finished; it wrote .dockerignore, .gitignore, CHAPKIT.md, Dockerfile,
   Makefile, README.md, _old/.dockerignore, _old/.gitignore, and 6 more
@@ -308,7 +307,7 @@ A chapkit service that runs scripts can write the `MLproject` of the same
 model:
 
 ```text
-$ varde chapkit --tag master mlproject export main.py -o MLproject
+$ varde chapkit mlproject export main.py -o MLproject
 running `chapkit mlproject export` in ghcr.io/dhis2-chap/chap-core:master
 chapkit finished; it wrote MLproject
 ```

@@ -22,8 +22,8 @@ chapkit is a dependency of chap-core, so the chap-core image has the chapkit
 CLI. varde runs it in that image, and there is no other image to pin or to
 update. The chap-core image v2.4.0 has chapkit 2.1.0. From v2.5.0 it has
 chapkit 2.4.0, which adds `chapkit mlproject export` and writes the full
-MLproject contract with `migrate`. Until v2.5.0 is released, use `--tag
-master` for these.
+MLproject contract with `migrate`. In a deployment on an older tag, add
+`--tag v2.5.0` for these.
 
 The version follows the rules of `varde chap`: in a deployment, the
 deployment's chap-core tag; outside a deployment, the newest chap-core
@@ -89,20 +89,21 @@ The values are `chapkit-py`, `chapkit-r`, `chapkit-r-tidyverse` and
 `chapkit-r-inla`. The `README.md` of a project from an `mlproject-*` template
 gives the command with the correct value.
 
-On chap-core `master` (chapkit 2.4.0), these models were migrated, built, and
-passed the model-level test with 1 training and 1 prediction:
-`minimalist_configurable_model` and `mean` from chap-models, and the
-`mlproject-py` and `mlproject-r` templates with `--base-image`.
+On chap-core `master` before v2.5.0 (chapkit 2.4.0), these models were
+migrated, built, and passed the model-level test with 1 training and 1
+prediction: `minimalist_configurable_model` and `mean` from chap-models, and
+the `mlproject-py` and `mlproject-r` templates with `--base-image`. On
+v2.5.0, the `mlproject-py` template passed again.
 
 ## Export a service as an MLproject
 
 `chapkit mlproject export` reads the `main.py` of a chapkit service, and
 writes the `MLproject` file that describes the same model. It needs chapkit
-2.4.0, so use chap-core v2.5.0 or `--tag master`:
+2.4.0, so it needs chap-core v2.5.0 or later:
 
 ```sh
 cd my-service
-varde chapkit --tag master mlproject export main.py -o MLproject
+varde chapkit mlproject export main.py -o MLproject
 ```
 
 chapkit imports `main.py` to read the service. This works in the chap-core

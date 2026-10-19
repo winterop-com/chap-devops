@@ -108,7 +108,7 @@ docker run --rm -i [-t] --init --platform linux/amd64
   -e HOME=/tmp -e CHAP_RUNS_DIR=<data>/chap/runs ...
   [--network <deployment>_default]
   --label com.winterop.varde.kind=cli
-  ghcr.io/dhis2-chap/chap-worker:v2.4.0 chap eval ...
+  ghcr.io/dhis2-chap/chap-worker:v2.5.0 chap eval ...
 ```
 
 - `--rm`: the container goes when chap stops. `--init` passes Ctrl-C on.
@@ -188,7 +188,7 @@ newest image on this machine
 ## The lines before the run
 
 ```text
-running `chap eval` in ghcr.io/dhis2-chap/chap-worker:v2.4.0; the first run pulls it, about 12 GB
+running `chap eval` in ghcr.io/dhis2-chap/chap-worker:v2.5.0; the first run pulls it, about 12 GB
 files: chap reads and writes in /home/me/work
 model: auto_arima_chapkit at http://auto-arima-chapkit:8000 answers
 ```
@@ -223,7 +223,7 @@ Outside a deployment, varde starts the model in a `varde run` group:
 
 ```text
 starting auto-arima-chapkit (auto_arima_chapkit in ~/.local/share/varde/run/default)
-running `chap eval` in ghcr.io/dhis2-chap/chap-core:v2.4.0
+running `chap eval` in ghcr.io/dhis2-chap/chap-core:v2.5.0
 model: auto_arima_chapkit at http://auto-arima-chapkit:8000 answers
 chap finished; it wrote arima.nc
 auto_arima_chapkit keeps running for the next run; `varde stop auto_arima_chapkit`
@@ -350,14 +350,13 @@ From chap-core v2.5.0, chap has baselines of its own. Give them with the
 `builtin:` prefix:
 
 ```sh
-varde chap --tag master eval --model-name builtin:seasonal_median \
+varde chap eval --model-name builtin:seasonal_median \
   --dataset-csv laos_subset.csv --output-file seasonal_median.nc
 ```
 
 - The names are `persistence`, `global_median` and `seasonal_median`.
 - chap runs them itself, so varde starts no model, and either image works.
-- An older tag does not have them. Until v2.5.0 is released, use
-  `--tag master`.
+- An older tag does not have them, and varde refuses them there.
 
 ---
 
@@ -367,7 +366,7 @@ From chap-core v2.5.0, `--run-config.as-chapkit` starts a model directory or a
 GitHub repository as a chapkit service in the container:
 
 ```sh
-varde chap --tag master eval --model-name ./my_model --run-config.as-chapkit \
+varde chap eval --model-name ./my_model --run-config.as-chapkit \
   --dataset-csv laos_subset.csv --output-file my_model.nc
 ```
 

@@ -9,9 +9,9 @@ its own, and `varde chapkit mlproject export` goes the other way. Python, uv,
 R and the chapkit CLI are not necessary on the machine.
 
 `mlproject run` uses chapkit images of its own, so it works with chap-core
-v2.4.0 and `master`; both were tested. `export` needs chapkit 2.4.0 in the
-chap-core image: chap-core v2.5.0, or `--tag master` until v2.5.0 is
-released. The other commands below have `--tag master` for the same reason.
+v2.4.0 and later. `export`, `--run-config.as-chapkit` and the up-to-date
+`migrate` need chapkit 2.4.0 in the chap-core image, which chap-core v2.5.0
+has.
 
 ## Make or bring the model
 
@@ -76,7 +76,7 @@ The chap CLI runs in a container, so it reaches the service at
 `host.docker.internal`, not at `localhost`:
 
 ```sh
-varde chap --tag master eval --model-name http://host.docker.internal:5001 \
+varde chap eval --model-name http://host.docker.internal:5001 \
   --dataset-csv laos_subset.csv --output-file rain-model.nc
 ```
 
@@ -95,7 +95,7 @@ chap can also run the directory itself, without the service. With
 and installs what `uv_env` or `renv_env` names:
 
 ```sh
-varde chap --tag master eval --model-name ./rain-model --run-config.as-chapkit \
+varde chap eval --model-name ./rain-model --run-config.as-chapkit \
   --dataset-csv laos_subset.csv --output-file rain-model.nc
 ```
 
@@ -143,8 +143,9 @@ commit that varde gave chapkit:
 An evaluation runs as for any other model. For `rain-model`, map only
 **Disease cases**, because the model has no covariates. See
 [Your first forecast in the Modeling App](../modeling-app.md). This was tested
-with Modeling App 7.2.0, DHIS2 2.42.6 and chap-core `master`: the evaluation
-of the 18 provinces, 2019 to 2024, took 19 seconds.
+with Modeling App 7.3.0, DHIS2 2.42.6 and chap-core v2.5.0, after a
+`varde update` from v2.4.0: the evaluation of the 18 provinces, 2019 to 2024,
+took 19 seconds.
 
 ![The evaluation of rain-model](../images/modeling-app/mlproject-evaluation.png)
 
@@ -162,7 +163,7 @@ model directory:
 
 ```sh
 cd rain-model
-varde chapkit --tag master mlproject migrate . --yes --base-image chapkit-r-tidyverse
+varde chapkit mlproject migrate . --yes --base-image chapkit-r-tidyverse
 docker build --platform linux/amd64 --build-arg GIT_REVISION=$(git rev-parse HEAD) -t rain-model:dev .
 varde run rain-model:dev
 varde -C ~/.local/share/varde/run/default models test rain_model
@@ -180,7 +181,7 @@ A chapkit service that runs scripts, such as one from the `shell-py` or
 
 ```sh
 cd my-service
-varde chapkit --tag master mlproject export main.py -o MLproject
+varde chapkit mlproject export main.py -o MLproject
 varde chapkit mlproject run .
 ```
 
@@ -194,8 +195,11 @@ The exported `MLproject` runs with `varde chapkit mlproject run` and with
 
 ## What was tested
 
-On chap-core `master` (chapkit 2.4.0), macOS arm64, each row served with
-`varde chapkit mlproject run` and evaluated with `varde chap eval`:
+On chap-core `master` before v2.5.0 (chapkit 2.4.0), macOS arm64, each row
+was served with `varde chapkit mlproject run` and evaluated with
+`varde chap eval`. On v2.5.0, the `mlproject-py` template was migrated and
+tested again, and the `shell-r` template was exported, served and evaluated
+again, with no `--tag`:
 
 | Model | Image | Result |
 | --- | --- | --- |
