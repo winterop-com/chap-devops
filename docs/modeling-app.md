@@ -20,8 +20,9 @@ It also makes the configured models that the Modeling App lists. It took about
 40 seconds. Its last line is
 `` the Modeling App can reach Chap; open DHIS2 with `chap-devops open dhis2` ``.
 
-Tested on 2026-10-12 with Modeling App 7.2.0, DHIS2 2.42.6 with the Laos demo
-database, chap-core v2.4.0 and Simple Multistep (chapkit) 0.1.2. Other versions of the Modeling
+Tested on 2026-10-19 with chap-devops v0.110.0, Modeling App 7.3.0, DHIS2
+2.42.6 with the Laos demo database, chap-core v2.5.0 and Simple Multistep
+(chapkit) 0.1.2. Other versions of the Modeling
 App may name a button differently; the steps stay the same. `chap-devops dhis2 show`
 says which Modeling App version a deployment has.
 
@@ -92,10 +93,14 @@ configs add`. See [Adding](./models.md#adding).
 `chap-devops models test --all` makes each model train and predict. See
 [Configured models](./models.md#configured-models).
 
-The list also holds models that chap-core ships configured on its own and runs
-inside its worker, such as **CHAP-EWARS Model** and **Monthly CHAP-EWARS
-model**. Some of them have the status *Deprecated*. They are not models that
-`chap-devops` started. The two `(chapkit)` entries have the status *Limited*.
+Under each name, the list shows the author of the model. The list also holds
+models that chap-core ships configured on its own and runs inside its worker,
+such as **CHAP-EWARS Model** and **Monthly CHAP-EWARS model**. Some of them
+have the status *Deprecated*. From chap-core v2.5.0, it also has the three
+built-in baselines, **Persistence**, **Global median** and **Seasonal
+median**. chap-core runs them beside each evaluation, so you can compare a
+model with them. None of these are models that `chap-devops` started. The two
+`(chapkit)` entries have the status *Limited*.
 
 ![Organisation units: Lao PDR at the Province level](images/modeling-app/03-org-units.png)
 
@@ -124,7 +129,7 @@ anything, and should say *All 18 locations can be successfully imported*.
 ![The dry run: 18 valid locations](images/modeling-app/05-dry-run.png)
 
 Close it and choose **Start import**. The app moves to **Jobs**, where the
-evaluation runs. With Simple Multistep it took about 25 seconds on an Apple
+evaluation runs. With Simple Multistep it took about 24 seconds on an Apple
 Silicon Mac (M2 Max), where the model runs under emulation. `chap-devops jobs` in the
 terminal shows the same job; its type is `create_backtest_from_data`.
 
@@ -167,7 +172,8 @@ marketplace models come with `chap-devops models enable ID` and `chap-devops up`
 
 On the evaluation, **Create prediction setup** keeps the model, the data
 mapping and the provinces under a name: type one in **Setup name**, leave
-**Set default import mapping** off and **Save**. The app then opens the setup.
+**Alert policy** at *No alert policy* and **Set default import mapping** off,
+and **Save**. The app then opens the setup.
 Once the evaluation has a setup, the same button says **Predict**.
 
 ![Creating a prediction setup](images/modeling-app/09-prediction-setup.png)
@@ -180,18 +186,25 @@ prediction** again. The app goes back to the setup, where the run shows as
 
 ![Running a prediction](images/modeling-app/10-run-prediction.png)
 
-The job took about 6 seconds in `chap-devops jobs`. The row in the app said
+The job took about 7 seconds in `chap-devops jobs`. The row in the app said
 *Success* within a minute, without a reload.
 **Go to last run** shows one chart per province:
 the real cases up to December 2024 and the forecast for January to March 2025.
 
 ![A forecast per province](images/modeling-app/11-forecast.png)
 
-**Import**, on the right of the forecast, writes the forecast back into DHIS2
-as data, where dashboards and maps can use it. It needs five data elements for
-the forecast's quantiles. Each box is empty at first; open it, and it lists
-the elements of the demo database under **Suggested**. Pick
-`CHAP Dengue Cases (Any) - Weekly Quantile High` to `... Quantile Low`.
+**Import**, on the right of the forecast, opens a page that writes the
+forecast back into DHIS2 as data, where dashboards and maps can use it. It
+needs five data elements for the forecast's quantiles. Each box is empty at
+first; open it, and it lists the elements of the demo database under
+**Suggested**. Pick `CHAP Dengue Cases (Any) - Weekly Quantile High` to
+`... Quantile Low`.
+
+**Use alert outputs** is on by default, and then the page also needs an
+**Outbreak indicator**: **Clear and import** does nothing until it has one,
+and the message is under the box, below the first screen. Pick
+`CHAP Dengue Cases (Any) - Weekly Outbreak Alert`; the box does not suggest it,
+so type `Outbreak` to find it. Or turn **Use alert outputs** off.
 **Clear and import** asks once more before it writes, then the app goes back
 to the setup. DHIS2 2.42.6 accepted the monthly values into those elements,
 but their data set is weekly. For a monthly forecast, create monthly data
@@ -204,6 +217,7 @@ elements in DHIS2's Maintenance app and pick those.
 | Typing `Modeling` in the app menu finds nothing | `chap-devops dhis2 connect` has not run, or failed; run it and read its last line. |
 | The model list does not have the model `chap-devops` enabled | `chap-devops status`: the model must be `registered`. If it says `registered, not configured`, run `chap-devops models configs sync`. Otherwise the line under the table says why. |
 | `Oops! Sorry, an unexpected error`, or `Unnamed evaluation` rows, after the deployment was recreated | The browser holds a login to the DHIS2 that was removed: open DHIS2 again and log in. See [Troubleshooting](./troubleshooting.md#oops-sorry-an-unexpected-error-or-unnamed-evaluation-in-the-modeling-app). |
+| **Clear and import** does nothing | Scroll down: with **Use alert outputs** on, the page says `Outbreak indicator is required`. Pick `CHAP Dengue Cases (Any) - Weekly Outbreak Alert`, or turn **Use alert outputs** off. |
 | A job in **Jobs** says it failed | `chap-devops jobs`, then `chap-devops jobs logs ID` with the id it prints: the model's own error is at the end. |
 
 More on connecting DHIS2 and Chap: [DHIS2](./dhis2.md). The Modeling App's own
