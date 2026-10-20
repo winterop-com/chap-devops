@@ -52,7 +52,6 @@ bug that is fixed leaves the file.
 ### A dataset that the baselines ran on cannot be deleted (CLIM-1447)
 
 - Seen: chap-core `master` before v2.5.0, and v2.5.0.
-- Also reported as CLIM-1193, for a dataset with normal backtests.
 - `DELETE /v1/crud/datasets/{id}` answers HTTP 500 (`ForeignKeyViolation ...
   "backtest_dataset_id_fkey"`) after a backtest, because the built-in
   baselines wrote backtests on the dataset. Every backtest listing hides
