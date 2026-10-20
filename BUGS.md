@@ -21,7 +21,7 @@ bug that is fixed leaves the file.
   suggested, or default the switch to off when the setup has no alert policy
   (the setup in this test had none).
 
-### Times are off by the UTC offset
+### Times are off by the UTC offset (CLIM-1475)
 
 - Seen: Modeling App 7.3.0 with chap-core v2.5.0, at 22:10 CEST (UTC+2).
 - A prediction run started at 22:10 shows **Created 19.10.2026, 20:10** and
@@ -52,17 +52,18 @@ bug that is fixed leaves the file.
 ### A dataset that the baselines ran on cannot be deleted (CLIM-1447)
 
 - Seen: chap-core `master` before v2.5.0, and v2.5.0.
+- Also reported as CLIM-1193, for a dataset with normal backtests.
 - `DELETE /v1/crud/datasets/{id}` answers HTTP 500 (`ForeignKeyViolation ...
   "backtest_dataset_id_fkey"`) after a backtest, because the built-in
   baselines wrote backtests on the dataset. Every backtest listing hides
   them, so a client cannot find them to delete them first. The only way is
   through the `result` of the `run_baseline` jobs, which chap-devops uses.
 
-### The refusal of a template without a revision contradicts itself
+### The refusal of a template without a revision contradicts itself (CLIM-1473)
 
 - `stored from revision None, but its source now reports revision None`.
 
-### `GET /v1/jobs/{id}` gives the status only
+### `GET /v1/jobs/{id}` gives the status only (CLIM-1474)
 
 - It answers `"SUCCESS"`, while `GET /v1/jobs` gives the whole job, with its
   start time and result.
