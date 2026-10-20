@@ -9,7 +9,7 @@
 mod clock;
 mod report;
 
-pub use clock::{ago, human_age, local_clock, local_clock_seconds};
+pub use clock::{ago, human_age, local_clock, local_clock_seconds, local_date_time, local_rfc3339};
 pub use report::{Level, Message, Report};
 
 use crate::error::Result;

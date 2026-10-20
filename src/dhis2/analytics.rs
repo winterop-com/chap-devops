@@ -219,6 +219,62 @@ pub fn recorded_success(raw: &str) -> String {
     }
 }
 
+/// The last analytics success of a `/api/system/info` answer, in this
+/// machine's zone, as RFC 3339 with the offset.
+///
+/// DHIS2 writes `lastAnalyticsTableSuccess` with no zone, in the zone of the
+/// server, and a container is UTC. `serverDate` is the clock of the same
+/// server in the same form, so the gap between it and `now` is the offset of
+/// the server. Without a `serverDate` to read, the time stays as DHIS2 wrote
+/// it, and [`shown_success`] says whose clock it is.
+pub fn recorded_success_of(info: &serde_json::Value, now: u64) -> String {
+    let raw = recorded_success(&text_at(info, "lastAnalyticsTableSuccess"));
+    match server_offset(&text_at(info, "serverDate"), now)
+        .and_then(|offset| success_as_unix(&raw, offset))
+    {
+        Some(unix) => crate::output::local_rfc3339(unix),
+        None => raw,
+    }
+}
+
+/// A recorded success as the human output prints it: `YYYY-MM-DD HH:MM` on
+/// this machine's clock, or the time of the DHIS2 server where chap-devops
+/// could not read its offset.
+pub fn shown_success(recorded: &str) -> String {
+    let recorded = recorded.trim();
+    let has_offset = recorded
+        .get(19..)
+        .is_some_and(|zone| zone.starts_with(['+', '-', 'Z']));
+    match has_offset
+        .then(|| crate::status::parse_rfc3339(recorded))
+        .flatten()
+    {
+        Some(unix) => crate::output::local_date_time(unix),
+        None if recorded.is_empty() => String::new(),
+        None => format!("{recorded} (DHIS2 server time)"),
+    }
+}
+
+/// The UTC offset of the DHIS2 server in seconds, from its `serverDate` and
+/// this machine's `now`.
+///
+/// The gap also holds the time the answer took and any clock drift, so it is
+/// rounded to the quarter hour that every zone offset is a multiple of. A
+/// gap past 14 hours is not a zone, and gives `None`.
+pub(super) fn server_offset(server_date: &str, now: u64) -> Option<i64> {
+    const QUARTER: i64 = 900;
+    let server = crate::status::parse_rfc3339(server_date)? as i64;
+    let gap = server - now as i64;
+    let offset = (gap + gap.signum() * QUARTER / 2) / QUARTER * QUARTER;
+    (offset.abs() <= 14 * 3600).then_some(offset)
+}
+
+/// A server time with no zone as a Unix timestamp, given the server offset.
+pub(super) fn success_as_unix(raw: &str, offset: i64) -> Option<u64> {
+    let server = crate::status::parse_rfc3339(raw)? as i64;
+    u64::try_from(server - offset).ok()
+}
+
 /// The job id a `POST /api/resourceTables/analytics` answered with.
 ///
 /// Three spellings, because the shape of that `WebMessage` has moved: the id

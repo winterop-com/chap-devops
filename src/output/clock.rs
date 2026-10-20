@@ -44,6 +44,38 @@ pub fn local_clock_seconds(unix: u64) -> String {
     format!("{hour:02}:{minute:02}:{second:02}")
 }
 
+/// `YYYY-MM-DD HH:MM` of a Unix timestamp on this machine's clock, for a
+/// time that can be days old. See [`local_clock`] for where the zone comes from.
+pub fn local_date_time(unix: u64) -> String {
+    date_time_of(unix, local_offset(unix as i64))
+}
+
+/// RFC 3339 of a Unix timestamp in this machine's zone, with the offset, so a
+/// `--json` reader gets the local time and can still compare it.
+pub fn local_rfc3339(unix: u64) -> String {
+    rfc3339_of(unix, local_offset(unix as i64))
+}
+
+/// [`local_date_time`] with the offset handed in.
+pub(super) fn date_time_of(unix: u64, offset: i64) -> String {
+    let local = (unix as i64).saturating_add(offset).max(0) as u64;
+    let (year, month, day, hour, minute, _) = crate::backup::utc_parts(local);
+    format!("{year}-{month:02}-{day:02} {hour:02}:{minute:02}")
+}
+
+/// [`local_rfc3339`] with the offset handed in.
+pub(super) fn rfc3339_of(unix: u64, offset: i64) -> String {
+    let local = (unix as i64).saturating_add(offset).max(0) as u64;
+    let (year, month, day, hour, minute, second) = crate::backup::utc_parts(local);
+    let sign = if offset < 0 { '-' } else { '+' };
+    let offset = offset.abs();
+    format!(
+        "{year}-{month:02}-{day:02}T{hour:02}:{minute:02}:{second:02}{sign}{:02}:{:02}",
+        offset / 3600,
+        offset % 3600 / 60
+    )
+}
+
 /// [`local_clock`] with the offset handed in, so the formatting is testable
 /// on a machine in any time zone.
 pub(super) fn clock_of(unix: u64, offset: i64) -> String {

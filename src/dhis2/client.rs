@@ -298,7 +298,7 @@ impl Dhis2 {
         let info = answer.json().unwrap_or(serde_json::Value::Null);
         Ok(Ready {
             version: text_at(&info, "version"),
-            last_analytics: super::recorded_success(&text_at(&info, "lastAnalyticsTableSuccess")),
+            last_analytics: super::recorded_success_of(&info, crate::backup::now()),
             user: self.whoami(),
             waited: started.elapsed(),
         })
@@ -333,8 +333,9 @@ pub struct Ready {
     /// DHIS2's own version string, `2.42.6` and the like. Empty when the
     /// answer carried none.
     pub version: String,
-    /// When analytics last succeeded, as DHIS2 records it. Empty for an
-    /// instance that has never run it.
+    /// When analytics last succeeded, as DHIS2 records it, in this machine's
+    /// zone where the server offset is known. Empty for an instance that has
+    /// never run it. See [`super::recorded_success_of`].
     pub last_analytics: String,
     /// Who the requests are sent as. See [`Dhis2::whoami`].
     pub user: String,

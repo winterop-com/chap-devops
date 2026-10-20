@@ -1,4 +1,4 @@
-use super::clock::{clock_of, tzif_offset};
+use super::clock::{clock_of, date_time_of, rfc3339_of, tzif_offset};
 use super::*;
 use std::time::Duration;
 
@@ -541,5 +541,20 @@ fn a_report_keeps_the_order_of_its_lines_across_the_two_streams() {
             ),
             (Stream::Stdout, "run `chap-devops dhis2 show`\n".to_string()),
         ]
+    );
+}
+
+#[test]
+fn a_date_time_is_local_and_rfc3339_carries_the_offset() {
+    // 2026-06-16T07:51:00Z
+    let unix = 1_781_596_260;
+    assert_eq!(date_time_of(unix, 0), "2026-06-16 07:51");
+    assert_eq!(date_time_of(unix, 2 * 3600), "2026-06-16 09:51");
+    assert_eq!(date_time_of(unix, -8 * 3600), "2026-06-15 23:51");
+    assert_eq!(rfc3339_of(unix, 0), "2026-06-16T07:51:00+00:00");
+    assert_eq!(rfc3339_of(unix, 2 * 3600), "2026-06-16T09:51:00+02:00");
+    assert_eq!(
+        rfc3339_of(unix, -(3 * 3600 + 1800)),
+        "2026-06-16T04:21:00-03:30"
     );
 }

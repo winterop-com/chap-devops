@@ -285,7 +285,7 @@ pub(super) fn analytics_lines(analytics: &AnalyticsReport, lines: &mut Report) {
     if !analytics.last_success.is_empty() {
         lines.hint(format!(
             "DHIS2 records its last analytics success as {}",
-            analytics.last_success
+            dhis2::shown_success(&analytics.last_success)
         ));
     }
 }
@@ -374,7 +374,7 @@ fn app_cell(app: &ShownApp, out: &Out) -> String {
 /// in them. Nothing here can see a row count; `lastYears` is the reason that
 /// distinction is worth keeping, and `docs/dhis2.md` carries it.
 pub(super) fn analytics_cell(evidence: dhis2::AnalyticsEvidence, last: &str, out: &Out) -> String {
-    let when = out.value(last.trim());
+    let when = out.value(&dhis2::shown_success(last));
     match evidence {
         dhis2::AnalyticsEvidence::Never => out.warn("never run"),
         dhis2::AnalyticsEvidence::Recorded => when,

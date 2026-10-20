@@ -581,14 +581,16 @@ fn the_apps_row_is_the_two_apps_chap_devops_installs_and_no_others() {
 /// and the one chap-devops watched finish must not read as more than that.
 #[test]
 fn the_analytics_row_says_what_the_timestamp_is_worth() {
-    let when = "2026-06-16T07:51:00.093";
-    let inherited = analytics_cell(dhis2::AnalyticsEvidence::Unconfirmed, when, &out());
+    let recorded = "2026-06-16T09:51:00+02:00";
+    // The row is on the clock of this machine, whatever its zone is.
+    let when = &crate::output::local_date_time(1_781_596_260);
+    let inherited = analytics_cell(dhis2::AnalyticsEvidence::Unconfirmed, recorded, &out());
     assert_eq!(
         inherited,
         format!("{when} (unconfirmed on a seeded database)")
     );
 
-    let here = analytics_cell(dhis2::AnalyticsEvidence::RanHere, when, &out());
+    let here = analytics_cell(dhis2::AnalyticsEvidence::RanHere, recorded, &out());
     assert_eq!(here, format!("{when} (a run finished on this deployment)"));
     // What chap-devops saw is a run finishing, which is not a row count: a run
     // can finish having written nothing, which is why it says neither
@@ -596,8 +598,17 @@ fn the_analytics_row_says_what_the_timestamp_is_worth() {
     assert!(!here.contains("done"), "{here}");
 
     assert_eq!(
-        analytics_cell(dhis2::AnalyticsEvidence::Recorded, when, &out()),
-        when
+        analytics_cell(dhis2::AnalyticsEvidence::Recorded, recorded, &out()),
+        *when
+    );
+    // With no offset to read, the time is the server's, and the row says so.
+    assert_eq!(
+        analytics_cell(
+            dhis2::AnalyticsEvidence::Recorded,
+            "2026-06-16T07:51:00.093",
+            &out()
+        ),
+        "2026-06-16T07:51:00.093 (DHIS2 server time)"
     );
     assert_eq!(
         analytics_cell(dhis2::AnalyticsEvidence::Never, "", &out()),
@@ -620,7 +631,7 @@ fn show_on_a_connected_instance_says_it_is_connected() {
             token_refused: false,
             way_out: String::new(),
         }),
-        last_analytics: "2026-09-25T10:01:00.000".to_string(),
+        last_analytics: "2026-09-25T10:01:00+00:00".to_string(),
         analytics: dhis2::AnalyticsEvidence::RanHere,
         apps: shown_apps(&["7.1.0", "1.16.2"]),
         missing: Vec::new(),
@@ -634,7 +645,10 @@ fn show_on_a_connected_instance_says_it_is_connected() {
         "{text}"
     );
     assert!(
-        text.contains("2026-09-25T10:01:00.000 (a run finished on this deployment)"),
+        text.contains(&format!(
+            "{} (a run finished on this deployment)",
+            crate::output::local_date_time(1_790_330_460)
+        )),
         "{text}"
     );
     assert!(!text.contains("missing:"), "{text}");

@@ -1,4 +1,4 @@
-use super::analytics::progress_of;
+use super::analytics::{progress_of, recorded_success, server_offset, success_as_unix};
 use super::apps::{HubApp, HubVersion};
 use super::credentials::{CredentialInputs, credentials_of};
 use super::route::{ROUTE_ADD_AUTHORITY, Route, RouteAuth, route_origin};
@@ -1230,4 +1230,69 @@ fn a_queued_analytics_job_is_read_off_the_job_list() {
     assert_eq!(queued_job(&none), None);
     assert_eq!(queued_job(&serde_json::json!({})), None);
     assert!(queued_jobs_query().contains("filter=jobType:eq:ANALYTICS_TABLE"));
+}
+
+/// DHIS2 writes `lastAnalyticsTableSuccess` with no zone, in the zone of the
+/// server. 2.42.6 in a container sent `serverDate` 07:17 at 09:17 CEST: the
+/// gap to `now` is the server offset, and the answer time is rounded out.
+#[test]
+fn the_server_offset_comes_from_server_date_and_rounds_to_the_quarter_hour() {
+    // 2026-10-20T07:17:21Z
+    let now = 1_792_480_641;
+    assert_eq!(server_offset("2026-10-20T07:17:21.579", now), Some(0));
+    assert_eq!(server_offset("2026-10-20T07:17:24.000", now), Some(0));
+    assert_eq!(
+        server_offset("2026-10-20T09:17:20.900", now),
+        Some(2 * 3600)
+    );
+    assert_eq!(
+        server_offset("2026-10-20T01:47:22.000", now),
+        Some(-(5 * 3600 + 1800))
+    );
+    assert_eq!(server_offset("2026-10-22T07:17:21.000", now), None);
+    assert_eq!(server_offset("", now), None);
+}
+
+#[test]
+fn a_recorded_success_is_read_in_the_zone_of_the_server() {
+    // 2026-06-16T07:51:00Z
+    let utc = 1_781_596_260;
+    assert_eq!(success_as_unix("2026-06-16T07:51:00.093", 0), Some(utc));
+    assert_eq!(
+        success_as_unix("2026-06-16T09:51:00.093", 2 * 3600),
+        Some(utc)
+    );
+    assert_eq!(success_as_unix("", 0), None);
+}
+
+/// With no `serverDate`, the time stays as DHIS2 wrote it, and the human
+/// output says whose clock it is.
+#[test]
+fn a_recorded_success_with_no_server_date_stays_as_dhis2_wrote_it() {
+    let info = serde_json::json!({"lastAnalyticsTableSuccess": "2026-06-16T07:51:00.093"});
+    let recorded = recorded_success_of(&info, 1_792_480_641);
+    assert_eq!(recorded, "2026-06-16T07:51:00.093");
+    assert_eq!(
+        shown_success(&recorded),
+        "2026-06-16T07:51:00.093 (DHIS2 server time)"
+    );
+    assert_eq!(shown_success(""), "");
+}
+
+#[test]
+fn a_recorded_success_with_a_server_date_has_the_offset_of_this_machine() {
+    let info = serde_json::json!({
+        "lastAnalyticsTableSuccess": "2026-06-16T07:51:00.093",
+        "serverDate": "2026-10-20T07:17:21.579",
+    });
+    let recorded = recorded_success_of(&info, 1_792_480_641);
+    assert_eq!(
+        crate::status::parse_rfc3339(&recorded),
+        Some(1_781_596_260),
+        "{recorded}"
+    );
+    assert_eq!(
+        shown_success(&recorded),
+        crate::output::local_date_time(1_781_596_260)
+    );
 }

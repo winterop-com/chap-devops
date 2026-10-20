@@ -132,7 +132,7 @@ It worked when `chap-devops dhis2 connect` says `chap-core answered through it`,
 external DHIS2 2.42.6 at http://localhost:8080, as `admin`
 route      http://host.docker.internal:8700/** (healthy)
 target     http://host.docker.internal:8700/**
-analytics  2026-10-07T23:14:20.016 (a run finished on this deployment)
+analytics  2026-10-08 01:14 (a run finished on this deployment)
 apps       Modeling App 7.3.0, DHIS2 Climate App 1.16.2
 the Modeling App can reach Chap; open DHIS2 with `chap-devops open dhis2`
 ```

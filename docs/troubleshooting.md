@@ -1428,7 +1428,7 @@ reports the app as already installed rather than fighting it.
 ## `analytics may never have run on this deployment`
 
 ```text
-analytics  2026-06-16T07:51:00.093 (unconfirmed on a seeded database)
+analytics  2026-06-16 09:51 (unconfirmed on a seeded database)
 missing: analytics may never have run on this deployment: a seeded database can carry the dump's timestamp, and no run has finished since DHIS2 started; run `chap-devops dhis2 analytics` to settle it
 ```
 

@@ -1,7 +1,7 @@
 use crate::common::*;
 use crate::dhis2_stand_in::*;
 #[cfg(unix)]
-use predicates::prelude::PredicateBooleanExt;
+use predicates::prelude::{Predicate, PredicateBooleanExt};
 use serde_json::Value as Json;
 use std::path::PathBuf;
 use tempfile::TempDir;
@@ -698,9 +698,13 @@ fn dhis2_analytics_runs_the_request_that_populates_and_waits_for_it() {
         .stdout(predicates::str::contains(
             "hint: DHIS2 said: Analytics tables updated",
         ))
-        .stdout(predicates::str::contains(
-            "hint: DHIS2 records its last analytics success as 2026-09-25T10:01:00.000",
-        ));
+        // The stand-in is a UTC server; the time is on the clock of this machine.
+        .stdout(
+            predicates::str::is_match(
+                r"hint: DHIS2 records its last analytics success as 2026-09-2\d \d\d:\d\d\n",
+            )
+            .unwrap(),
+        );
 
     let asked = stand_in.asked();
     assert!(
@@ -963,9 +967,12 @@ fn dhis2_show_does_not_call_an_inherited_analytics_timestamp_evidence() {
     dhis2_chap(&sandbox, &dir, &bin, None, &["show"])
         .assert()
         .success()
-        .stdout(predicates::str::contains(
-            "analytics  2026-06-16T07:51:00.093 (unconfirmed on a seeded database)",
-        ))
+        .stdout(
+            predicates::str::is_match(
+                r"analytics  2026-06-1\d \d\d:\d\d \(unconfirmed on a seeded database\)",
+            )
+            .unwrap(),
+        )
         .stdout(predicates::str::contains(
             "missing: analytics may never have run on this deployment",
         ))
@@ -982,7 +989,14 @@ fn dhis2_show_does_not_call_an_inherited_analytics_timestamp_evidence() {
         &["show", "--json"],
     ));
     assert_eq!(report["analytics"], "unconfirmed", "{report}");
-    assert_eq!(report["last_analytics"], "2026-06-16T07:51:00.093");
+    // 07:51 on a UTC server, in the zone of this machine, with its offset.
+    let last = report["last_analytics"].as_str().unwrap_or_default();
+    assert!(
+        predicates::str::is_match(r"^2026-06-1\dT\d\d:\d\d:00[+-]\d\d:\d\d$")
+            .unwrap()
+            .eval(last),
+        "{last}"
+    );
 
     // The notifier is what settles it, and `show` asks: a run it remembers is
     // a run that happened on this DHIS2, because the notifier is in the
@@ -1025,9 +1039,7 @@ fn dhis2_show_trusts_the_timestamp_where_no_dump_could_have_brought_it() {
     dhis2_chap(&sandbox, &dir, &bin, None, &["show"])
         .assert()
         .success()
-        .stdout(predicates::str::contains(
-            "analytics  2026-06-16T07:51:00.093",
-        ))
+        .stdout(predicates::str::is_match(r"analytics  2026-06-1\d \d\d:\d\d\n").unwrap())
         .stdout(predicates::str::contains("unconfirmed").not())
         .stdout(predicates::str::contains("missing: analytics").not());
 
@@ -1056,9 +1068,12 @@ fn dhis2_show_credits_an_analytics_run_that_finished_on_this_deployment() {
     dhis2_chap(&sandbox, &dir, &bin, None, &["show"])
         .assert()
         .success()
-        .stdout(predicates::str::contains(
-            "analytics  2026-09-25T10:01:00.000 (a run finished on this deployment)",
-        ))
+        .stdout(
+            predicates::str::is_match(
+                r"analytics  2026-09-2\d \d\d:\d\d \(a run finished on this deployment\)",
+            )
+            .unwrap(),
+        )
         .stdout(predicates::str::contains("unconfirmed").not())
         .stdout(predicates::str::contains("missing: analytics").not());
 }

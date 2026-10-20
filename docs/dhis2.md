@@ -1125,9 +1125,16 @@ what it checked and labels the timestamp with what it is worth:
 | Row | What chap-devops checked |
 | --- | --- |
 | `analytics  never run` | DHIS2 records no successful run at all. DHIS2 2.42 with an empty database reports `1970-01-01T00:00:00.000` instead, and chap-devops reads that time as no run too. |
-| `analytics  2026-09-27T10:10:40.043 (a run finished on this deployment)` | An analytics run has finished on this DHIS2 since it started, which `GET /api/system/tasks/ANALYTICS_TABLE` says. That notifier lives in the running process, so nothing a dump carries can put an entry in it. |
-| `analytics  2026-06-16T07:51:00.093 (unconfirmed on a seeded database)` | DHIS2 records a success, this deployment was seeded, and no run has finished here since DHIS2 started. The timestamp proves nothing either way. |
-| `analytics  2026-09-27T10:10:40.043` | DHIS2 records a success and this deployment has no seed, so its database was migrated from empty and the record was made against it. |
+| `analytics  2026-09-27 12:10 (a run finished on this deployment)` | An analytics run has finished on this DHIS2 since it started, which `GET /api/system/tasks/ANALYTICS_TABLE` says. That notifier lives in the running process, so nothing a dump carries can put an entry in it. |
+| `analytics  2026-06-16 09:51 (unconfirmed on a seeded database)` | DHIS2 records a success, this deployment was seeded, and no run has finished here since DHIS2 started. The timestamp proves nothing either way. |
+| `analytics  2026-09-27 12:10` | DHIS2 records a success and this deployment has no seed, so its database was migrated from empty and the record was made against it. |
+
+DHIS2 records the time with no zone, on the clock of the server, and a
+DHIS2 container runs in UTC. chap-devops reads the offset of the server from
+`serverDate` in `GET /api/system/info`, and shows the time on the clock of
+this machine. `--json` gives the same time in RFC 3339, with the offset of
+this machine. If DHIS2 sends no `serverDate`, the time stays as DHIS2 wrote it,
+with `(DHIS2 server time)` after it.
 
 The third of those is a question and not a verdict, and it is put as one:
 
