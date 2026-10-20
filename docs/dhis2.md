@@ -1184,7 +1184,7 @@ bundled apps of its own, identical on every DHIS2, and they are not what this
 command answers for:
 
 ```text
-apps       Modeling App 7.2.0, DHIS2 Climate App not installed
+apps       Modeling App 7.3.0, DHIS2 Climate App not installed
 missing: the Climate App is not installed
 ```
 

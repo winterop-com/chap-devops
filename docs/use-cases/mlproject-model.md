@@ -152,8 +152,16 @@ took 19 seconds.
 chap-devops gives chapkit the git commit of the model directory, and chap-core
 stores the version of the model with it. After a change, commit it, and
 raise `version` in `MLproject`, before you serve the model again. If the
-directory has changes that are not committed, chap-devops warns. `chap-devops status`
-does not show the service, because chap-devops does not manage it.
+directory has changes that are not committed, chap-devops warns.
+
+`chap-devops status` lists the service as `unmanaged`, because chap-devops does not
+manage it:
+
+```text
+MODEL                           STATE       REACH                                      LAST PING
+chapkit-simple-multistep-model  registered  via chap-core                              11s ago
+rm1                             unmanaged   http://chap-devops-mlproject-85595-0:8000  6s ago
+```
 
 ## Make it a chapkit service
 

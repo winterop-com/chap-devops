@@ -192,7 +192,8 @@ chap-devops models configs sync my-model
 chap-devops models test my-model --backtest
 ```
 
-`chap-devops status` does not show the service, because chap-devops does not manage it.
+`chap-devops status` lists the service as `unmanaged`, with the address where chap-core
+reaches it, because chap-devops does not manage it.
 
 Outside a deployment, or with an external chap-core, it does not register;
 use the URL that chap-devops prints. `chap-devops chap` runs in a container, where

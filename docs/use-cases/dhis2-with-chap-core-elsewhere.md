@@ -67,7 +67,7 @@ On the seed database, `chap-devops dhis2 connect` printed this:
 ```text
 DHIS2 2.42.6 at http://localhost:8780, as `admin`
 repointed the `chap` route at http://host.docker.internal:8000/**; chap-core answered through it
-installed Modeling App 7.2.0
+installed Modeling App 7.3.0
 installed DHIS2 Climate App 1.16.2
 analytics finished in 20 seconds (job AyL1NbEW3ot)
 the Modeling App can reach Chap; open DHIS2 with `chap-devops open dhis2`

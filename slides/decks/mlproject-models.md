@@ -249,7 +249,7 @@ After a change:
 2. Raise `version` in `MLproject`.
 3. Run `chap-devops chapkit mlproject run DIR` again.
 
-`chap-devops status` does not show the service, because chap-devops does not manage it.
+`chap-devops status` lists it as `unmanaged`, because chap-devops does not manage it.
 
 ---
 
