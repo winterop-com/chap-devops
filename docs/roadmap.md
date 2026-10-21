@@ -45,9 +45,8 @@ not change.
 `chap-devops` installs, updates and removes models as `chap-admin` does, but
 it checks less. The plan:
 
-- Install only a stable version with `status: verified`, and check that its
-  `image_tag` is `sha-<prefix>` of its `commit`. Today `resolve()` refuses
-  only a yanked version.
+- Check that the `image_tag` of a version is `sha-<prefix>` of its
+  `commit`.
 - Check that the `id` of a marketplace entry matches its file name, and that
   its `service_id` is the id with `-` for `_`.
 - After a model registers, compare its service id and its `git_revision`
@@ -87,12 +86,10 @@ and a takeover.
 The marketplace now calls itself Chap Hub in its `registry.yaml`. The help,
 the messages and the docs change to that name when the Chap team confirms it.
 
-### A green weekly e2e
+### A stable CLI test
 
-The weekly e2e run has failed since 2026-10-12: `init` stops after one
-second in both chap-core jobs. The cause is in the uploaded log, which nobody
-has read yet. The CLI test
-`models_test_runs_chapkit_test_in_the_container_and_cleans_up_after_it` also
+The CLI test
+`models_test_runs_chapkit_test_in_the_container_and_cleans_up_after_it`
 failed once in a full run and passed again alone, so it is not stable.
 
 ## Not planned
