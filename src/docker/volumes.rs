@@ -224,6 +224,55 @@ pub fn volume_exists(name: &str) -> bool {
         .unwrap_or(false)
 }
 
+/// Copy the contents of the volume `from` into a new volume `to` of the
+/// compose project `project`, with busybox, and keep `from` as it is.
+///
+/// `to` carries the labels compose gives a volume it creates, so the next
+/// `docker compose up` of that project takes it as its own rather than
+/// warning that it was not created by compose.
+pub fn copy_volume(from: &str, to: &str, project: &str) -> crate::error::Result<()> {
+    let key = to.strip_prefix(&format!("{project}_")).unwrap_or(to);
+    let create = [
+        "volume".to_string(),
+        "create".to_string(),
+        "--label".to_string(),
+        format!("com.docker.compose.project={project}"),
+        "--label".to_string(),
+        format!("com.docker.compose.volume={key}"),
+        to.to_string(),
+    ];
+    let copy = [
+        "run".to_string(),
+        "--rm".to_string(),
+        "-v".to_string(),
+        format!("{from}:/from:ro"),
+        "-v".to_string(),
+        format!("{to}:/to"),
+        crate::backup::BUSYBOX_IMAGE.to_string(),
+        "cp".to_string(),
+        "-a".to_string(),
+        "/from/.".to_string(),
+        "/to/".to_string(),
+    ];
+    for args in [&create[..], &copy[..]] {
+        trace_command(args);
+        let out = Command::new("docker")
+            .args(args)
+            .stdin(Stdio::null())
+            .output()
+            .map_err(|e| anyhow::anyhow!("running docker: {e}"))?;
+        if !out.status.success() {
+            let stderr = String::from_utf8_lossy(&out.stderr);
+            return Err(anyhow::anyhow!(
+                "`docker {}` failed: {}",
+                args[..2].join(" "),
+                first_stderr_line(&stderr).unwrap_or_default()
+            ));
+        }
+    }
+    Ok(())
+}
+
 /// What became of one `docker volume rm`.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Removal {

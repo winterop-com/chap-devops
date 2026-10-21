@@ -1,5 +1,6 @@
 //! `chap-devops init` — write a deployment directory.
 
+mod adopt;
 mod chap_core;
 mod components;
 mod dropped;
@@ -116,6 +117,26 @@ pub(crate) fn create(ctx: &Ctx, args: &InitArgs, report_it: bool) -> Result<()> 
     }
 
     let mut registry = registry::load(&ctx.registry)?;
+    // A takeover reads the old deployment, and refuses, before anything is
+    // decided: its project name, secrets and models are what this run writes.
+    let adoption = match &args.adopt {
+        Some(old) => Some(start_adoption(ctx, args, &dir, old, &registry)?),
+        None => None,
+    };
+    // chap-core's compose files publish the API on 8000, and what calls it
+    // (a DHIS2 route, a script) calls it there; a takeover keeps the port
+    // unless --api-port names another.
+    let kept_port;
+    let args = match &adoption {
+        Some(_) if args.api_port == crate::project::DEFAULT_API_PORT => {
+            kept_port = InitArgs {
+                api_port: adopt::ADMIN_API_PORT,
+                ..args.clone()
+            };
+            &kept_port
+        }
+        _ => args,
+    };
     // What the deployment is made of is settled first: it decides which
     // compose files are rendered at all, and an unknown name in --with is a
     // typo to report before anything is written.
@@ -180,7 +201,13 @@ pub(crate) fn create(ctx: &Ctx, args: &InitArgs, report_it: bool) -> Result<()> 
             cached: None,
         }
     } else if components.chap_core.enabled {
-        resolve_chap_core(ctx, &dir, &args.chap_tag)
+        // A takeover keeps the chap-core the old `.env` pinned, unless
+        // --chap-tag names another.
+        let tag = match adoption.as_ref().and_then(|a| a.chap_tag.as_deref()) {
+            Some(old) if args.chap_tag == MOVING_DEFAULT_TAG => old,
+            _ => args.chap_tag.as_str(),
+        };
+        resolve_chap_core(ctx, &dir, tag)
     } else {
         ChapCore {
             tag: args.chap_tag.trim().to_string(),
@@ -191,7 +218,10 @@ pub(crate) fn create(ctx: &Ctx, args: &InitArgs, report_it: bool) -> Result<()> 
     let state = ProjectState {
         chap_image_tag: chap_core.tag.clone(),
         chap_compose_source: chap_core.source.clone(),
-        compose_project: compose_project(&dir)?,
+        compose_project: match &adoption {
+            Some(adoption) => adoption.project.clone(),
+            None => compose_project(&dir)?,
+        },
         registry_url: ctx.registry.url.clone(),
         api_port: args.api_port,
         port_range: (args.port_base, DEFAULT_PORT_RANGE.1.max(args.port_base)),
@@ -232,7 +262,9 @@ pub(crate) fn create(ctx: &Ctx, args: &InitArgs, report_it: bool) -> Result<()> 
 
     // Decide what to enable before writing anything, so a cancelled browser
     // or a typo in --models leaves no half-written directory behind.
-    let selection = if args.interactive {
+    let selection = if let Some(adoption) = &adoption {
+        adoption.selection()
+    } else if args.interactive {
         // Quitting the browser without saving is "no models", not an error.
         crate::tui::run_tui(ctx, &project, &registry)?.unwrap_or_default()
     } else {
@@ -276,6 +308,9 @@ pub(crate) fn create(ctx: &Ctx, args: &InitArgs, report_it: bool) -> Result<()> 
     // file removed, so a rejected token leaves an existing deployment as it
     // was.
     let secrets = match env {
+        EnvAction::Written if adoption.is_some() => {
+            adopted_secrets(adoption.as_ref().map(|a| &a.env))?
+        }
         EnvAction::Written => resolve_secrets(args.api_token.as_ref())?,
         _ => {
             if args.api_token.is_some() {
@@ -356,9 +391,19 @@ pub(crate) fn create(ctx: &Ctx, args: &InitArgs, report_it: bool) -> Result<()> 
         crate::dotenv::write(
             &env_path,
             &render_env(&EnvSpec {
-                postgres_user: POSTGRES_USER.to_string(),
-                postgres_password: random_password()?,
-                postgres_db: POSTGRES_DB.to_string(),
+                // A takeover keeps the credentials the database was made with.
+                postgres_user: match &adoption {
+                    Some(a) => a.env.postgres_user.clone(),
+                    None => POSTGRES_USER.to_string(),
+                },
+                postgres_password: match &adoption {
+                    Some(a) => a.env.postgres_password.clone(),
+                    None => random_password()?,
+                },
+                postgres_db: match &adoption {
+                    Some(a) => a.env.postgres_db.clone(),
+                    None => POSTGRES_DB.to_string(),
+                },
                 chap_image_tag: Some(chap_core.tag.clone()),
                 api_port: args.api_port,
                 api_token: secrets.as_ref().map(|s| s.api_token.clone()),
@@ -425,6 +470,9 @@ pub(crate) fn create(ctx: &Ctx, args: &InitArgs, report_it: bool) -> Result<()> 
     let endpoints = crate::manual::Endpoints::from_env(ctx.registry.offline);
     let mut report = apply(&mut project, &registry, &selection, &endpoints)?;
     report.removed.extend(stale);
+    let adopted = adoption
+        .as_ref()
+        .map(|adoption| finish_adoption(ctx, &mut project, adoption));
     written.extend(report.written.iter().cloned());
     written.push(dir.join(CHAP_DEVOPS_DIR).join(PROJECT_FILE));
     written.push(dir.join(CHAP_DEVOPS_DIR).join(MODELS_FILE));
@@ -461,6 +509,11 @@ pub(crate) fn create(ctx: &Ctx, args: &InitArgs, report_it: bool) -> Result<()> 
         // `--json` output is the kind of thing that ends up in a log.
         "auth": project.state.auth,
         "report": report,
+        "adopted": adopted.as_ref().map(|lines| serde_json::json!({
+            "from": adoption.as_ref().map(|a| a.dir.clone()),
+            "compose_project": adoption.as_ref().map(|a| a.project.clone()),
+            "lines": lines,
+        })),
     });
     if !report_it {
         for warning in &warnings {
@@ -471,6 +524,9 @@ pub(crate) fn create(ctx: &Ctx, args: &InitArgs, report_it: bool) -> Result<()> 
     ctx.out.report(&value, |lines| {
         for warning in &warnings {
             lines.warning(warning.as_str());
+        }
+        if let (Some(adoption), Some(adopted)) = (&adoption, &adopted) {
+            adoption_lines(adoption, adopted, lines);
         }
         summary(
             &dir,
@@ -485,6 +541,104 @@ pub(crate) fn create(ctx: &Ctx, args: &InitArgs, report_it: bool) -> Result<()> 
             lines,
         )
     })
+}
+
+/// Read the deployment `--adopt` names and check it with docker, refusing
+/// the flags a takeover decides itself.
+fn start_adoption(
+    ctx: &Ctx,
+    args: &InitArgs,
+    dir: &Path,
+    old: &Path,
+    registry: &Registry,
+) -> Result<adopt::Adoption> {
+    let refused = [
+        (args.models.trim() != "none", "--models"),
+        (args.interactive, "--interactive"),
+        (args.source.is_some(), "--source"),
+        (args.chap_core_url.is_some(), "--chap-core-url"),
+        (args.api_token.is_some(), "--api-token"),
+        (args.fresh_env, "--fresh-env"),
+        (args.no_env, "--no-env"),
+    ];
+    if let Some((_, flag)) = refused.iter().find(|(given, _)| *given) {
+        return Err(ChapError::Usage(format!(
+            "--adopt takes the models and the secrets from the old deployment, so {flag} has \
+             nothing to do; run it without {flag}"
+        ))
+        .into());
+    }
+    if Project::exists(dir) {
+        return Err(anyhow::anyhow!(
+            "{} is a deployment already, and --adopt makes a new one; give --adopt a new \
+             directory",
+            dir.display()
+        ));
+    }
+    let old = resolve_dir(old)?;
+    let mut adoption = adopt::read(&old, registry, &ctx.registry.url)?;
+    adopt::check(&mut adoption, &adopt::Docker::real())?;
+    Ok(adoption)
+}
+
+/// The secrets of a takeover: the old token, and the old registration key
+/// or a new one, because chap-devops writes a token only with a key.
+fn adopted_secrets(old: Option<&adopt::OldEnv>) -> Result<Option<env::Secrets>> {
+    let Some(token) = old.and_then(|old| old.api_token.clone()) else {
+        return Ok(None);
+    };
+    Ok(Some(env::Secrets {
+        api_token: token,
+        registration_key: match old.and_then(|old| old.registration_key.clone()) {
+            Some(key) => key,
+            None => crate::auth::random_secret()?,
+        },
+    }))
+}
+
+/// Add the models that come over as `models add` entries, and copy the data
+/// of every model. Each failure is a line; the deployment is written either
+/// way.
+fn finish_adoption(ctx: &Ctx, project: &mut Project, adoption: &adopt::Adoption) -> Vec<String> {
+    let mut lines = Vec::new();
+    for args in adopt::manual_args(adoption) {
+        let id = args.id.clone().unwrap_or_default();
+        if let Err(err) = crate::commands::manual_models::add_in(ctx, project, &args, false) {
+            lines.push(format!(
+                "could not add {id}: {err:#}; run `chap-devops models add {} --id {id} \
+                 --service-id {}` in the new deployment",
+                args.source,
+                args.service_id.as_deref().unwrap_or_default()
+            ));
+        }
+    }
+    adopt::copy_model_data(adoption, project, &mut lines);
+    lines
+}
+
+/// The closing lines of a takeover.
+fn adoption_lines(
+    adoption: &adopt::Adoption,
+    adopted: &[String],
+    lines: &mut crate::output::Report,
+) {
+    lines.info(format!(
+        "took over the deployment in {} (compose project {})",
+        adoption.dir.display(),
+        adoption.project
+    ));
+    for warning in &adoption.warnings {
+        lines.warning(warning.as_str());
+    }
+    for line in adopted {
+        match line.starts_with("could not") {
+            true => lines.warning(line.as_str()),
+            false => lines.info(line.as_str()),
+        };
+    }
+    for note in &adoption.notes {
+        lines.hint(note.as_str());
+    }
 }
 
 /// The model definitions a re-init carries over, which is all of them: they

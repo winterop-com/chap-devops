@@ -64,6 +64,10 @@ pub struct InitArgs {
     #[arg(long = "only", value_name = "LIST", conflicts_with_all = ["with", "without"])]
     pub only: Option<String>,
 
+    /// Take over the chap-admin deployment in DIR, with its database
+    #[arg(long, value_name = "DIR")]
+    pub adopt: Option<PathBuf>,
+
     /// Register the models with the chap-core at URL instead of running one
     #[arg(long = "chap-core-url", value_name = "URL")]
     pub chap_core_url: Option<String>,

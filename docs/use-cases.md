@@ -59,6 +59,7 @@ enable` / `disable`. See [Growing a deployment](./use-cases/growing.md).
 
 - [Several deployments on one machine](./use-cases/several-deployments.md): taking turns on the default ports, or giving each its own.
 - [Growing a deployment](./use-cases/growing.md): adding or removing chap-core, OCS, DHIS2 or models later.
+- [Taking over a chap-admin deployment](./use-cases/from-chap-admin.md): moving a server that runs chap-core's compose files and `chap-admin` to chap-devops, with its database.
 
 ## Which commands work where
 

@@ -4,6 +4,7 @@
 //! the frozen marketplace data of `tests/fixtures/marketplace/`, so no test
 //! touches the network or the developer's real cache.
 
+mod adopt;
 mod auth;
 mod backup;
 mod chap;

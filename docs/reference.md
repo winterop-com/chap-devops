@@ -54,6 +54,7 @@ Usage: chap-devops init [OPTIONS] [DIR]
 | `--with <LIST>` | Components to add: ocs, s3, dhis2. |
 | `--without <LIST>` | Components to omit: chap-core, ocs, s3, dhis2. |
 | `--only <LIST>` | Exactly these components and nothing else; `none` for models alone. |
+| `--adopt <DIR>` | Take over the chap-admin deployment in DIR, with its database. |
 | `--chap-core-url <URL>` | Register the models with the chap-core at URL instead of running one. |
 | `--ocs-base-url <URL>` | Public URL OCS is reached at, for a proxied instance. |
 | `--ocs-port <PORT\|none>` | Host port to publish OCS on, or none to keep it internal. |

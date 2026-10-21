@@ -1613,6 +1613,34 @@ made from a stale catalogue is not a plan. Outside a deployment, `--dry-run`
 shows the cached registry instead. Every other command falls back to the cache
 and then to the snapshot compiled into the binary.
 
+## `the deployment in DIR still has containers in compose project`
+
+```text
+error: the deployment in /srv/chap still has containers in compose project chap; stop it with `docker compose -p chap down`, which keeps its volumes, then run this again
+```
+
+`chap-devops init --adopt` takes over the database of the old deployment. If
+both deployments ran, they would use one database at the same time.
+
+1. Run the `docker compose -p <project> down` command in the message. It
+   removes the containers and keeps the volumes.
+2. Run `chap-devops init --adopt` again.
+
+## `found no volume PROJECT_chap-db, so this would start chap-core with an empty database`
+
+```text
+error: found no volume chap_chap-db, so this would start chap-core with an empty database; if the deployment in /srv/chap ran under another compose project name, set COMPOSE_PROJECT_NAME in its .env to that name, then run this again
+```
+
+`chap-devops init --adopt` gives the new deployment the compose project name of
+the old one: the directory name, as compose makes it, or `COMPOSE_PROJECT_NAME`
+in its `.env`. Docker has no database volume under that name.
+
+1. Run `docker volume ls --filter name=chap-db` to find the database volume.
+2. The part before `_chap-db` is the project name. Set `COMPOSE_PROJECT_NAME`
+   to it in the `.env` of the old directory.
+3. Run `chap-devops init --adopt` again.
+
 ## `could not find the template of ID in chap-core, so nothing changed`
 
 ```text

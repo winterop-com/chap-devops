@@ -29,6 +29,7 @@
   - [Combinations](./use-cases/combinations.md)
   - [Several deployments on one machine](./use-cases/several-deployments.md)
   - [Growing a deployment](./use-cases/growing.md)
+  - [Taking over a chap-admin deployment](./use-cases/from-chap-admin.md)
   - [Evaluating a model on your own data](./use-cases/evaluate-with-chap-cli.md)
 - [Concepts](./concepts.md)
 - [Commands](./commands.md)
