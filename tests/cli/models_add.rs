@@ -557,9 +557,15 @@ fn models_remove_takes_the_definition_and_the_overlay_with_it() {
     );
 
     // Offline: the definition is the deployment's own, so removing it needs
-    // nothing from the network.
+    // nothing from the network. `--keep-in-chap` leaves chap-core alone, so
+    // nothing asks the port it would answer on.
     sandbox
-        .models(&["remove", "chapkit-example-manual-model", "-v"])
+        .models(&[
+            "remove",
+            "chapkit-example-manual-model",
+            "--keep-in-chap",
+            "-v",
+        ])
         .assert()
         .success()
         .stdout(predicates::str::contains(

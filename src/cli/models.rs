@@ -328,6 +328,10 @@ pub struct ModelsRemoveArgs {
     /// Delete the model's data volume as well
     #[arg(long)]
     pub purge: bool,
+
+    /// Leave the model and its configured models live in chap-core
+    #[arg(long)]
+    pub keep_in_chap: bool,
 }
 
 /// Enable a model and write its compose overlay
@@ -376,6 +380,10 @@ pub struct ModelsDisableArgs {
     /// Delete the model's data volume as well
     #[arg(long)]
     pub purge: bool,
+
+    /// Retire the model in chap-core too, with its configured models
+    #[arg(long)]
+    pub retire: bool,
 }
 
 /// Publish a host port for an enabled model

@@ -432,6 +432,27 @@ pub fn archive(api: &Api, id: i64) -> Result<()> {
     Ok(())
 }
 
+/// The path that retires every version of the template `id`.
+pub fn retire_path(id: i64) -> String {
+    format!("{TEMPLATES_PATH}/{id}?allVersions=true")
+}
+
+/// Retire every version of the template `id` and its configured models,
+/// which is what `chap-admin uninstall` does.
+///
+/// chap-core archives the rows and keeps them for the backtests and
+/// predictions that use them. A `from-service` of the same version shows the
+/// template again, and [`sync`] posts the marketplace configurations again;
+/// a configured model made by hand stays archived.
+pub fn retire(api: &Api, id: i64) -> Result<()> {
+    let path = retire_path(id);
+    let answer = api.send("DELETE", &path, None)?;
+    if !answer.is_success() {
+        return Err(api.status_error(&path, &answer));
+    }
+    Ok(())
+}
+
 /// Whether `configs sync` leaves the model alone once `archived` is
 /// archived: it does when another configured model of the same version is
 /// not archived. The same rule as [`sync::is_configured`].

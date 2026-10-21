@@ -1595,6 +1595,31 @@ made from a stale catalogue is not a plan. Outside a deployment, `--dry-run`
 shows the cached registry instead. Every other command falls back to the cache
 and then to the snapshot compiled into the binary.
 
+## `could not find the template of ID in chap-core, so nothing changed`
+
+```text
+error: could not find the template of chapkit_simple_multistep_model in chap-core, so nothing changed: chap-core at http://localhost:8000 is not responding: io: Connection refused (os error 61); run `chap-devops status`; start chap-core with `chap-devops up`, or run it without --retire
+```
+
+`chap-devops models disable --retire` and `chap-devops models remove` look up the
+model template in chap-core before they change anything. chap-core did not
+answer, so the model is still as it was.
+
+- If the deployment is down, run `chap-devops up`, then run the command again.
+- If you do not want to change chap-core, run `models disable` without
+  `--retire`, or `models remove` with `--keep-in-chap`. The model then stays
+  live in the Modeling App.
+
+## `could not retire ID in chap-core`
+
+```text
+warning: could not retire chapkit_simple_multistep_model in chap-core: ...; run `chap-devops api DELETE '/v1/crud/model-templates/30?allVersions=true'`
+```
+
+The model left the deployment, but chap-core refused the retire or stopped
+answering after the lookup. The template is still live in the Modeling App.
+Run the `chap-devops api` command in the warning when chap-core answers again.
+
 ## `` `chap-devops registry update` refreshes the marketplace registry, which needs the network; drop --offline ``
 
 ```text

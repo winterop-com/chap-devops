@@ -69,6 +69,9 @@ struct RemoveReport {
     apply: ApplyReport,
     /// Data volumes this run removed.
     purged: Vec<String>,
+    /// What the retire in chap-core did, unless `--keep-in-chap`.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    retired: Option<super::enable::retire::Outcome>,
 }
 
 /// Add a model that is not in the marketplace, and enable it.
@@ -286,6 +289,16 @@ pub fn remove(ctx: &Ctx, args: &ModelsRemoveArgs) -> Result<()> {
 
     let entry = project.state.manual[&id].clone();
     let was_enabled = project.state.models.contains_key(&id);
+    let pending = match args.keep_in_chap {
+        true => None,
+        false => super::enable::retire::prepare(
+            &project,
+            &id,
+            &entry.service_id,
+            false,
+            "pass --keep-in-chap",
+        )?,
+    };
     let (mut applied, mut notes, mut purged) = (ApplyReport::default(), Vec::new(), Vec::new());
     if was_enabled {
         let (report, disable_notes) =
@@ -308,6 +321,7 @@ pub fn remove(ctx: &Ctx, args: &ModelsRemoveArgs) -> Result<()> {
     // the model the way the deployment recorded it.
     project.state.manual.remove(&id);
     project.save()?;
+    let retired = super::enable::retire::finish(pending);
 
     let report = RemoveReport {
         id: id.clone(),
@@ -315,6 +329,7 @@ pub fn remove(ctx: &Ctx, args: &ModelsRemoveArgs) -> Result<()> {
         was_enabled,
         apply: applied,
         purged,
+        retired,
     };
     ctx.out.report_ok(&report, |lines| {
         lines.info(format!("removed {id}")).hint(format!(
@@ -323,12 +338,15 @@ pub fn remove(ctx: &Ctx, args: &ModelsRemoveArgs) -> Result<()> {
         ));
         if was_enabled {
             super::enable::summary(&report.apply, &notes, &project, lines);
-            return;
+        } else {
+            for note in &notes {
+                lines.hint(note.as_str());
+            }
+            lines.hint("it was not enabled, so the compose files did not change");
         }
-        for note in &notes {
-            lines.hint(note.as_str());
+        if let Some(retired) = &report.retired {
+            super::enable::retire::line(&id, retired, lines);
         }
-        lines.hint("it was not enabled, so nothing else changed");
     })
 }
 

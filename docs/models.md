@@ -172,7 +172,7 @@ and the DNS name).
 chap-devops models enable ID [ID..] [--channel stable|latest | --version X]
                        [--port N|auto] [--bind ADDR] [--data-dir PATH]
                        [--user USER:GROUP] [--allow-template]
-chap-devops models disable ID [--purge]
+chap-devops models disable ID [--purge] [--retire]
 chap-devops models expose ID [--port N|auto] [--bind ADDR]
 chap-devops models unexpose ID
 chap-devops up                            # apply any of them
@@ -208,6 +208,31 @@ which would have removed the container as an orphan but only once it was run.
 There is nothing left for `chap-devops up` to apply. With `-v`, two hints follow:
 the overlay that was removed (`removed compose.chapkit-simple-multistep-model.yml`) and
 `` `chap-devops status` shows what runs now ``.
+
+### Retiring a model in chap-core
+
+A plain `disable` does not change chap-core. The model template and its
+configured models stay live, so the Modeling App still lists the model. This
+keeps a disable easy to undo: `enable` and `up` bring the model back as it was.
+
+`disable --retire` also retires the model in chap-core, which is what
+`chap-admin uninstall` does. chap-core then archives every version of the
+template and every configured model of it. The rows stay for the backtests and
+predictions that use them.
+
+```text
+disabled chapkit_simple_multistep_model
+retired chapkit_simple_multistep_model in chap-core; its configured models are archived
+```
+
+If you enable the model again, chap-devops creates the configurations of the
+marketplace entry again. A configured model that you made with
+`chap-devops models configs add` stays archived. Use `--retire` when the model
+leaves the deployment for good.
+
+`--retire` needs chap-core to answer. chap-devops looks up the template before
+it changes anything. If chap-core does not answer, the command stops and the
+model stays enabled.
 
 ### The data volume
 
@@ -1204,14 +1229,21 @@ browser shows `manual` in its `KIND` column.
 ### Removing one
 
 ```sh
-chap-devops models remove ID [--purge]
+chap-devops models remove ID [--purge] [--keep-in-chap]
 ```
 
 `remove` is the way back: it disables the model if it is enabled - stopping its
 container and removing its overlay, exactly as `models disable` does - and then
 drops the definition. `--purge` takes the data volume as well, and means the
-same thing here as it does there. A marketplace model has no local definition
-to remove, and says so:
+same thing here as it does there.
+
+`remove` also retires the model in chap-core, as `models disable --retire`
+does (see [Retiring a model in chap-core](#retiring-a-model-in-chap-core)).
+The removal is permanent, so the template goes as well. `--keep-in-chap`
+leaves chap-core as it is. If chap-core does not answer, `remove` stops before
+it changes anything. Start chap-core, or pass `--keep-in-chap`.
+
+A marketplace model has no local definition to remove, and says so:
 
 ```text
 error: chapkit_ghr_model is a marketplace model, so there is no local definition to remove; run `chap-devops models disable chapkit_ghr_model`

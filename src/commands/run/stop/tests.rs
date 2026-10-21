@@ -7,6 +7,7 @@ fn disable(purged: &[&str]) -> DisableReport {
         stopped: None,
         purged: purged.iter().map(|v| v.to_string()).collect(),
         kept_volumes: Vec::new(),
+        retired: None,
     }
 }
 

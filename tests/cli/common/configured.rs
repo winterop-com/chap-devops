@@ -33,6 +33,14 @@ pub(crate) fn template_json(id: i64, service: &str) -> Json {
     })
 }
 
+/// The path that retires every version of a template row.
+fn retire_path(row: &Json) -> String {
+    format!(
+        "/v1/crud/model-templates/{}?allVersions=true",
+        row["id"].as_i64().unwrap_or_default()
+    )
+}
+
 /// The id of the template the stand-in stores for `service`.
 fn template_id(service: &str) -> i64 {
     TEMPLATE_IDS
@@ -51,6 +59,7 @@ fn template_id(service: &str) -> i64 {
 pub(crate) fn configured_route(
     method: &str,
     route: &str,
+    query: &str,
     body: &str,
     recorded: &mut Recorded,
 ) -> Option<(u16, &'static str, String)> {
@@ -89,13 +98,25 @@ pub(crate) fn configured_route(
             ))
         }
         // The live templates: discovery stores one for every registered
-        // service that reports a revision.
+        // service that reports a revision, and a retired one is not listed.
         ("GET", "/v1/crud/model-templates") => {
             let rows: Vec<Json> = [PASSING_MODEL, FAILING_MODEL, HOST_RUN_MODEL]
                 .iter()
                 .map(|service| template_json(template_id(service), service))
+                .filter(|row| {
+                    !recorded
+                        .retired
+                        .iter()
+                        .any(|path| *path == retire_path(row))
+                })
                 .collect();
             Some((200, json, Json::Array(rows).to_string()))
+        }
+        // A retire; the stand-in keeps the whole path, because the query is
+        // what makes it every version.
+        ("DELETE", _) if route.starts_with("/v1/crud/model-templates/") => {
+            recorded.retired.push(format!("{route}?{query}"));
+            Some((200, json, r#"{"message":"deleted"}"#.to_string()))
         }
         // chap-core archives; it never deletes a configured model.
         ("DELETE", _) if route.starts_with("/v1/crud/configured-models/") => {

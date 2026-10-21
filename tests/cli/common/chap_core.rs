@@ -506,6 +506,7 @@ pub(crate) fn analytics_route(
                 "backtests": recorded.backtests,
                 "templates": recorded.templates,
                 "configured_posts": recorded.configured_posts,
+                "retired": recorded.retired,
             })
             .to_string(),
         )),
@@ -590,6 +591,8 @@ pub(crate) struct Recorded {
     pub(crate) fresh: bool,
     /// The service of every template stored from a service.
     pub(crate) templates: Vec<String>,
+    /// Every template retire, with its query.
+    pub(crate) retired: Vec<String>,
     /// Every `POST /v1/crud/configured-models` body, whole.
     pub(crate) configured_posts: Vec<Json>,
     /// The rows those posts made, as the listing returns them.
@@ -632,7 +635,7 @@ pub(crate) fn chap_core_route(
     if let Some(answer) = services_route(method, route, recorded) {
         return answer;
     }
-    if let Some(answer) = configured_route(method, route, body, recorded) {
+    if let Some(answer) = configured_route(method, route, query, body, recorded) {
         return answer;
     }
     if let Some(answer) = analytics_route(method, route, body, recorded) {

@@ -169,14 +169,30 @@ pub fn disable(ctx: &Ctx, args: &ModelsDisableArgs) -> Result<()> {
     // `--purge` it is neither, because the volume outlives the model it
     // belonged to and removing it is what the flag is for.
     let Some(id) = enabled_id(&project, &args.id) else {
+        if args.retire {
+            return Err(anyhow::anyhow!(
+                "{} is not enabled here, so there is no model to retire; run the command \
+                 without --retire",
+                args.id
+            ));
+        }
         if args.purge {
             return purge_only(ctx, &project, &registry, &args.id);
         }
         return Err(ChapError::UnknownModel(args.id.clone()).into());
     };
-    let (report, notes) = disable_enabled(&mut project, &registry, &id, args.purge, false)?;
+    let service_id = project.state.models[&id].service_id.clone();
+    let pending = match args.retire {
+        true => retire::prepare(&project, &id, &service_id, true, "run it without --retire")?,
+        false => None,
+    };
+    let (mut report, notes) = disable_enabled(&mut project, &registry, &id, args.purge, false)?;
+    report.retired = retire::finish(pending);
     ctx.out.report_ok(&report, |lines| {
-        summary(&report.apply, &notes, &project, lines)
+        summary(&report.apply, &notes, &project, lines);
+        if let Some(retired) = &report.retired {
+            retire::line(&id, retired, lines);
+        }
     })
 }
 
@@ -249,6 +265,7 @@ pub(crate) fn disable_enabled(
         stopped,
         purged,
         kept_volumes,
+        retired: None,
     };
     Ok((report, notes))
 }
@@ -287,6 +304,7 @@ fn purge_only(ctx: &Ctx, project: &Project, registry: &Registry, wanted: &str) -
         stopped: None,
         purged,
         kept_volumes: Vec::new(),
+        retired: None,
     };
     ctx.out.report_ok(&report, |lines| {
         for note in &notes {
@@ -326,6 +344,9 @@ pub(crate) struct DisableReport {
     /// Data volumes it left in place, which is what a disable without
     /// `--purge` does.
     pub(crate) kept_volumes: Vec<String>,
+    /// What `--retire` did in chap-core.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub(crate) retired: Option<retire::Outcome>,
 }
 
 /// Publish a host port for a model that is already enabled.
@@ -614,6 +635,8 @@ pub(crate) fn summary(
         false => lines.info("run `chap-devops up` to apply"),
     };
 }
+
+pub(crate) mod retire;
 
 #[cfg(test)]
 mod tests;

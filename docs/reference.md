@@ -369,6 +369,7 @@ Usage: chap-devops models remove [OPTIONS] <ID>
 | --- | --- |
 | `<ID>` | Id of a model added with models add. |
 | `--purge` | Delete the model's data volume as well. |
+| `--keep-in-chap` | Leave the model and its configured models live in chap-core. |
 
 Registry options: `--registry-url <URL>`, `--offline`, `--cache-dir <DIR>` (see [chap-devops](#chap-devops)).
 
@@ -405,6 +406,7 @@ Usage: chap-devops models disable [OPTIONS] <ID>
 | --- | --- |
 | `<ID>` | Marketplace id or service id. |
 | `--purge` | Delete the model's data volume as well. |
+| `--retire` | Retire the model in chap-core too, with its configured models. |
 
 Registry options: `--registry-url <URL>`, `--offline`, `--cache-dir <DIR>` (see [chap-devops](#chap-devops)).
 
