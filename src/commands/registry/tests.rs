@@ -52,17 +52,31 @@ fn update_only_reports_the_ids_on_show() {
 }
 
 #[test]
-fn update_says_the_count_and_hints_where_it_came_from() {
+fn update_says_what_changed_and_hints_where_it_came_from() {
     let tmp = tempfile::tempdir().unwrap();
     let ctx = ctx(tmp.path());
     let registry = registry::load_embedded().unwrap();
-    let report = report(&ctx, &registry, false);
+    let mut report = report(&ctx, &registry, false);
     let mut lines = output::Report::default();
     updated(&report, &mut lines);
     let text = lines.text();
     assert!(
         text.starts_with(&format!(
-            "updated the marketplace registry: {} models\n",
+            "fetched the marketplace registry: {} models\n",
+            registry.models.len()
+        )),
+        "{text}"
+    );
+    report.changes = Some(registry::changes::Changes {
+        added: vec!["brand_new_model".into()],
+        ..Default::default()
+    });
+    let mut lines = output::Report::default();
+    updated(&report, &mut lines);
+    let text = lines.text();
+    assert!(
+        text.starts_with(&format!(
+            "updated the marketplace registry: {} models; new: brand_new_model\n",
             registry.models.len()
         )),
         "{text}"

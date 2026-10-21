@@ -48,7 +48,9 @@ hint: `chap-devops models info ID` describes one
 ```
 
 `chap-devops registry update` forces a fetch and refreshes the cache, as does
-`chap-devops update`. `--offline` never touches the network, so a laptop on a plane
+`chap-devops update`. Both say what changed against the cached copy: the new
+and removed models, and each changed model with its stable version before and
+after. If nothing changed, the line says so. `--offline` never touches the network, so a laptop on a plane
 still resolves the catalogue from the cache or the embedded snapshot;
 `chap-devops update` and `chap-devops registry update` refuse to run that way, because a
 refresh needs the network.

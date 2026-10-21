@@ -17,6 +17,13 @@ struct RegistryRefresh {
     source: String,
     /// How many models it lists.
     models: usize,
+    /// What changed against the cached copy; absent under `--dry-run` and
+    /// when there was no cached copy.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    changes: Option<marketplace::changes::Changes>,
+    /// How old that cached copy was.
+    #[serde(skip)]
+    compared_age: Option<std::time::Duration>,
 }
 
 /// Refresh the registry and say so.
@@ -40,14 +47,23 @@ pub(super) fn refresh(ctx: &Ctx, args: &UpdateArgs) -> Result<()> {
         )
         .into());
     }
-    let loaded = match args.dry_run {
-        true => marketplace::load(&ctx.registry)?,
-        false => marketplace::update(&ctx.registry)?,
+    let (loaded, changes, compared_age) = match args.dry_run {
+        true => (marketplace::load(&ctx.registry)?, None, None),
+        false => {
+            let refreshed = marketplace::refresh(&ctx.registry)?;
+            (
+                refreshed.registry,
+                refreshed.changes,
+                refreshed.compared_age,
+            )
+        }
     };
     let report = RegistryRefresh {
         refreshed: !args.dry_run,
         source: loaded.provenance.describe(),
         models: loaded.models.len(),
+        changes,
+        compared_age,
     };
     ctx.out.report(&report, |lines| say(&report, lines))
 }
@@ -71,11 +87,20 @@ fn say(report: &RegistryRefresh, lines: &mut output::Report) {
         n => format!("{n} models"),
     };
     match report.refreshed {
-        true => lines.info(format!("updated the marketplace registry: {models}")),
-        false => lines.info(format!(
-            "the marketplace registry has {models} ({}); --dry-run fetched nothing",
-            report.source
-        )),
+        true => {
+            marketplace::changes::lines(
+                &models,
+                report.changes.as_ref(),
+                report.compared_age,
+                lines,
+            );
+        }
+        false => {
+            lines.info(format!(
+                "the marketplace registry has {models} ({}); --dry-run fetched nothing",
+                report.source
+            ));
+        }
     };
     lines
         .hint("this directory is not a deployment, so no version pin changed")

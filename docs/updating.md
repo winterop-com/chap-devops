@@ -21,9 +21,15 @@ the registry that chap-devops has now, and fetches nothing, so it also works wit
 `--offline`. `--chap-tag`, `--pin-chap-core` and `--list-tags` need a
 deployment, so they are refused there.
 
+The first line says what changed against the copy that chap-devops had
+before: the new and removed models, and the models whose entry changed, with
+the stable version before and after. `-v` adds the age of that copy.
+
 ```text
 $ chap-devops update
-updated the marketplace registry: 7 models
+updated the marketplace registry: 7 models; changed: chapkit_simple_multistep_model 0.1.3 to 0.1.4
+$ chap-devops update
+the marketplace registry did not change: 7 models
 $ chap-devops update --dry-run
 the marketplace registry has 7 models (cache (0 seconds old)); --dry-run fetched nothing
 ```

@@ -15,6 +15,12 @@ struct RegistryReport {
     /// Directory holding this registry's cache entry, whether or not it exists.
     cache_dir: PathBuf,
     models: usize,
+    /// What `update` changed against the cached copy; absent when there
+    /// was none, and for `show`.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    changes: Option<registry::changes::Changes>,
+    #[serde(skip)]
+    compared_age: Option<std::time::Duration>,
     /// Marketplace ids, in index order. Only `show` fills this in.
     #[serde(skip_serializing_if = "Option::is_none")]
     ids: Option<Vec<String>>,
@@ -32,18 +38,22 @@ pub fn run(ctx: &Ctx, cmd: &RegistryCmd) -> Result<()> {
 /// Force a network refresh. Failure is an error, not a fallback: the point of
 /// the command is to find out whether the refresh worked.
 fn update(ctx: &Ctx) -> Result<()> {
-    let registry = registry::update(&ctx.registry)?;
-    let report = report(ctx, &registry, false);
+    let refreshed = registry::refresh(&ctx.registry)?;
+    let mut report = report(ctx, &refreshed.registry, false);
+    report.changes = refreshed.changes;
+    report.compared_age = refreshed.compared_age;
     ctx.out.report(&report, |lines| updated(&report, lines))
 }
 
-/// The lines of `registry update`: the count, then where it came from.
+/// The lines of `registry update`: what changed, then where it came from.
 fn updated(report: &RegistryReport, lines: &mut output::Report) {
+    registry::changes::lines(
+        &models(report.models),
+        report.changes.as_ref(),
+        report.compared_age,
+        lines,
+    );
     lines
-        .info(format!(
-            "updated the marketplace registry: {}",
-            models(report.models)
-        ))
         .hint(format!("fetched from {}", report.url))
         .hint(format!("cached in {}", report.cache_dir.display()));
 }
@@ -108,6 +118,8 @@ fn report(ctx: &Ctx, registry: &Registry, with_ids: bool) -> RegistryReport {
         provenance: registry.provenance.clone(),
         cache_dir: registry::cache::dir_for(&ctx.registry),
         models: registry.models.len(),
+        changes: None,
+        compared_age: None,
         ids: with_ids.then(|| registry.models.iter().map(|m| m.id.clone()).collect()),
     }
 }

@@ -470,27 +470,41 @@ fn list_tags_works_offline_with_what_it_has() {
 }
 
 /// Without a deployment there is no pin to move, but `chap-devops update` still
-/// refreshes this machine's marketplace registry and says so.
+/// refreshes this machine's marketplace registry and says whether it changed.
 #[test]
 fn update_without_a_deployment_refreshes_the_registry() {
     let sandbox = Sandbox::new();
     let port = Hub::new().start();
     let base = format!("http://127.0.0.1:{port}");
 
-    let mut update = assert_cmd::Command::cargo_bin("chap-devops").unwrap();
-    update
-        .env("CHAP_DEVOPS_CACHE_DIR", sandbox.cache.path())
-        .env("CHAP_DEVOPS_DATA_DIR", sandbox.cache.path().join("data"))
-        .env("CHAP_DEVOPS_NO_UPDATE_CHECK", "1")
-        .env("CHAP_DEVOPS_NO_DOCKER_PROBE", "1")
-        .current_dir(sandbox.home.path())
-        .arg("--registry-url")
-        .arg(format!("{base}/registry.yaml"))
-        .arg("update");
-    update
+    let update = || {
+        let mut update = assert_cmd::Command::cargo_bin("chap-devops").unwrap();
+        update
+            .env("CHAP_DEVOPS_CACHE_DIR", sandbox.cache.path())
+            .env("CHAP_DEVOPS_DATA_DIR", sandbox.cache.path().join("data"))
+            .env("CHAP_DEVOPS_NO_UPDATE_CHECK", "1")
+            .env("CHAP_DEVOPS_NO_DOCKER_PROBE", "1")
+            .current_dir(sandbox.home.path())
+            .arg("--registry-url")
+            .arg(format!("{base}/registry.yaml"))
+            .arg("update");
+        update
+    };
+    // No cached copy to compare with.
+    update()
         .assert()
         .success()
-        .stdout("updated the marketplace registry: 1 model\n");
+        .stdout("fetched the marketplace registry: 1 model\n");
+    // The same registry a second time is no change, and says so.
+    update()
+        .assert()
+        .success()
+        .stdout("the marketplace registry did not change: 1 model\n");
+    let report = json_of(update().arg("--json"));
+    assert_eq!(
+        report["changes"],
+        serde_json::json!({"added": [], "removed": [], "changed": []})
+    );
 }
 
 #[test]

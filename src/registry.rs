@@ -1,6 +1,7 @@
 //! The marketplace catalogue: loading it, and querying what was loaded.
 
 pub mod cache;
+pub mod changes;
 pub mod embedded;
 pub mod fetch;
 pub mod model;
@@ -281,6 +282,20 @@ fn load_chosen(opts: &RegistryOptions) -> Result<Registry> {
 /// is to know whether the refresh worked, so every failure surfaces as
 /// [`ChapError::RegistryUnavailable`], and `--offline` as a usage error.
 pub fn update(opts: &RegistryOptions) -> Result<Registry> {
+    refresh(opts).map(|refreshed| refreshed.registry)
+}
+
+/// What [`refresh`] fetched, and what changed against the cache.
+pub struct Refreshed {
+    pub registry: Registry,
+    /// `None` when there was no usable cache to compare with.
+    pub changes: Option<changes::Changes>,
+    /// The age of the cached copy it was compared with.
+    pub compared_age: Option<Duration>,
+}
+
+/// [`update`], and what changed against the copy in the cache before it.
+pub fn refresh(opts: &RegistryOptions) -> Result<Refreshed> {
     if opts.offline {
         return Err(ChapError::Usage(
             "`chap-devops registry update` refreshes the marketplace registry, which needs the \
@@ -292,8 +307,20 @@ pub fn update(opts: &RegistryOptions) -> Result<Registry> {
 
     let (index_yaml, model_files) = fetch::fetch_registry(opts)
         .map_err(|e| ChapError::RegistryUnavailable(format!("{e:#}")))?;
+    // The copy the refresh replaces, read before the write; a corrupt one
+    // warns and compares as none.
+    let before = cache::read(opts)?.and_then(|(index, files, age)| {
+        parse_cached(opts, age, &index, &files).map(|registry| (registry, age))
+    });
     cache::write(opts, &index_yaml, &model_files)?;
-    Registry::parse(&opts.url, Provenance::Network, &index_yaml, &model_files)
+    let registry = Registry::parse(&opts.url, Provenance::Network, &index_yaml, &model_files)?;
+    Ok(Refreshed {
+        changes: before
+            .as_ref()
+            .map(|(old, _)| changes::between(old, &registry)),
+        compared_age: before.map(|(_, age)| age),
+        registry,
+    })
 }
 
 /// Parse a cache entry, reporting a corrupt one as "no cache" so the caller
