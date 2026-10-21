@@ -265,7 +265,7 @@ pub struct ConfigsSyncArgs {
 /// Add a model the marketplace does not list
 #[derive(Debug, Clone, Args)]
 pub struct ModelsAddArgs {
-    /// GitHub repository URL, ghcr image reference, or local image name:tag
+    /// GitHub repository URL, image reference, or local image name:tag
     #[arg(value_name = "SOURCE")]
     pub source: String,
 

@@ -36,16 +36,12 @@ pub(super) fn image_config(
         };
     }
     if !endpoints.offline {
-        let repository = match source {
-            Source::Repo(repo) => repo.path().to_lowercase(),
-            Source::Image(image) | Source::Local(image) => image.repository().to_string(),
-        };
-        match read_config(&repository, reference, endpoints) {
+        match read_config(&source.image(), reference, endpoints) {
             Ok(Some(config)) => return Ok(Some(config)),
             Ok(None) => notes.push(format!(
                 "{reference} is not published at {}, so the data directory and user \
                  come from the local image or the chapkit defaults",
-                endpoints.ghcr_url
+                super::location::Location::of(&source.image(), endpoints).base
             )),
             Err(err) => notes.push(format!(
                 "could not read the image config from the registry ({err:#}); \
@@ -79,11 +75,10 @@ pub(super) fn image_config(
 /// The registry half of [`image_config`], split out so its errors are notes
 /// rather than failures.
 fn read_config(
-    repository: &str,
+    image: &str,
     reference: &str,
     endpoints: &Endpoints,
 ) -> Result<Option<ghcr::ImageConfig>> {
-    let client = ghcr::Client::anonymous(&endpoints.ghcr_url, repository, endpoints.timeout)?;
     // The manifest is addressed by the pin alone: the client already knows
     // the repository.
     let pin = reference
@@ -96,7 +91,7 @@ fn read_config(
                 .map(|(_, tag)| tag.to_string())
         })
         .unwrap_or_else(|| "latest".to_string());
-    client.image_config(&pin)
+    super::location::image_config(image, &pin, endpoints)
 }
 
 /// `/work` -> `/work/data`, which is where a chapkit service keeps its SQLite

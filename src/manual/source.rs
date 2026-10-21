@@ -55,13 +55,6 @@ impl Image {
     pub fn reference(&self) -> String {
         crate::compose::image_ref(&self.image, &self.tag)
     }
-
-    /// The `<owner>/<repo>` part, which is what a ghcr token is scoped to.
-    pub fn repository(&self) -> &str {
-        self.image
-            .strip_prefix(&format!("{GHCR_HOST}/"))
-            .unwrap_or(&self.image)
-    }
 }
 
 /// What the caller named on the command line.
@@ -84,7 +77,7 @@ impl Source {
         let text = text.trim();
         if text.is_empty() {
             return Err(anyhow::anyhow!(
-                "name a GitHub repository URL, a ghcr image reference, or a local image such as `my-model:dev`"
+                "name a GitHub repository URL, an image reference such as `quay.io/org/model:v1`, or a local image such as `my-model:dev`"
             ));
         }
         if is_github(text) {
@@ -186,17 +179,10 @@ fn parse_repo(text: &str) -> Result<Repo> {
     Ok(Repo { owner, repo })
 }
 
-/// `ghcr.io/<owner>/<repo>:<tag>` or the same with `@sha256:<digest>`.
+/// `<registry host>/<repository>:<tag>` or the same with `@sha256:<digest>`,
+/// such as `ghcr.io/<owner>/<repo>:<tag>` or `quay.io/<org>/<repo>:<tag>`.
+/// Only a reference with a registry host gets here; one without is local.
 fn parse_image(text: &str) -> Result<Image> {
-    // Only a reference with a registry host gets here; one without is local.
-    let host = text.split('/').next().unwrap_or_default();
-    if !host.eq_ignore_ascii_case(GHCR_HOST) {
-        return Err(anyhow::anyhow!(
-            "`{text}` is on {host}; `chap-devops models add` reads {GHCR_HOST} images, \
-             so enable it from there or add the model to the marketplace"
-        ));
-    }
-
     if let Some((image, digest)) = text.split_once('@') {
         let digest = digest.trim();
         if !is_digest(digest) {

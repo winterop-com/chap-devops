@@ -345,7 +345,7 @@ Usage: chap-devops models add [OPTIONS] <SOURCE>
 
 | Argument | Description |
 | --- | --- |
-| `<SOURCE>` | GitHub repository URL, ghcr image reference, or local image name:tag. |
+| `<SOURCE>` | GitHub repository URL, image reference, or local image name:tag. |
 | `--id <ID\|auto>` | Identifier to record the model under, or auto for a free one. |
 | `--service-id <ID>` | Compose service name, which must match the service's own id. |
 | `--name <NAME>` | Name to show in the listings. |
@@ -772,7 +772,7 @@ Usage: chap-devops run [OPTIONS] <MODEL>
 
 | Argument | Description |
 | --- | --- |
-| `<MODEL>` | Marketplace id, GitHub repository URL, ghcr image, or local image:tag. |
+| `<MODEL>` | Marketplace id, GitHub repository URL, image reference, or local image:tag. |
 | `--port <PORT\|auto>` | Host port to publish the model on, or auto for a free one. Default: `auto`. |
 | `--bind <ADDR>` | Host address to publish the port on, e.g. 0.0.0.0 for the network. |
 | `--id <ID\|auto>` | Identifier to record an added model under, or auto for a free one. |

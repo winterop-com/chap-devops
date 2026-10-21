@@ -237,9 +237,22 @@ impl Hub {
                     .push((path.clone(), authorization.clone()));
                 let (status, content_type, body) = self.respond(&path, authorization.as_deref());
                 let reason = if status == 200 { "OK" } else { "Not Found" };
+                // A registry other than ghcr says where its tokens come from
+                // in the challenge of a 401 on `/v2/`, which needs the port.
+                let (status, reason, challenge) = match path.as_str() {
+                    "/v2/" => (
+                        401,
+                        "Unauthorized",
+                        format!(
+                            "WWW-Authenticate: Bearer realm=\"http://127.0.0.1:{port}/token\",\
+                             service=\"stand-in\"\r\n"
+                        ),
+                    ),
+                    _ => (status, reason, String::new()),
+                };
                 let response = format!(
                     "HTTP/1.1 {status} {reason}\r\nContent-Type: {content_type}\r\n\
-                     Content-Length: {}\r\nConnection: close\r\n\r\n{body}",
+                     {challenge}Content-Length: {}\r\nConnection: close\r\n\r\n{body}",
                     body.len()
                 );
                 let _ = stream.write_all(response.as_bytes());

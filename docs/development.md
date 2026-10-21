@@ -57,6 +57,7 @@ four hooks nothing on the command line can set:
 | `CHAP_DEVOPS_GITHUB_API` | The GitHub REST base URL, normally `https://api.github.com`: the repository lookups, chap-core's release feed, `chap-devops`'s own, and `/rate_limit`. |
 | `CHAP_DEVOPS_GITHUB_RAW` | The raw file base URL, normally `https://raw.githubusercontent.com`: chap-core's `compose.ghcr.yml` at a ref. |
 | `CHAP_DEVOPS_GHCR_URL` | The registry base URL, normally `https://ghcr.io`. |
+| `CHAP_DEVOPS_OCI_URL` | The base URL of every other image registry, normally the host in the image name. |
 | `CHAP_DEVOPS_NO_DOCKER_PROBE` | `1` turns off the uid probe, which would otherwise `docker pull` an image the test has not got. |
 
 The registry itself moves with the ordinary `--registry-url` flag. The hooks

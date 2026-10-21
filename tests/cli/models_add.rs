@@ -778,3 +778,48 @@ fn models_add_of_a_marketplace_repository_under_its_own_id_warns_it_may_not_regi
         "the way out that cannot work is gone: {doc}"
     );
 }
+
+/// An image on a registry other than ghcr: the token comes from the realm in
+/// the challenge of a 401 on `/v2/`, and the image config is read the same
+/// way as on ghcr, user, data directory and amd64 pin alike.
+#[test]
+fn models_add_reads_an_image_on_another_registry_through_its_token_challenge() {
+    let hub = Hub::new().publishing("v1.2");
+    let (sandbox, dir, _) = added_sandbox(Hub::new());
+    let (port, seen) = hub.start_seen();
+    sandbox
+        .online(port)
+        .args(["models", "add", "quay.io/someone/dengue_model:v1.2"])
+        .assert()
+        .success();
+
+    let entry = &manual_models(&dir)["dengue_model"];
+    assert_eq!(entry["image"], "quay.io/someone/dengue_model");
+    assert_eq!(entry["tag"], "v1.2");
+    let model = &state(&dir)["models"]["dengue_model"];
+    assert_eq!(model["user"], "10001:10001");
+    assert_eq!(model["data_dir"], "/work/data");
+    let overlay = yaml(&dir.join("compose.dengue-model.yml"));
+    let service = &overlay["services"]["dengue-model"];
+    assert_eq!(
+        service["image"],
+        "quay.io/someone/dengue_model:${DENGUE_MODEL_IMAGE_TAG:-v1.2}"
+    );
+    assert_eq!(service["platform"], "linux/amd64");
+
+    // The token the realm handed out went with the manifest request.
+    let seen = seen.lock().expect("the request log");
+    assert!(seen.iter().any(|(path, _)| path == "/v2/"), "{seen:?}");
+    assert!(
+        seen.iter().any(|(path, _)| path
+            .starts_with("/token?service=stand-in&scope=repository:someone/dengue_model:pull")),
+        "{seen:?}"
+    );
+    assert!(
+        seen.iter().any(
+            |(path, auth)| path == "/v2/someone/dengue_model/manifests/v1.2"
+                && auth.as_deref() == Some("Bearer anonymous")
+        ),
+        "{seen:?}"
+    );
+}

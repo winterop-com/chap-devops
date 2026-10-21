@@ -7,7 +7,7 @@ use clap::Args;
 /// Start one model and print where it answers
 #[derive(Debug, Clone, Args)]
 pub struct ModelRunArgs {
-    /// Marketplace id, GitHub repository URL, ghcr image, or local image:tag
+    /// Marketplace id, GitHub repository URL, image reference, or local image:tag
     #[arg(value_name = "MODEL")]
     pub source: String,
 

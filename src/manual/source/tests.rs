@@ -96,7 +96,6 @@ fn an_image_reference_splits_into_the_image_and_the_pin() {
     let image = image_of("ghcr.io/chap-models/chapkit_ghr_model:sha-1eb8cf1");
     assert_eq!(image.image, "ghcr.io/chap-models/chapkit_ghr_model");
     assert_eq!(image.tag, "sha-1eb8cf1");
-    assert_eq!(image.repository(), "chap-models/chapkit_ghr_model");
     assert_eq!(
         image.reference(),
         "ghcr.io/chap-models/chapkit_ghr_model:sha-1eb8cf1"
@@ -135,7 +134,7 @@ fn what_cannot_be_added_says_why() {
             "chapkit_ghr_model",
             "docker build -t chapkit_ghr_model:dev .",
         ),
-        ("docker.io/library/nginx:1", "chap-devops models add` reads"),
+        ("quay.io/someone/model", "names no tag"),
         ("ghcr.io/chap-models/chapkit_ghr_model", "names no tag"),
         ("ghcr.io/chap-models/chapkit_ghr_model:", "empty tag"),
         ("ghcr.io/x/y@sha256:nope", "not a digest"),
@@ -206,4 +205,16 @@ fn the_reserved_service_ids_cover_every_service_the_templates_define() {
         assert!(check_service_id(stem).is_err(), "{stem}");
     }
     assert!(check_service_id("chapkit-ewars-model").is_ok());
+}
+
+#[test]
+fn an_image_on_another_registry_is_an_image_reference() {
+    let image = image_of("quay.io/someone/dengue_model:v1.2");
+    assert_eq!(image.image, "quay.io/someone/dengue_model");
+    assert_eq!(image.tag, "v1.2");
+    let image = image_of("registry.example.org:5000/team/model:dev");
+    assert_eq!(image.image, "registry.example.org:5000/team/model");
+    assert_eq!(image.tag, "dev");
+    let image = image_of("docker.io/someone/model:1");
+    assert_eq!(image.image, "docker.io/someone/model");
 }

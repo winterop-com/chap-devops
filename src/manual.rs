@@ -13,6 +13,7 @@
 pub mod ghcr;
 pub mod github;
 mod image;
+pub mod location;
 mod published;
 pub mod source;
 
@@ -44,6 +45,9 @@ const USER_AGENT: &str = concat!("chap-devops/", env!("CARGO_PKG_VERSION"));
 pub struct Endpoints {
     pub github_api: String,
     pub ghcr_url: String,
+    /// Where every registry other than ghcr answers, for the tests;
+    /// `None` is each registry's own host.
+    pub oci_url: Option<String>,
     /// `--offline`: the network is not to be touched.
     pub offline: bool,
     /// Whether the local docker daemon may be asked about an image at all:
@@ -59,6 +63,7 @@ impl Default for Endpoints {
         Endpoints {
             github_api: github::DEFAULT_API.to_string(),
             ghcr_url: ghcr::DEFAULT_URL.to_string(),
+            oci_url: None,
             offline: false,
             docker_probe: true,
             timeout: DEFAULT_TIMEOUT,
@@ -76,6 +81,9 @@ impl Endpoints {
                 .ok()
                 .filter(|v| !v.trim().is_empty())
                 .unwrap_or_else(|| ghcr::DEFAULT_URL.to_string()),
+            oci_url: std::env::var("CHAP_DEVOPS_OCI_URL")
+                .ok()
+                .filter(|v| !v.trim().is_empty()),
             offline,
             docker_probe: !matches!(
                 std::env::var("CHAP_DEVOPS_NO_DOCKER_PROBE").as_deref(),
@@ -349,6 +357,30 @@ pub(crate) fn get(url: &str, timeout: Duration, headers: &[(&str, &str)]) -> Res
         .map_err(|e| anyhow::anyhow!("reading the response body from {url}: {e}"))?;
     crate::output::debug(&format!("  {}", crate::output::trace_body(&body)));
     Ok((status, body))
+}
+
+/// `GET url` for its status and its `WWW-Authenticate` header, which is how
+/// a registry says where its pull tokens come from.
+pub(crate) fn challenge(url: &str, timeout: Duration) -> Result<(u16, Option<String>)> {
+    let agent = ureq::Agent::new_with_config(
+        ureq::Agent::config_builder()
+            .timeout_global(Some(timeout))
+            .user_agent(USER_AGENT)
+            .http_status_as_error(false)
+            .build(),
+    );
+    let response = agent
+        .get(url)
+        .call()
+        .map_err(|err| anyhow::anyhow!("fetching {url}: {err}"))?;
+    let status = response.status().as_u16();
+    crate::output::verbose(&format!("GET {url} -> {status}"));
+    let challenge = response
+        .headers()
+        .get("www-authenticate")
+        .and_then(|value| value.to_str().ok())
+        .map(str::to_string);
+    Ok((status, challenge))
 }
 
 #[cfg(test)]

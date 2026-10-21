@@ -1069,8 +1069,16 @@ own - is added to one deployment with `chap-devops models add`:
 chap-devops models add https://github.com/my-org/chapkit_dengue_model
 chap-devops models add ghcr.io/my-org/chapkit_dengue_model:sha-1eb8cf1
 chap-devops models add ghcr.io/my-org/chapkit_dengue_model@sha256:31163f6a...
+chap-devops models add quay.io/my-org/dengue_model:v1.2      # any other registry
+chap-devops models add docker.io/my-org/dengue_model:v1.2    # Docker Hub, with its host
 chap-devops models add my-dengue-model:dev        # built on this machine, never pulled
 ```
+
+An image reference can name any registry: ghcr.io, Docker Hub, quay.io, or a
+registry of your own. Write Docker Hub images with `docker.io/` in front. A name
+with no registry host is a local image (see below). The repository URL form
+uses ghcr, because that is where the publish workflow of the model
+repositories writes its builds.
 
 A reference with no registry host is an image in the local image store, such as
 one just built with `docker build --platform linux/amd64 -t my-dengue-model:dev .`.
@@ -1265,8 +1273,13 @@ error: chapkit_ghr_model is a marketplace model, so there is no local definition
 
 ### What it needs, and what it refuses
 
-`chap-devops models add` reads GitHub's REST API and ghcr; both are public for the
-Chap model repositories, so neither needs a credential. GitHub allows 60
+`chap-devops models add` reads GitHub's REST API and the registry of the image;
+both are public for the Chap model repositories, so neither needs a credential.
+A registry other than ghcr gives its pull token through the challenge on
+`/v2/`, and chap-devops asks it for an anonymous one. A private registry that
+wants credentials for every pull is not read. Run `docker login` and
+`docker pull --platform linux/amd64` the image first; then the image config
+comes from the local image. GitHub allows 60
 requests an hour to an address that sends none, and `chap-devops` sends
 `GITHUB_TOKEN` (or `GH_TOKEN`) where the environment names one, for 5000 an
 hour instead - it is never stored and never printed, and `chap-devops doctor`'s
@@ -1278,7 +1291,7 @@ inspect` can answer what the registry would have; the error names the `docker
 pull --platform linux/amd64` that puts it there.
 
 Refused rather than guessed at: a bare image name (`chapkit_dengue_model`), an
-image on a registry other than ghcr, an image reference with no tag or digest,
+image reference with no tag or digest,
 an id or service name the marketplace already uses (`--id auto` picks a free
 id), and an id this deployment
 has already added. The marketplace always wins a collision, so an id it
@@ -1861,11 +1874,11 @@ renders the same bytes on any machine.
 | Value | Where it comes from, in order |
 | --- | --- |
 | data dir | `--data-dir`, else `<WorkingDir>/data` from the image config, else the built-in table, else `/work/data`. |
-| user | `--user`, else `config.User` from the image config on ghcr, else the same field from an image already pulled here (`docker image inspect --platform linux/amd64`), else the built-in table. |
+| user | `--user`, else `config.User` from the image config on its registry, else the same field from an image already pulled here (`docker image inspect --platform linux/amd64`), else the built-in table. |
 
 `chap-devops models info <id>` and the browser's details overlay name which of those
 answered: `image config`, `docker probe`, `--user` or `table`. A run that could
-reach neither ghcr nor a local copy says so, because the table is a snapshot
+reach neither the registry nor a local copy says so, because the table is a snapshot
 this binary was built with and an image can change what it runs as.
 
 What the marketplace images declare today:

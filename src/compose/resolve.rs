@@ -66,12 +66,9 @@ impl Request<'_> {
         crate::compose::image_ref(self.image, self.image_tag)
     }
 
-    /// `<owner>/<name>`, which is what ghcr scopes a pull token to.
+    /// The repository inside its registry, such as `<owner>/<name>`.
     fn repository(&self) -> String {
-        self.image
-            .strip_prefix(&format!("{}/", crate::manual::source::GHCR_HOST))
-            .unwrap_or(self.image)
-            .to_lowercase()
+        crate::manual::location::Location::of(self.image, &Endpoints::default()).repository
     }
 }
 
@@ -130,7 +127,7 @@ pub fn from_image(req: &Request, endpoints: &Endpoints) -> Resolution {
     from_image_with(
         req,
         endpoints,
-        &|repository, tag| read_config(repository, tag, endpoints),
+        &|_, tag| crate::manual::location::image_config(req.image, tag, endpoints),
         &crate::docker::image_config,
         &crate::docker::image_command,
         &crate::docker::pull_image,
@@ -159,7 +156,7 @@ pub fn from_image_with(
             Ok(None) => notes.push(format!(
                 "{reference} is not published at {}, so its user comes from the \
                  local image or the built-in table",
-                endpoints.ghcr_url
+                crate::manual::location::Location::of(req.image, endpoints).base
             )),
             Err(err) => notes.push(format!(
                 "could not read the image config of {reference} from the registry \
@@ -288,16 +285,6 @@ pub fn normalize(user: &str) -> String {
         return "root".to_string();
     }
     overrides::numeric_pair(user).unwrap_or_else(|| user.trim().to_string())
-}
-
-/// The registry half, split out so its errors are notes rather than failures.
-fn read_config(
-    repository: &str,
-    tag: &str,
-    endpoints: &Endpoints,
-) -> Result<Option<ghcr::ImageConfig>> {
-    let client = ghcr::Client::anonymous(&endpoints.ghcr_url, repository, endpoints.timeout)?;
-    client.image_config(tag.trim_start_matches('@'))
 }
 
 #[cfg(test)]

@@ -44,7 +44,8 @@ pub struct ImageConfig {
 pub struct Client {
     base: String,
     repository: String,
-    token: String,
+    /// The pull token, or `None` for a registry that asks for none.
+    token: Option<String>,
     timeout: Duration,
 }
 
@@ -65,9 +66,39 @@ impl Client {
         Ok(Client {
             base,
             repository: repository.to_string(),
-            token: parse_token(&body).map_err(|e| anyhow::anyhow!("reading {url}: {e}"))?,
+            token: Some(parse_token(&body).map_err(|e| anyhow::anyhow!("reading {url}: {e}"))?),
             timeout,
         })
+    }
+
+    /// A reader with a token from somewhere else: the realm of another
+    /// registry's challenge.
+    pub fn with_token(base: &str, repository: &str, token: &str, timeout: Duration) -> Client {
+        Client {
+            base: base.trim_end_matches('/').to_string(),
+            repository: repository.to_string(),
+            token: Some(token.to_string()),
+            timeout,
+        }
+    }
+
+    /// A reader of a registry that answers without a token.
+    pub fn open(base: &str, repository: &str, timeout: Duration) -> Client {
+        Client {
+            base: base.trim_end_matches('/').to_string(),
+            repository: repository.to_string(),
+            token: None,
+            timeout,
+        }
+    }
+
+    /// The headers of a request that accepts `accept`.
+    fn headers(&self, accept: &'static str) -> Vec<(&'static str, String)> {
+        let mut headers = vec![("Accept", accept.to_string())];
+        if let Some(token) = &self.token {
+            headers.push(("Authorization", format!("Bearer {token}")));
+        }
+        headers
     }
 
     /// The manifest of `reference` (a tag, or `sha256:...`), or `None` when
@@ -75,14 +106,9 @@ impl Client {
     pub fn manifest(&self, reference: &str) -> Result<Option<String>> {
         let reference = reference.trim_start_matches('@');
         let url = format!("{}/v2/{}/manifests/{reference}", self.base, self.repository);
-        let (status, body) = super::get(
-            &url,
-            self.timeout,
-            &[
-                ("Accept", ACCEPT),
-                ("Authorization", &format!("Bearer {}", self.token)),
-            ],
-        )?;
+        let headers = self.headers(ACCEPT);
+        let headers: Vec<(&str, &str)> = headers.iter().map(|(k, v)| (*k, v.as_str())).collect();
+        let (status, body) = super::get(&url, self.timeout, &headers)?;
         match status {
             200 => Ok(Some(body)),
             404 => Ok(None),
@@ -98,14 +124,9 @@ impl Client {
     /// One blob of this repository, as text.
     pub fn blob(&self, digest: &str) -> Result<String> {
         let url = format!("{}/v2/{}/blobs/{digest}", self.base, self.repository);
-        let (status, body) = super::get(
-            &url,
-            self.timeout,
-            &[
-                ("Accept", "application/json"),
-                ("Authorization", &format!("Bearer {}", self.token)),
-            ],
-        )?;
+        let headers = self.headers("application/json");
+        let headers: Vec<(&str, &str)> = headers.iter().map(|(k, v)| (*k, v.as_str())).collect();
+        let (status, body) = super::get(&url, self.timeout, &headers)?;
         if !(200..300).contains(&status) {
             return Err(crate::error::ChapError::Http { url, status }.into());
         }

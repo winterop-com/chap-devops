@@ -95,7 +95,7 @@ with `chap-devops components enable chap-core --url URL`.
 | A marketplace id or service id: `chapkit_simple_multistep_model` | Enables it at the catalogue's stable version. |
 | A GitHub repository the marketplace lists | The same: the catalogue's reviewed pin, not the newest build of the branch. |
 | Any other GitHub repository URL | Adds it the way [`chap-devops models add`](./models.md#models-outside-the-marketplace) does: the newest published `sha-` build of the default branch. Needs the network. |
-| A ghcr image with a tag or digest | Pins exactly that image. A tag the marketplace publishes for one of its models enables that marketplace version instead. |
+| An image on a registry, with a tag or digest | Pins exactly that image. A tag the marketplace publishes for one of its models enables that marketplace version instead. |
 | A local image, `name:tag` with no registry | Runs the image from the local store, never pulled. |
 
 A model that is already enabled is started as it is: a second `chap-devops run` of
