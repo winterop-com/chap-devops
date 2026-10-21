@@ -286,7 +286,10 @@ impl Model {
     ///
     /// Errors with [`crate::error::ChapError::UnknownVersion`] when the version
     /// (or the version a channel points at) is absent, and with
-    /// [`crate::error::ChapError::YankedVersion`] when it is yanked.
+    /// [`crate::error::ChapError::YankedVersion`] when it is yanked. The
+    /// stable channel of a marketplace model takes a `verified` version
+    /// only, as `chap-admin install` does; an exact `--version` is the way to
+    /// take another one.
     pub fn resolve(&self, sel: &VersionSelector) -> crate::error::Result<&Version> {
         let wanted = match sel {
             VersionSelector::Channel(Channel::Stable) => self.channels.stable.clone(),
@@ -299,6 +302,20 @@ impl Model {
                     id: self.id.clone(),
                     version: wanted.clone(),
                 })?;
+        if matches!(sel, VersionSelector::Channel(Channel::Stable))
+            && !self.manual
+            && !matches!(
+                found.status,
+                VersionStatus::Verified | VersionStatus::Yanked
+            )
+        {
+            return Err(crate::error::ChapError::UnverifiedStable {
+                id: self.id.clone(),
+                version: wanted,
+                status: format!("{:?}", found.status).to_lowercase(),
+            }
+            .into());
+        }
         if found.status == VersionStatus::Yanked {
             return Err(crate::error::ChapError::YankedVersion {
                 id: self.id.clone(),

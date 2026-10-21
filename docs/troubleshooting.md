@@ -1613,6 +1613,20 @@ made from a stale catalogue is not a plan. Outside a deployment, `--dry-run`
 shows the cached registry instead. Every other command falls back to the cache
 and then to the snapshot compiled into the binary.
 
+## `the stable version VERSION of ID is STATUS, not verified`
+
+```text
+error: the stable version 0.1.4 of `chapkit_simple_multistep_model` is unstable, not verified; pass `--version 0.1.4` to enable it anyway
+```
+
+The `stable` channel of the marketplace entry points at a version that the
+marketplace has not verified. chap-devops follows `chap-admin install` and
+takes only a verified version on that channel.
+
+- To wait for a verified version, run `chap-devops update` again later.
+- To run this version now, enable it with the `--version` in the message.
+  The model is then pinned, and `chap-devops update` does not move it.
+
 ## `the deployment in DIR still has containers in compose project`
 
 ```text

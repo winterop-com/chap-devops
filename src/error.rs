@@ -39,6 +39,16 @@ pub enum ChapError {
     YankedVersion { id: String, version: String },
 
     #[error(
+        "the stable version {version} of `{id}` is {status}, not verified; pass \
+         `--version {version}` to enable it anyway"
+    )]
+    UnverifiedStable {
+        id: String,
+        version: String,
+        status: String,
+    },
+
+    #[error(
         "host port {port} is already in use by {holder}; pick another with `--port <n>`, or `--port auto`"
     )]
     PortInUse { port: u16, holder: PortHolder },

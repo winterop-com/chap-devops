@@ -81,6 +81,11 @@ resolved to, and `chap-devops update` re-resolves the channel. A model enabled w
 `--version` is listed as pinned by `update` and never moved. `--channel` and
 `--version` cannot be combined.
 
+The `stable` channel takes only a version with `status: verified`, as
+`chap-admin install` does. If the stable version of an entry is `unstable` or
+`deprecated`, enabling it on the channel is refused, and the message names the
+`--version` that takes it anyway. A yanked version is refused in every form.
+
 Every version pins one commit of the model's own repository, and the image
 built from it; whether that commit is still the newest build the repository
 has published is what [`chap-devops doctor`](./doctor.md#project-checks) reports as

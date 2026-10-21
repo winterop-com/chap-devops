@@ -168,6 +168,39 @@ fn resolve_rejects_a_yanked_version() {
     ));
 }
 
+/// The stable channel takes a verified version only, as `chap-admin install`
+/// does; the version itself, named exactly, is still there to take.
+#[test]
+fn the_stable_channel_refuses_a_version_that_is_not_verified() {
+    let mut m = model("auto_arima_chapkit");
+    let stable = m.channels.stable.clone();
+    let at = m
+        .versions
+        .iter()
+        .position(|v| v.version == stable)
+        .expect("the stable version is listed");
+    m.versions[at].status = VersionStatus::Unstable;
+    let err = m
+        .resolve(&VersionSelector::Channel(Channel::Stable))
+        .expect_err("an unstable stable version errors");
+    assert_eq!(
+        err.to_string(),
+        format!(
+            "the stable version {stable} of `auto_arima_chapkit` is unstable, not verified; \
+             pass `--version {stable}` to enable it anyway"
+        )
+    );
+    let exact = m
+        .resolve(&VersionSelector::Exact(stable.clone()))
+        .expect("an exact version is taken as it is");
+    assert_eq!(exact.version, stable);
+
+    // A model added by hand has no review, so its channel is not checked.
+    m.manual = true;
+    m.resolve(&VersionSelector::Channel(Channel::Stable))
+        .expect("a manual model resolves");
+}
+
 #[test]
 fn configurations_keep_their_json_shape() {
     let m = model("chapkit_ewars_model");
