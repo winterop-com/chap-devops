@@ -17,7 +17,7 @@ on:
         default: "2.42"
       models:
         description: model ids, comma separated, "none" or "all"
-        default: all
+        default: chapkit_simple_multistep_model
 
 concurrency:
   group: e2e-${{ github.ref }}
@@ -70,7 +70,7 @@ jobs:
         env:
           TAG: ${{ matrix.tag }}
           DHIS2_VERSIONS: ${{ inputs.dhis2 || '2.42' }}
-          MODELS: ${{ inputs.models || 'all' }}
+          MODELS: ${{ inputs.models || 'chapkit_simple_multistep_model' }}
         run: |
           args=(--tags "$TAG" --models "$MODELS" --work "$RUNNER_TEMP/e2e")
           if [ "$DHIS2_VERSIONS" = none ]; then

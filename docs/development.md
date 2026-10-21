@@ -89,7 +89,9 @@ cargo test --test cli -- --ignored live_up_then_purge
 images, once per chap-core tag (`latest` and `master` by default) and DHIS2
 version (2.41, 2.42, 2.43 and `dev` by default; `dev` is the unreleased next
 one, `dhis2/core-dev:master`). Each pair gets one deployment with OCS, the
-object store, DHIS2 and the models running together, on ports of its own.
+object store, DHIS2 and `chapkit_simple_multistep_model` running together, on
+ports of its own. `--models all` runs every marketplace model instead, which
+takes much longer and needs more disk.
 DHIS2 2.42 is seeded from the Laos climate demo chap-devops uses by default, and the
 other versions start empty: DHIS2's Sierra Leone demo exists for some of them,
 but its `admin` may not create the route `dhis2 connect` writes. Then:
