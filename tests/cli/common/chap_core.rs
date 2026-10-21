@@ -79,6 +79,17 @@ pub(crate) fn fresh_chap_core_server() -> u16 {
     serve_chap_core(false, false, true)
 }
 
+/// [`fresh_chap_core_server`] that refuses the configured model `name`
+/// once, with a 422, the way chap-core refuses a configuration it cannot
+/// store.
+pub(crate) fn refusing_chap_core_server(name: &str) -> u16 {
+    serve(Recorded {
+        fresh: true,
+        refuse_config: Some(name.to_string()),
+        ..Recorded::default()
+    })
+}
+
 /// The paths chap-core answers without a token, copied from `OPEN_PATHS` in
 /// its `rest_api/auth.py` rather than from chap-devops, so the stand-in does not
 /// agree with chap-devops by construction.
@@ -115,6 +126,16 @@ pub(crate) fn unreachable_models_chap_core_server() -> u16 {
 }
 
 fn serve_chap_core(protected: bool, unreachable: bool, fresh: bool) -> u16 {
+    serve(Recorded {
+        unreachable,
+        protected,
+        fresh,
+        ..Recorded::default()
+    })
+}
+
+/// Serve the stand-in, starting from `recorded`.
+fn serve(recorded: Recorded) -> u16 {
     use std::io::Write;
 
     let listener = std::net::TcpListener::bind((Ipv4Addr::LOCALHOST, 0)).expect("a free port");
@@ -122,12 +143,8 @@ fn serve_chap_core(protected: bool, unreachable: bool, fresh: bool) -> u16 {
     std::thread::spawn(move || {
         // What this server was asked to do, for the tests that check the
         // cleanup: one server per port, so the record is this thread's own.
-        let mut recorded = Recorded {
-            unreachable,
-            protected,
-            fresh,
-            ..Recorded::default()
-        };
+        let mut recorded = recorded;
+        let protected = recorded.protected;
         for stream in listener.incoming() {
             let Ok(mut stream) = stream else { continue };
             // The request has to be read before the answer, or the client
@@ -159,6 +176,7 @@ fn serve_chap_core(protected: bool, unreachable: bool, fresh: bool) -> u16 {
                 400 => "Bad Request",
                 401 => "Unauthorized",
                 409 => "Conflict",
+                422 => "Unprocessable Entity",
                 502 => "Bad Gateway",
                 _ => "Not Found",
             };
@@ -593,6 +611,8 @@ pub(crate) struct Recorded {
     pub(crate) templates: Vec<String>,
     /// Every template retire, with its query.
     pub(crate) retired: Vec<String>,
+    /// The name of a configured model the next post of it is refused for.
+    pub(crate) refuse_config: Option<String>,
     /// Every `POST /v1/crud/configured-models` body, whole.
     pub(crate) configured_posts: Vec<Json>,
     /// The rows those posts made, as the listing returns them.

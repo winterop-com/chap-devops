@@ -270,3 +270,67 @@ fn a_model_without_a_revision_gets_the_way_out_of_where_it_runs() {
          where it runs, then start it again"
     );
 }
+
+#[test]
+fn a_failure_says_what_was_done_about_the_template_it_stored() {
+    let failed = |undo: Option<Undo>| ModelOutcome {
+        id: "chapkit_ewars_model".to_string(),
+        service_id: "chapkit-ewars-model".to_string(),
+        outcome: Outcome::Failed {
+            error: "HTTP 422".to_string(),
+            undo,
+        },
+    };
+    let text = |undo: Option<Undo>| {
+        let mut lines = Report::default();
+        command_lines(&[failed(undo)], &mut lines);
+        lines.messages()[0].text.clone()
+    };
+    let again = "run `chap-devops models configs sync chapkit_ewars_model` again, and \
+                 `chap-devops logs chap` says why";
+
+    assert_eq!(
+        text(None),
+        format!("chapkit_ewars_model: could not create its configured models: HTTP 422; {again}")
+    );
+    assert_eq!(
+        text(Some(Undo::Retired { template_id: 30 })),
+        format!(
+            "chapkit_ewars_model: could not create its configured models: HTTP 422; the \
+             template version it stored is retired again, with the configured models made so \
+             far; {again}"
+        )
+    );
+    assert_eq!(
+        text(Some(Undo::NotRetired {
+            template_id: 30,
+            error: "HTTP 500".to_string(),
+        })),
+        "chapkit_ewars_model: could not create its configured models: HTTP 422; retiring the \
+         template version it stored failed too: HTTP 500; run `chap-devops api DELETE \
+         '/v1/crud/model-templates/30'`, then `chap-devops models configs sync chapkit_ewars_model`"
+    );
+
+    // Folded into another command, the warning is the same.
+    let mut lines = Report::default();
+    folded_lines(
+        &[failed(Some(Undo::Retired { template_id: 30 }))],
+        false,
+        &mut lines,
+    );
+    assert!(
+        lines.messages()[0].text.contains("is retired again"),
+        "{:?}",
+        lines.messages()
+    );
+
+    // `--json` carries the undo beside the error.
+    let json = serde_json::to_value(failed(Some(Undo::Retired { template_id: 30 }))).unwrap();
+    assert_eq!(json["state"], "failed");
+    assert_eq!(
+        json["undo"],
+        serde_json::json!({"state": "retired", "template_id": 30})
+    );
+    let json = serde_json::to_value(failed(None)).unwrap();
+    assert!(json.get("undo").is_none());
+}

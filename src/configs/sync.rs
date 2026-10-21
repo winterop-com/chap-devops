@@ -16,6 +16,12 @@
 //! The step is idempotent. A model that has a configured model of the version
 //! it registered with already is left alone, so an older chap-core that still
 //! makes them itself gets no second set, and a second run adds nothing.
+//!
+//! A step that fails after the template was stored is undone, as
+//! `chap-admin install` undoes a failed registration: the template version
+//! is retired with the configured models made so far. Without that, one
+//! configured model of three counts as configured, and no later run adds
+//! the other two.
 
 use crate::api::Api;
 use crate::error::Result;
@@ -179,7 +185,13 @@ pub enum Outcome {
     /// configure.
     NotRegistered,
     /// A request failed; the sentence says which and why.
-    Failed { error: String },
+    Failed {
+        error: String,
+        /// What was done about the template the step stored, when it
+        /// stored one.
+        #[serde(skip_serializing_if = "Option::is_none")]
+        undo: Option<Undo>,
+    },
     /// The template request failed, and the service reports no git revision,
     /// which is the reason chap-core gives no template: running the step
     /// again cannot fix it.
@@ -190,6 +202,17 @@ pub enum Outcome {
         #[serde(skip)]
         managed: bool,
     },
+}
+
+/// What a failed step did about the template version it stored.
+#[derive(Debug, Clone, PartialEq, Serialize)]
+#[serde(tag = "state", rename_all = "kebab-case")]
+pub enum Undo {
+    /// chap-core retired the version, and the configured models made so far
+    /// with it; an earlier version that can run is live again.
+    Retired { template_id: i64 },
+    /// The retire failed too; the sentence says why.
+    NotRetired { template_id: i64, error: String },
 }
 
 /// The way out for a model of this deployment that reports no git revision.
@@ -261,7 +284,7 @@ pub fn configure(
                     match configure_one(api, target, &service.version, &models, source) {
                         // A failed template request for a service that reports
                         // no revision is that, whatever the status code says.
-                        Outcome::Failed { error }
+                        Outcome::Failed { error, undo: None }
                             if is_no_revision(service, sends_revision, &error) =>
                         {
                             Outcome::NoRevision {
@@ -312,6 +335,7 @@ fn configure_one(
         Err(err) => {
             return Outcome::Failed {
                 error: err.to_string(),
+                undo: None,
             };
         }
     };
@@ -319,7 +343,7 @@ fn configure_one(
     let body = super::from_service_body(&target.service_id, role);
     let template = match post(api, FROM_SERVICE_PATH, &body) {
         Ok(template) => template,
-        Err(error) => return Outcome::Failed { error },
+        Err(error) => return Outcome::Failed { error, undo: None },
     };
     let Some(template_id) = template.get("id").and_then(|id| id.as_i64()) else {
         return Outcome::Failed {
@@ -327,6 +351,7 @@ fn configure_one(
                 "{} answered without a template id",
                 api.url(FROM_SERVICE_PATH)
             ),
+            undo: None,
         };
     };
     // The template is named after what the service reports, which is the
@@ -346,12 +371,38 @@ fn configure_one(
                     true => error,
                     false => format!("{error} (after {})", created.join(", ")),
                 },
+                undo: Some(undo(api, template_id)),
             };
         }
         created.push(request.name);
     }
     Outcome::Created {
         configured: created,
+    }
+}
+
+/// Retire the template version `template_id`, which this step stored and
+/// could not configure. Only this version: chap-core makes the newest earlier
+/// version that can run live again, so a failed update leaves the model as
+/// it was. A `from-service` of the same version shows it again on the next
+/// run.
+fn undo(api: &Api, template_id: i64) -> Undo {
+    let path = format!("{}/{template_id}", super::TEMPLATES_PATH);
+    let answer = match api.send("DELETE", &path, None) {
+        Ok(answer) => answer,
+        Err(err) => {
+            return Undo::NotRetired {
+                template_id,
+                error: err.to_string(),
+            };
+        }
+    };
+    match answer.is_success() {
+        true => Undo::Retired { template_id },
+        false => Undo::NotRetired {
+            template_id,
+            error: api.status_error(&path, &answer).to_string(),
+        },
     }
 }
 
@@ -387,8 +438,8 @@ pub fn command_lines(outcomes: &[ModelOutcome], lines: &mut Report) {
                     "{id}: not registered with chap-core; {NOT_REGISTERED_WAY_OUT}"
                 ));
             }
-            Outcome::Failed { error } => {
-                lines.warning(failed_line(id, error));
+            Outcome::Failed { error, undo } => {
+                lines.warning(failed_line(id, error, undo.as_ref()));
             }
             Outcome::NoRevision { error, managed } => {
                 lines.warning(no_revision_line(id, error, *managed));
@@ -419,8 +470,8 @@ pub fn folded_lines(outcomes: &[ModelOutcome], not_registered: bool, lines: &mut
     }
     for model in outcomes {
         match &model.outcome {
-            Outcome::Failed { error } => {
-                lines.warning(failed_line(&model.id, error));
+            Outcome::Failed { error, undo } => {
+                lines.warning(failed_line(&model.id, error, undo.as_ref()));
             }
             Outcome::NoRevision { error, managed } => {
                 lines.warning(no_revision_line(&model.id, error, *managed));
@@ -438,10 +489,26 @@ pub fn folded_lines(outcomes: &[ModelOutcome], not_registered: bool, lines: &mut
 }
 
 /// The warning for a model the step could not configure.
-fn failed_line(id: &str, error: &str) -> String {
-    format!(
-        "{id}: could not create its configured models: {error}; run `chap-devops models configs sync {id}` again, and `chap-devops logs chap` says why"
-    )
+fn failed_line(id: &str, error: &str, undo: Option<&Undo>) -> String {
+    let again = format!(
+        "run `chap-devops models configs sync {id}` again, and `chap-devops logs chap` says why"
+    );
+    match undo {
+        None => format!("{id}: could not create its configured models: {error}; {again}"),
+        Some(Undo::Retired { .. }) => format!(
+            "{id}: could not create its configured models: {error}; the template version it \
+             stored is retired again, with the configured models made so far; {again}"
+        ),
+        Some(Undo::NotRetired {
+            template_id,
+            error: why,
+        }) => format!(
+            "{id}: could not create its configured models: {error}; retiring the template \
+             version it stored failed too: {why}; run `chap-devops api DELETE \
+             '{}/{template_id}'`, then `chap-devops models configs sync {id}`",
+            super::TEMPLATES_PATH
+        ),
+    }
 }
 
 /// The warning for a model that reports no git revision.

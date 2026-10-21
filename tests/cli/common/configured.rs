@@ -41,6 +41,19 @@ fn retire_path(row: &Json) -> String {
     )
 }
 
+/// The service of the template `id`.
+fn service_of(id: i64) -> &'static str {
+    [
+        PASSING_MODEL,
+        FAILING_MODEL,
+        OLD_CHAPKIT_MODEL,
+        HOST_RUN_MODEL,
+    ]
+    .get((id - TEMPLATE_IDS) as usize)
+    .copied()
+    .unwrap_or_default()
+}
+
 /// The id of the template the stand-in stores for `service`.
 fn template_id(service: &str) -> i64 {
     TEMPLATE_IDS
@@ -113,9 +126,26 @@ pub(crate) fn configured_route(
             Some((200, json, Json::Array(rows).to_string()))
         }
         // A retire; the stand-in keeps the whole path, because the query is
-        // what makes it every version.
+        // what makes it every version. chap-core archives the configured
+        // models of what it retires.
         ("DELETE", _) if route.starts_with("/v1/crud/model-templates/") => {
-            recorded.retired.push(format!("{route}?{query}"));
+            recorded.retired.push(match query {
+                "" => route.to_string(),
+                query => format!("{route}?{query}"),
+            });
+            let id: i64 = route
+                .rsplit('/')
+                .next()
+                .and_then(|id| id.parse().ok())
+                .unwrap_or_default();
+            let service = service_of(id);
+            let prefix = format!("{service}:");
+            for row in &mut recorded.created {
+                let name = row["name"].as_str().unwrap_or_default();
+                if name == service || name.starts_with(&prefix) {
+                    row["archived"] = Json::Bool(true);
+                }
+            }
             Some((200, json, r#"{"message":"deleted"}"#.to_string()))
         }
         // chap-core archives; it never deletes a configured model.
@@ -140,16 +170,19 @@ pub(crate) fn configured_route(
         }
         ("POST", "/v1/crud/configured-models") => {
             let sent: Json = serde_json::from_str(body).unwrap_or(Json::Null);
+            // The one configuration this stand-in refuses, once.
+            if recorded.refuse_config.is_some()
+                && recorded.refuse_config.as_deref() == sent["name"].as_str()
+            {
+                recorded.refuse_config = None;
+                return Some((
+                    422,
+                    json,
+                    r#"{"detail":"the stand-in refuses this configuration"}"#.to_string(),
+                ));
+            }
             let template = sent["model_template_id"].as_i64().unwrap_or_default();
-            let service = [
-                PASSING_MODEL,
-                FAILING_MODEL,
-                OLD_CHAPKIT_MODEL,
-                HOST_RUN_MODEL,
-            ]
-            .get((template - TEMPLATE_IDS) as usize)
-            .copied()
-            .unwrap_or_default();
+            let service = service_of(template);
             let name = match sent["name"].as_str().unwrap_or_default() {
                 "default" => service.to_string(),
                 config => format!("{service}:{config}"),

@@ -398,6 +398,24 @@ template chap-core stored for its version.
    `chap-devops restart --all <service>` to make the model register again.
 4. Run `chap-devops models configs sync` again.
 
+## `could not create its configured models`
+
+```text
+warning: chapkit_ewars_model: could not create its configured models: ... (after monthly_climate); the template version it stored is retired again, with the configured models made so far; run `chap-devops models configs sync chapkit_ewars_model` again, and `chap-devops logs chap` says why
+```
+
+chap-core refused a configured model of the marketplace entry, or stopped
+answering. chap-devops retired the template version that it stored, so the
+model has no configured model of this version that is half done.
+
+1. Read `chap-devops logs chap` for the reason.
+2. Run `chap-devops models configs sync ID` again. The run starts again from
+   the template.
+
+If the line says `retiring the template version it stored failed too`, the
+configured models made so far are still live. Run the `chap-devops api DELETE`
+command in the line, then run `chap-devops models configs sync ID`.
+
 ## `chap-core has no configured model NAME for`
 
 ```text

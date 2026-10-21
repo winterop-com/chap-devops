@@ -308,3 +308,76 @@ fn configure_takes_a_model_registered_from_outside_the_deployment() {
     assert_eq!(posts[0]["name"], "default");
     assert!(posts[0]["additional_continuous_covariates"].is_null());
 }
+
+/// A configured model that chap-core refuses part-way undoes the step: the
+/// template version it stored is retired with the configured models made so
+/// far. Without that, one of three would count as configured, and no later
+/// run would add the other two.
+#[test]
+fn a_failed_configure_retires_the_template_version_and_runs_again_from_the_start() {
+    let sandbox = Sandbox::new();
+    let port = refusing_chap_core_server("monthly_population_only");
+    sandbox
+        .init(&[
+            "--models",
+            "chapkit_ewars_model",
+            "--api-port",
+            &port.to_string(),
+        ])
+        .assert()
+        .success();
+    let dir = sandbox.project();
+
+    let output = chap_in(&sandbox, &dir, &["--json", "models", "configs", "sync"])
+        .assert()
+        .failure()
+        .get_output()
+        .clone();
+    let report: Json = serde_json::from_slice(&output.stdout).expect("one document");
+    let model = &report["models"][0];
+    assert_eq!(model["state"], "failed");
+    assert_eq!(
+        model["undo"],
+        serde_json::json!({"state": "retired", "template_id": TEMPLATE_IDS})
+    );
+    let error = model["error"].as_str().unwrap_or_default();
+    assert!(error.contains("HTTP 422"), "{error}");
+    assert!(error.ends_with("(after monthly_climate)"), "{error}");
+    let text = report["messages"][0]["text"].as_str().unwrap_or_default();
+    assert!(
+        text.contains(
+            "the template version it stored is retired again, with the configured models made \
+             so far; run `chap-devops models configs sync chapkit_ewars_model` again"
+        ),
+        "{text}"
+    );
+
+    // Only that version is retired, not every version of the name.
+    let seen = recorded(&sandbox, &dir);
+    assert_eq!(
+        seen["retired"],
+        serde_json::json!([format!("/v1/crud/model-templates/{TEMPLATE_IDS}")])
+    );
+
+    // The stand-in refuses once, so the next run makes all three.
+    let output = chap_in(&sandbox, &dir, &["models", "configs", "sync"])
+        .assert()
+        .success()
+        .get_output()
+        .clone();
+    let text = stdout_of(&output);
+    for name in [
+        "monthly_climate",
+        "monthly_population_only",
+        "monthly_region_seasonal",
+    ] {
+        assert!(
+            text.contains(&format!(
+                "chapkit_ewars_model: created configured model {name}"
+            )),
+            "{text}"
+        );
+    }
+    let seen = recorded(&sandbox, &dir);
+    assert_eq!(seen["configured_posts"].as_array().map(Vec::len), Some(4));
+}

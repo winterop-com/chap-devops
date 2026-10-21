@@ -584,6 +584,21 @@ chapkit_simple_multistep_model: not registered with chap-core; run `chap-devops 
 A model that could not be configured gets a warning with the reason, and the
 command exits non-zero.
 
+If a configured model fails after the template was stored, chap-devops undoes
+the step, as `chap-admin install` undoes a failed registration. It retires the
+template version that it stored, and with it the configured models that the
+step made. Only that version is retired. If an earlier version can run,
+chap-core makes it live again, so a failed update leaves the model as it was.
+The next run starts again from the template. Without the undo, one configured
+model of three counts as configured, and no later run adds the other two.
+
+```text
+warning: chapkit_ewars_model: could not create its configured models: ... (after monthly_climate); the template version it stored is retired again, with the configured models made so far; run `chap-devops models configs sync chapkit_ewars_model` again, and `chap-devops logs chap` says why
+```
+
+In `--json`, the model has the state `failed` and an `undo` object: `retired`,
+or `not-retired` with the error.
+
 You do not usually run the command yourself. `chap-devops up --wait`, `chap-devops dhis2
 connect` and `chap-devops models test --backtest` do the same step, and say which
 configured models they created:
