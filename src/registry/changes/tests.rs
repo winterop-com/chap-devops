@@ -55,3 +55,15 @@ fn added_and_removed_models_are_named() {
         format!("new: brand_new_model; removed: {gone}")
     );
 }
+
+#[test]
+fn a_model_left_out_of_the_new_registry_is_not_removed() {
+    let old = registry();
+    let mut new = registry();
+    let gone = new.models.remove(0).id;
+    new.skipped.push(crate::registry::Skipped {
+        path: format!("models/{gone}.yaml"),
+        line: String::new(),
+    });
+    assert!(between(&old, &new).is_empty());
+}

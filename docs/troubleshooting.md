@@ -1620,6 +1620,21 @@ The model left the deployment, but chap-core refused the retire or stopped
 answering after the lookup. The template is still live in the Modeling App.
 Run the `chap-devops api` command in the warning when chap-core answers again.
 
+## `left out models/ID.yaml of the marketplace registry`
+
+```text
+warning: left out models/chapkit_minimalist_example_py.yaml of the marketplace registry: kind: unknown variant `starter`, expected `model` or `template` at line 6 column 7; this chap-devops may be older than the registry, so run `chap-devops self update`
+```
+
+chap-devops could not read one model file of the marketplace registry. The
+usual cause is a field or a value that the marketplace added after this
+chap-devops was built. chap-devops leaves that model out and uses the others,
+so the other commands still work.
+
+- Run `chap-devops self update`. A newer chap-devops usually reads the file.
+- If the warning stays after the update, the file is not valid. Report it
+  against the marketplace repository.
+
 ## `` `chap-devops registry update` refreshes the marketplace registry, which needs the network; drop --offline ``
 
 ```text

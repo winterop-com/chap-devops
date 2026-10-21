@@ -69,8 +69,15 @@ pub fn between(old: &Registry, new: &Registry) -> Changes {
             Some(_) => {}
         }
     }
+    // A model the new registry still lists, in a file this chap-devops
+    // could not read, was left out, not removed; the warning names it.
+    let left_out = |id: &str| {
+        new.skipped
+            .iter()
+            .any(|skipped| skipped.path == format!("models/{id}.yaml"))
+    };
     for model in &old.models {
-        if !new.models.iter().any(|m| m.id == model.id) {
+        if !new.models.iter().any(|m| m.id == model.id) && !left_out(&model.id) {
             changes.removed.push(model.id.clone());
         }
     }

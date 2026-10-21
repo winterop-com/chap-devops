@@ -114,13 +114,29 @@ pub struct Registry {
     pub provenance: Provenance,
     pub index: RegistryIndex,
     pub models: Vec<Model>,
+    /// Each model file that did not parse, which the catalogue goes
+    /// without; [`load`] and [`refresh`] warn with them.
+    #[serde(skip)]
+    pub skipped: Vec<Skipped>,
+}
+
+/// A model file that did not parse.
+#[derive(Debug, Clone)]
+pub struct Skipped {
+    /// The path the index lists, such as `models/<id>.yaml`.
+    pub path: String,
+    /// The warning that names it.
+    pub line: String,
 }
 
 impl Registry {
     /// Parse an index plus its model files.
     ///
     /// `model_files` are `(relative path as listed in the index, contents)`
-    /// pairs; every path the index lists must be present.
+    /// pairs; every path the index lists must be present. A model file that
+    /// does not parse is left out and named in [`Registry::skipped`]: the
+    /// marketplace can add a field value before chap-devops knows it, and
+    /// one entry must not take the other models with it.
     pub fn parse(
         url: &str,
         provenance: Provenance,
@@ -131,15 +147,23 @@ impl Registry {
             .map_err(|e| anyhow::anyhow!("{url}: invalid registry index: {e}"))?;
 
         let mut models = Vec::with_capacity(index.models.len());
+        let mut skipped = Vec::new();
         for path in &index.models {
             let body = model_files
                 .iter()
                 .find(|(name, _)| name == path)
                 .map(|(_, body)| body)
                 .ok_or_else(|| anyhow::anyhow!("registry lists {path} but it is missing"))?;
-            let model: Model = serde_yaml_ng::from_str(body)
-                .map_err(|e| anyhow::anyhow!("{path}: invalid model file: {e}"))?;
-            models.push(model);
+            match serde_yaml_ng::from_str::<Model>(body) {
+                Ok(model) => models.push(model),
+                Err(e) => skipped.push(Skipped {
+                    path: path.clone(),
+                    line: format!(
+                        "left out {path} of the marketplace registry: {e}; this chap-devops may \
+                         be older than the registry, so run `chap-devops self update`"
+                    ),
+                }),
+            }
         }
 
         Ok(Registry {
@@ -147,6 +171,7 @@ impl Registry {
             provenance,
             index,
             models,
+            skipped,
         })
     }
 
@@ -234,6 +259,7 @@ impl Registry {
 /// marketplace has already yanked. `--offline` does not warn: the user asked.
 pub fn load(opts: &RegistryOptions) -> Result<Registry> {
     let registry = load_chosen(opts)?;
+    warn_skipped(&registry);
     crate::output::verbose(&format!(
         "registry: {} from {} ({} models)",
         registry.url,
@@ -314,6 +340,7 @@ pub fn refresh(opts: &RegistryOptions) -> Result<Refreshed> {
     });
     cache::write(opts, &index_yaml, &model_files)?;
     let registry = Registry::parse(&opts.url, Provenance::Network, &index_yaml, &model_files)?;
+    warn_skipped(&registry);
     Ok(Refreshed {
         changes: before
             .as_ref()
@@ -321,6 +348,13 @@ pub fn refresh(opts: &RegistryOptions) -> Result<Refreshed> {
         compared_age: before.map(|(_, age)| age),
         registry,
     })
+}
+
+/// Warn once for each model file the catalogue goes without.
+fn warn_skipped(registry: &Registry) {
+    for skipped in &registry.skipped {
+        crate::output::warn(&skipped.line);
+    }
 }
 
 /// Parse a cache entry, reporting a corrupt one as "no cache" so the caller

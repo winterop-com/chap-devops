@@ -10,6 +10,7 @@ fn embedded_snapshot_parses_into_a_registry() {
     assert_eq!(r.models.len(), 7);
     assert_eq!(r.url, DEFAULT_REGISTRY_URL);
     assert!(matches!(r.provenance, Provenance::Embedded));
+    assert!(r.skipped.is_empty(), "{:?}", r.skipped);
     // Model order follows the index order.
     assert_eq!(r.models[0].id, "chapkit_ewars_model");
 }
@@ -355,14 +356,38 @@ fn offline_accepts_a_stale_cache() {
     assert_eq!(r.models.len(), 1);
 }
 
+/// A model file in the cache that does not parse looks the same as one the
+/// marketplace wrote with a newer value, so it is left out like one: the
+/// cache stays in use, and a fallback would only hide the other models.
 #[test]
-fn a_corrupt_cache_does_not_stop_the_ladder() {
+fn a_model_file_in_the_cache_that_does_not_parse_is_left_out() {
     let tmp = tempfile::tempdir().unwrap();
     let opts = opts(tmp.path(), true);
     seed_cache(&opts, Duration::from_secs(60));
     std::fs::write(
         cache::dir_for(&opts).join("models/chapkit_ewars_model.yaml"),
         "schema_version: 2\nnot: a model\n",
+    )
+    .unwrap();
+
+    let r = load(&opts).unwrap();
+    assert!(
+        matches!(r.provenance, Provenance::Cache { .. }),
+        "{:?}",
+        r.provenance
+    );
+    assert!(r.models.is_empty());
+    assert_eq!(r.skipped.len(), 1);
+}
+
+#[test]
+fn a_corrupt_cache_index_does_not_stop_the_ladder() {
+    let tmp = tempfile::tempdir().unwrap();
+    let opts = opts(tmp.path(), true);
+    seed_cache(&opts, Duration::from_secs(60));
+    std::fs::write(
+        cache::dir_for(&opts).join("registry.yaml"),
+        "schema_version: [not, an, index\n",
     )
     .unwrap();
 
@@ -424,4 +449,46 @@ fn model_url_replaces_the_index_filename() {
         "https://raw.githubusercontent.com/dhis2-chap/model-marketplace/main/models/chapkit_ewars_model.yaml"
     );
     assert_eq!(model_url("registry.yaml", "models/x.yaml"), "models/x.yaml");
+}
+
+/// A model file with a value this chap-devops does not know, such as a new
+/// `kind`, is left out with a sentence that says why; the other models stay.
+#[test]
+fn a_model_file_that_does_not_parse_is_left_out_and_named() {
+    let embedded = registry();
+    let index_yaml = serde_yaml_ng::to_string(&embedded.index).expect("the index serializes");
+    let mut files: Vec<(String, String)> = embedded
+        .index
+        .models
+        .iter()
+        .zip(&embedded.models)
+        .map(|(rel, model)| {
+            (
+                rel.clone(),
+                serde_yaml_ng::to_string(model).expect("a model serializes"),
+            )
+        })
+        .collect();
+    let (broken, body) = &mut files[0];
+    *body = body.replace("kind: model", "kind: something_new");
+    let broken = broken.clone();
+
+    let r = Registry::parse(
+        DEFAULT_REGISTRY_URL,
+        Provenance::Network,
+        &index_yaml,
+        &files,
+    )
+    .expect("one bad file does not fail the registry");
+    assert_eq!(r.models.len(), embedded.models.len() - 1);
+    assert_eq!(r.skipped.len(), 1);
+    assert_eq!(r.skipped[0].path, broken);
+    let line = &r.skipped[0].line;
+    assert!(
+        line.starts_with(&format!(
+            "left out {broken} of the marketplace registry: kind"
+        )),
+        "{line}"
+    );
+    assert!(line.ends_with("run `chap-devops self update`"), "{line}");
 }
