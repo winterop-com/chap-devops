@@ -16,8 +16,8 @@ on:
         description: DHIS2 versions, space separated, or "none"
         default: "2.42"
       models:
-        description: model ids, comma separated, "default" or "all"
-        default: default
+        description: model ids, comma separated, "none" or "all"
+        default: all
 
 concurrency:
   group: e2e-${{ github.ref }}
@@ -70,7 +70,7 @@ jobs:
         env:
           TAG: ${{ matrix.tag }}
           DHIS2_VERSIONS: ${{ inputs.dhis2 || '2.42' }}
-          MODELS: ${{ inputs.models || 'default' }}
+          MODELS: ${{ inputs.models || 'all' }}
         run: |
           args=(--tags "$TAG" --models "$MODELS" --work "$RUNNER_TEMP/e2e")
           if [ "$DHIS2_VERSIONS" = none ]; then

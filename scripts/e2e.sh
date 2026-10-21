@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 # End-to-end run against real images: OCS, chap-core and DHIS2 in one
-# deployment, the default models beside them, and every check chap-devops has.
+# deployment, every marketplace model beside them, and every check chap-devops has.
 #
 #   scripts/e2e.sh                       # chap-core latest and master, DHIS2 2.41 2.42 2.43 dev
 #   scripts/e2e.sh --tags "v2.3.1"       # one tag
 #   scripts/e2e.sh --keep                # leave the deployments running
 #   scripts/e2e.sh --no-dhis2            # OCS and chap-core only
-#   scripts/e2e.sh --models all          # every marketplace model, not just the default
+#   scripts/e2e.sh --models ID,ID        # only these models, not every one
 #   scripts/e2e.sh --dhis2 2.42          # one DHIS2 version (dev: dhis2/core-dev:master)
 #
 # For each chap-core tag and DHIS2 version it creates a deployment under the
@@ -26,7 +26,7 @@ set -uo pipefail
 
 CHAP_DEVOPS="${CHAP_DEVOPS:-}"
 TAGS="latest master"
-MODELS="default"
+MODELS="all"
 DHIS2_VERSIONS="2.41 2.42 2.43 dev"
 KEEP=0
 DHIS2=1
@@ -43,7 +43,7 @@ options:
   --dhis2 "V1 V2"  DHIS2 versions to run each tag with (default: "2.41 2.42 2.43 dev");
                    dev is the unreleased next one, dhis2/core-dev:master
   --no-dhis2       leave DHIS2 out, and dhis2 connect with it
-  --models LIST    model ids, comma separated, \`default\` or \`all\` (default: default)
+  --models LIST    model ids, comma separated, \`none\` or \`all\` (default: all)
   --work DIR       where the deployments and the report go (default: a temp dir)
 
 environment: CHAP_DEVOPS (the chap-devops binary), WAIT_SECONDS (default 1800)
