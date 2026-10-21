@@ -40,6 +40,61 @@ and the loops are in the template files, and the Rust code only gives the
 values. The golden files in `tests/fixtures/` make sure that the output does
 not change.
 
+### The checks of chap-admin
+
+`chap-devops` installs, updates and removes models as `chap-admin` does, but
+it checks less. The plan:
+
+- Install only a stable version with `status: verified`, and check that its
+  `image_tag` is `sha-<prefix>` of its `commit`. Today `resolve()` refuses
+  only a yanked version.
+- Check that the `id` of a marketplace entry matches its file name, and that
+  its `service_id` is the id with `-` for `_`.
+- After a model registers, compare its service id and its `git_revision`
+  with the pin, and warn when they differ.
+- Before `chap-devops models add` registers an image, refuse a template name that
+  is already live in chap-core and that this deployment does not own.
+
+### A confirmation for an image outside the marketplace
+
+`chap-admin install --image` needs `--accept-risk` each time, because nobody
+reviewed the image. `chap-devops models add` asks for no confirmation. Whether it
+should, and how (a flag, or a question at a terminal), is still open.
+
+### Undo of a failed update, for the container too
+
+When a configure step fails, `chap-devops` retires the template version it
+stored, so chap-core is as it was. `chap-admin` also stops the new container
+and starts the previous image again. `chap-devops` leaves the new container
+running.
+
+### The development overlays in a takeover
+
+`chap-devops init --adopt` reads `compose.marketplace.yml` only. A deployment that
+also ran chap-core's `compose.ewars.yml` or `compose.chapkit.yml` loses those
+services in the takeover. They are for development, but the takeover must
+at least name them.
+
+### chap-devops for chap-admin users
+
+A page that maps each `chap-admin` command and flag to the `chap-devops`
+command that does the same, and a scenario in `scripts/e2e.sh` that runs
+each of them against real images: install, update, uninstall, a custom image
+and a takeover.
+
+### Chap Hub
+
+The marketplace now calls itself Chap Hub in its `registry.yaml`. The help,
+the messages and the docs change to that name when the Chap team confirms it.
+
+### A green weekly e2e
+
+The weekly e2e run has failed since 2026-10-12: `init` stops after one
+second in both chap-core jobs. The cause is in the uploaded log, which nobody
+has read yet. The CLI test
+`models_test_runs_chapkit_test_in_the_container_and_cleans_up_after_it` also
+failed once in a full run and passed again alone, so it is not stable.
+
 ## Not planned
 
 ### Native Windows
