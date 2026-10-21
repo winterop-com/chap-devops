@@ -452,14 +452,14 @@ pub(super) fn info_lines<'a>(app: &App, row: &Row, width: usize, theme: &Theme) 
     // Everything below is about this deployment rather than the model.
     lines.push(Line::raw(""));
 
-    // A template is not a forecasting model, and the overlay says so in a
+    // A starter is not a forecasting model, and the overlay says so in a
     // colour that is neither "good" nor "bad", just different.
-    if model.is_template() {
+    if model.is_starter() {
         lines.push(Line::from(vec![
             Span::styled(fit("kind", LABEL_WIDTH), theme.label_style()),
             Span::styled(
-                "template (scaffolding, not a forecasting model)",
-                theme.template_style(),
+                "starter (scaffolding, not a forecasting model)",
+                theme.starter_style(),
             ),
         ]));
     } else if model.manual {

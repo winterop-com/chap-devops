@@ -24,8 +24,8 @@ pub struct Theme {
     pub bad: Color,
     /// Labels, ids, everything already known.
     pub dim: Color,
-    /// The `[template]` marker, which is neither good nor bad, just different.
-    pub template: Color,
+    /// The `[starter]` marker, which is neither good nor bad, just different.
+    pub starter: Color,
     pub selection_bg: Color,
     pub selection_fg: Color,
     /// No colour at all: shape, bold and reverse have to do the work.
@@ -40,7 +40,7 @@ impl Default for Theme {
             warn: Color::Yellow,
             bad: Color::Red,
             dim: Color::DarkGray,
-            template: Color::Magenta,
+            starter: Color::Magenta,
             selection_bg: Color::Blue,
             selection_fg: Color::White,
             mono: false,
@@ -67,7 +67,7 @@ impl Theme {
             warn: Color::Reset,
             bad: Color::Reset,
             dim: Color::Reset,
-            template: Color::Reset,
+            starter: Color::Reset,
             selection_bg: Color::Reset,
             selection_fg: Color::Reset,
             mono: true,
@@ -124,8 +124,8 @@ impl Theme {
         }
     }
 
-    pub fn template_style(&self) -> Style {
-        self.fg(self.template, Modifier::ITALIC)
+    pub fn starter_style(&self) -> Style {
+        self.fg(self.starter, Modifier::ITALIC)
     }
 
     /// A label in front of a value.

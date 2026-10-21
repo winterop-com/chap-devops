@@ -76,7 +76,7 @@ pub struct Model {
 #[serde(rename_all = "lowercase")]
 pub enum Kind {
     Model,
-    Template,
+    Starter,
 }
 
 /// The author's own chapkit assessment, not a marketplace verdict.
@@ -271,8 +271,8 @@ pub const R_INLA_RUNTIME: &str = "ghcr.io/dhis2-chap/chapkit-r-inla";
 
 impl Model {
     /// Scaffolding rather than a deployable forecasting model.
-    pub fn is_template(&self) -> bool {
-        self.kind == Kind::Template
+    pub fn is_starter(&self) -> bool {
+        self.kind == Kind::Starter
     }
 
     /// Look up a version by its `version` string.
@@ -316,7 +316,7 @@ impl Model {
 
     /// Whether the service needs `platform: linux/amd64`, i.e. whether it is
     /// built on the R-INLA runtime.
-    /// How the catalogue is listed: templates after models, then by
+    /// How the catalogue is listed: starters after models, then by
     /// maturity, then by name, because a tie on maturity is not a reason to
     /// fall back on the order a directory listing happened to have.
     ///
@@ -324,7 +324,7 @@ impl Model {
     /// sort where a reader looks for them.
     pub fn order_key(&self) -> (bool, u8, String) {
         (
-            self.is_template(),
+            self.is_starter(),
             self.assessed_status.rank(),
             self.display_name.to_lowercase(),
         )

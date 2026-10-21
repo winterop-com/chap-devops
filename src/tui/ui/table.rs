@@ -12,8 +12,8 @@ use ratatui::widgets::{List, ListItem, ListState, Paragraph};
 /// A space, the cursor column, and the enabled mark, each with a space.
 pub(super) const MARKER_W: usize = 5;
 pub(super) const MODEL_W: usize = 22;
-/// `template` is the longest thing the kind column says.
-pub(super) const KIND_W: usize = 8;
+/// `starter` is the longest thing the kind column says.
+pub(super) const KIND_W: usize = 7;
 /// `● experimental`: the dot, and the longest thing the scale means.
 pub(super) const STATUS_W: usize = 14;
 pub(super) const VERSION_W: usize = 8;
@@ -99,10 +99,10 @@ pub(super) fn columns(inner: usize, kind: bool) -> Columns {
 }
 
 /// A kind column appears once the list holds something that is not a plain
-/// marketplace model: a template the user asked to see, or an entry this
+/// marketplace model: a starter the user asked to see, or an entry this
 /// deployment added itself.
 pub(super) fn kind_column(app: &App) -> bool {
-    app.show_templates || app.rows.iter().any(|row| app.model(row).manual)
+    app.show_starters || app.rows.iter().any(|row| app.model(row).manual)
 }
 
 /// `MODEL  ID  STATUS  VERSION  ENABLED`, over the columns they label.
@@ -216,8 +216,8 @@ pub(super) fn row_line<'a>(
         Span::raw(" "),
     ];
     if columns.kind > 0 {
-        let (label, style) = if model.is_template() {
-            ("template", theme.template_style())
+        let (label, style) = if model.is_starter() {
+            ("starter", theme.starter_style())
         } else if model.manual {
             ("manual", theme.dim_style())
         } else {

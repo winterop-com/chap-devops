@@ -145,7 +145,7 @@ fn browse(key: &KeyEvent, ctrl: bool) -> Action {
         // there is nothing to type for.
         KeyCode::Char('P') => Action::RemovePort,
         KeyCode::Char('v') => Action::ChannelPrompt,
-        KeyCode::Char('t') => Action::ToggleTemplates,
+        KeyCode::Char('t') => Action::ToggleStarters,
         KeyCode::Char('/') => Action::StartFilter,
         // Enter is the second way into the details, next to `i`; saving is
         // `s`, which is the one key that writes anything.
@@ -265,7 +265,7 @@ pub fn help_entries() -> &'static [(&'static str, &'static str)] {
         ("p", "publish a host port: a number, auto, or none"),
         ("P", "take the host port away"),
         ("v", "pick the channel; on the dhis2 component, its version"),
-        ("t", "show or hide templates"),
+        ("t", "show or hide starters"),
         ("/", "filter; Enter keeps it, Esc clears it"),
         ("s", "save the changes; `chap-devops up` applies them"),
         ("u", "discard the pending changes"),
@@ -304,7 +304,7 @@ fn hint(key: &'static str, what: &str, rank: u8) -> Hint {
 ///
 /// `pending` and `filtering` are what the browser is in the middle of: with
 /// changes to save the bar grows a save chip and a way to throw them away,
-/// and with a filter on it offers to clear it rather than to hide templates.
+/// and with a filter on it offers to clear it rather than to hide starters.
 pub fn keybar(page: Page, mode: Mode, pending: usize, filtering: bool) -> Vec<Hint> {
     match mode {
         Mode::Browse => {
@@ -333,7 +333,7 @@ pub fn keybar(page: Page, mode: Mode, pending: usize, filtering: bool) -> Vec<Hi
                 if filtering {
                     hints.push(hint("esc", "clear filter", 7));
                 } else {
-                    hints.push(hint("t", "templates", 0));
+                    hints.push(hint("t", "starters", 0));
                     hints.push(hint("/", "filter", 1));
                 }
             }

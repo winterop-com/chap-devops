@@ -435,7 +435,7 @@ fn enable_source(
                 bind: args.bind,
                 data_dir: None,
                 user: None,
-                allow_template: args.allow_template,
+                allow_starter: args.allow_starter,
             },
         )?;
         return Ok(id);
@@ -454,7 +454,7 @@ fn enable_source(
             user: None,
             runtime_amd64: false,
         },
-        args.allow_template,
+        args.allow_starter,
     )?;
     Ok(match added {
         super::manual_models::Added::Marketplace(report) => report

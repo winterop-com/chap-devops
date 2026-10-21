@@ -116,7 +116,7 @@ fn the_synthesised_entry_resolves_every_selector_to_the_recorded_tag() {
     assert_eq!(model.id, "chapkit_ghr_model");
     assert_eq!(model.service_id, "chapkit-ghr-model");
     assert_eq!(model.kind, Kind::Model);
-    assert!(!model.is_template());
+    assert!(!model.is_starter());
     assert_eq!(model.assessed_status, AssessedStatus::Gray);
     assert_eq!(
         model.summary,

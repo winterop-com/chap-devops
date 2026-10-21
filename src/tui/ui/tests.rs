@@ -695,7 +695,7 @@ fn the_palette_filters_and_runs_a_command() {
     );
     assert!(screen.contains("Remove the host port"), "{screen}");
     assert!(
-        !screen.contains("Show or hide templates"),
+        !screen.contains("Show or hide starters"),
         "the filter narrowed the list:\n{screen}"
     );
     assert!(
@@ -743,7 +743,7 @@ fn the_footer_follows_what_is_pending_and_what_is_filtered() {
         "[i] info",
         "[p] port",
         "[v] channel",
-        "[t] templates",
+        "[t] starters",
         "[/] filter",
         "[s] save",
         "[ctrl+k] commands",
@@ -767,7 +767,7 @@ fn the_footer_follows_what_is_pending_and_what_is_filtered() {
     assert!(plain.contains("[ctrl+k] commands"), "{plain}");
     assert!(plain.contains("[s] save"), "{plain}");
     assert!(!plain.contains("[u] discard"), "{plain}");
-    assert!(!plain.contains("[t] templates"), "{plain}");
+    assert!(!plain.contains("[t] starters"), "{plain}");
 
     app.reduce(Action::Toggle);
     let pending = render(&app, 150, 40);
@@ -781,7 +781,7 @@ fn the_footer_follows_what_is_pending_and_what_is_filtered() {
     app.reduce(Action::FilterDone);
     let filtered = render(&app, 150, 40);
     assert!(filtered.contains("[esc] clear filter"), "{filtered}");
-    assert!(!filtered.contains("[t] templates"), "{filtered}");
+    assert!(!filtered.contains("[t] starters"), "{filtered}");
     assert!(!filtered.contains("[/] filter"), "{filtered}");
 }
 
@@ -827,16 +827,16 @@ fn filter_mode_shows_what_is_being_typed_in_the_title() {
 }
 
 #[test]
-fn templates_and_manual_entries_get_a_kind_column() {
+fn starters_and_manual_entries_get_a_kind_column() {
     let registry = registry();
     let mut app = App::new(&registry, &ProjectState::default());
     let screen = render(&app, 120, 40);
     assert!(!screen.contains("KIND"), "{screen}");
 
-    app.reduce(Action::ToggleTemplates);
+    app.reduce(Action::ToggleStarters);
     let screen = render(&app, 120, 40);
     assert!(screen.contains("KIND"), "{screen}");
-    assert!(screen.contains("template"), "{screen}");
+    assert!(screen.contains("starter"), "{screen}");
     let row = line_with(&screen, "CHAP-EWARS  ");
     let head = line_with(&screen, "MODEL");
     assert_eq!(column_of(head, "KIND"), column_of(row, "model "));
@@ -874,7 +874,7 @@ fn a_manually_added_model_is_marked_and_named() {
     assert!(screen.contains("KIND"), "{screen}");
     let row = line_with(&screen, "example_manual_model");
     assert!(row.contains("manual "), "{row}");
-    assert!(!row.contains("template"), "{row}");
+    assert!(!row.contains("starter"), "{row}");
 
     // The overlay for that row says what kind of entry it is.
     while app.selected().map(|row| app.model(row).id.as_str()) != Some("example_manual_model") {

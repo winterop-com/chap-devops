@@ -36,7 +36,7 @@ fn disabling_a_model_that_is_not_enabled_fails() {
 }
 
 #[test]
-fn a_template_needs_allow_template() {
+fn a_starter_needs_allow_starter() {
     let sandbox = Sandbox::new();
     let dir = sandbox.project();
     sandbox.init(&["--models", "none"]).assert().success();
@@ -45,25 +45,21 @@ fn a_template_needs_allow_template() {
         .models(&["enable", "chapkit_minimalist_example_py"])
         .assert()
         .failure()
-        .stderr(predicates::str::contains("--allow-template"));
+        .stderr(predicates::str::contains("--allow-starter"));
     assert!(
         !dir.join("compose.chapkit-minimalist-example-py.yml")
             .exists()
     );
 
     sandbox
-        .models(&[
-            "enable",
-            "chapkit_minimalist_example_py",
-            "--allow-template",
-        ])
+        .models(&["enable", "chapkit_minimalist_example_py", "--allow-starter"])
         .assert()
         .success();
     assert!(
         dir.join("compose.chapkit-minimalist-example-py.yml")
             .is_file()
     );
-    // The template's image is built from /work, unlike ewars, and it runs as
+    // The starter's image is built from /work, unlike ewars, and it runs as
     // root - so its overlay hands it no user, and its init container chowns
     // the volume to root rather than to an account the image does not use.
     let model = &state(&dir)["models"]["chapkit_minimalist_example_py"];

@@ -57,7 +57,7 @@ pub struct EnableRequest {
     ///
     /// [`user`]: EnableRequest::user
     pub user_from: Option<UserSource>,
-    pub allow_template: bool,
+    pub allow_starter: bool,
     /// Leave the version the project recorded exactly as it is, [`selector`]
     /// included.
     ///
@@ -82,7 +82,7 @@ impl EnableRequest {
             data_dir: None,
             user: None,
             user_from: None,
-            allow_template: false,
+            allow_starter: false,
             keep_version: false,
         }
     }
@@ -166,8 +166,8 @@ pub fn validate(project: &Project, registry: &Registry, sel: &Selection) -> Resu
         let model = registry
             .get(&req.id)
             .ok_or_else(|| ChapError::UnknownModel(req.id.clone()))?;
-        if model.is_template() && !req.allow_template {
-            return Err(ChapError::IsTemplate(req.id.clone()).into());
+        if model.is_starter() && !req.allow_starter {
+            return Err(ChapError::IsStarter(req.id.clone()).into());
         }
         // Two models on one compose service would be merged into one by
         // compose, so a model whose service name another enabled model holds
@@ -358,11 +358,11 @@ pub(crate) fn plan_with(
         let model = registry
             .get(&req.id)
             .ok_or_else(|| ChapError::UnknownModel(req.id.clone()))?;
-        // A template nobody allowed was refused by validate() above; what is
+        // A starter nobody allowed was refused by validate() above; what is
         // left is to say out loud that this one was allowed.
-        if model.is_template() {
+        if model.is_starter() {
             report.warnings.push(format!(
-                "{} is a template, not a deployable model; it is scaffolding to copy",
+                "{} is a starter, not a deployable model; it is scaffolding to copy",
                 model.id
             ));
         }

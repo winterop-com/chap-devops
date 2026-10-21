@@ -311,7 +311,7 @@ fn an_unknown_model_is_rejected_before_anything_is_written() {
 }
 
 #[test]
-fn a_template_needs_allow_template_and_warns() {
+fn a_starter_needs_allow_starter_and_warns() {
     let registry = load_embedded().unwrap();
     let (_dir, mut project) = project();
     let err = apply(
@@ -319,18 +319,18 @@ fn a_template_needs_allow_template_and_warns() {
         &registry,
         &enable(&["chapkit_minimalist_example_py"]),
     )
-    .expect_err("templates are not deployable");
+    .expect_err("starters are not deployable");
     assert!(matches!(
         err.downcast_ref::<ChapError>(),
-        Some(ChapError::IsTemplate(_))
+        Some(ChapError::IsStarter(_))
     ));
 
     let mut sel = enable(&["chapkit_minimalist_example_py"]);
-    sel.enable[0].allow_template = true;
+    sel.enable[0].allow_starter = true;
     let report = apply(&mut project, &registry, &sel).unwrap();
     assert_eq!(report.enabled.len(), 1);
     assert_eq!(report.warnings.len(), 1);
-    assert!(report.warnings[0].contains("template"));
+    assert!(report.warnings[0].contains("starter"));
 }
 
 /// Publishing a host port is no reason to move the version a deployment
@@ -396,10 +396,10 @@ fn validate_answers_for_the_whole_selection_and_touches_nothing() {
         &registry,
         &enable(&["chapkit_minimalist_example_py"]),
     )
-    .expect_err("templates are not deployable");
+    .expect_err("starters are not deployable");
     assert!(matches!(
         err.downcast_ref::<ChapError>(),
-        Some(ChapError::IsTemplate(_))
+        Some(ChapError::IsStarter(_))
     ));
     let err = validate(&project, &registry, &enable(&["nope"])).expect_err("unknown");
     assert!(matches!(

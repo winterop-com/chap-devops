@@ -3,8 +3,8 @@
 
 use super::{
     App, CHANNELS, COMPONENT_HAS_NO_AUTO_PORT, CORE_PORT_IS_API_PORT, Mode,
-    PORT_NEEDS_COMPONENT_HINT, PUBLISH_NEEDS_ENABLED_HINT, Page, PortWant, TEMPLATE_HIDDEN_HINT,
-    TEMPLATE_WARNING,
+    PORT_NEEDS_COMPONENT_HINT, PUBLISH_NEEDS_ENABLED_HINT, Page, PortWant, STARTER_HIDDEN_HINT,
+    STARTER_WARNING,
 };
 use crate::components::Component;
 use crate::registry::Channel;
@@ -57,9 +57,9 @@ impl App<'_> {
         let Some(&row_idx) = self.visible.get(self.cursor) else {
             return;
         };
-        let is_template = self.model(&self.rows[row_idx]).is_template();
-        if is_template && !self.show_templates {
-            self.message = Some(TEMPLATE_HIDDEN_HINT.to_string());
+        let is_starter = self.model(&self.rows[row_idx]).is_starter();
+        if is_starter && !self.show_starters {
+            self.message = Some(STARTER_HIDDEN_HINT.to_string());
             return;
         }
         let row = &mut self.rows[row_idx];
@@ -70,8 +70,8 @@ impl App<'_> {
             // on in the same session does not silently re-publish.
             row.want = PortWant::None;
         }
-        if is_template && now_enabled {
-            self.message = Some(TEMPLATE_WARNING.to_string());
+        if is_starter && now_enabled {
+            self.message = Some(STARTER_WARNING.to_string());
         }
         self.dirty = self.has_changes();
     }

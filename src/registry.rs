@@ -225,7 +225,7 @@ impl Registry {
             .or_else(|| self.models.iter().find(|m| m.service_id == id))
     }
 
-    /// Entries that can actually be deployed, i.e. everything but templates.
+    /// Entries that can actually be deployed, i.e. everything but starters.
     #[cfg(test)]
     pub fn deployable(&self) -> impl Iterator<Item = &Model> {
         self.models.iter().filter(|m| m.kind == Kind::Model)

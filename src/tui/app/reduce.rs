@@ -201,8 +201,8 @@ impl App<'_> {
                 self.open_dhis2_version_prompt()
             }
             // Nor is a component filtered or hidden: three rows need neither.
-            Action::ToggleTemplates if self.page == Page::Models => {
-                self.show_templates = !self.show_templates;
+            Action::ToggleStarters if self.page == Page::Models => {
+                self.show_starters = !self.show_starters;
                 self.refilter();
             }
             Action::StartFilter if self.page == Page::Models => self.mode = Mode::Filter,
@@ -314,7 +314,7 @@ impl App<'_> {
         let keep = self.visible.get(self.cursor).copied();
         let registry = self.registry;
         let needle = self.filter.to_lowercase();
-        let show_templates = self.show_templates;
+        let show_starters = self.show_starters;
 
         self.visible = self
             .rows
@@ -322,9 +322,9 @@ impl App<'_> {
             .enumerate()
             .filter(|(_, row)| {
                 let model = &registry.models[row.model_idx];
-                // Templates are scaffolding: hidden unless asked for, or
+                // Starters are scaffolding: hidden unless asked for, or
                 // already enabled in this project.
-                if model.is_template() && !show_templates && !row.enabled {
+                if model.is_starter() && !show_starters && !row.enabled {
                     return false;
                 }
                 matches(model, &needle)

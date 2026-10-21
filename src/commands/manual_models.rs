@@ -110,13 +110,13 @@ pub(crate) enum Added {
 }
 
 /// [`add`] on a project the caller has loaded and locked, writing the state
-/// and printing nothing. `allow_template` lets a source that is a marketplace
-/// template be enabled, which `chap-devops run --allow-template` asks for.
+/// and printing nothing. `allow_starter` lets a source that is a marketplace
+/// starter be enabled, which `chap-devops run --allow-starter` asks for.
 pub(crate) fn add_in(
     ctx: &Ctx,
     project: &mut Project,
     args: &ModelsAddArgs,
-    allow_template: bool,
+    allow_starter: bool,
 ) -> Result<Added> {
     // A source the marketplace already lists is that model: it is enabled
     // from the marketplace, curated pin and all, unless `--id` asks for a
@@ -141,7 +141,7 @@ pub(crate) fn add_in(
                     bind: args.bind,
                     data_dir: args.data_dir.clone(),
                     user: args.user.clone(),
-                    allow_template,
+                    allow_starter,
                 },
             )?;
             return Ok(Added::Marketplace(report));
@@ -207,7 +207,7 @@ pub(crate) fn add_in(
             // answer came from keeps `models info` honest about an entry
             // nobody typed a `--user` for.
             user_from: Some(user_source(resolved.user_from)),
-            allow_template: false,
+            allow_starter: false,
             keep_version: false,
         }],
         ..Selection::default()

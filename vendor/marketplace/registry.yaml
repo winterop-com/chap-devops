@@ -1,4 +1,4 @@
-# Chap Model Marketplace — registry index
+# Chap Hub — registry index
 #
 # This file is the entry point for the marketplace site. Every model listed
 # here has been reviewed and verified by the Chap maintainers; a model (or a
@@ -11,16 +11,16 @@
 # Verification is about the pin, not the forecast: the gate checks that a
 # pinned revision is what it claims to be and runs as a chapkit service. What
 # the model's own authors will vouch for is a separate axis, carried per
-# model as `assessed_status` and surfaced as such by the site.
+# model as `assessed_status`; it is kept as data and not shown on the site.
 
 schema_version: 2
 
 marketplace:
-  name: Chap Model Marketplace
+  name: Chap Hub
   description: >-
-    Curated, verified forecasting models for Chap, the Climate & Health
-    Analytics Platform. Every listed model and every version pin is reviewed
-    by the Chap maintainers before it appears here.
+    Discover forecasting models for Chap, the Climate & Health Analytics
+    Platform. Browse models, check their requirements and follow the
+    installation instructions.
   # The marketplace's own repository. The site build ingests this repo's open
   # pull requests so an in-review model or version pin can appear on the site
   # with its running approval count before it merges.
@@ -28,7 +28,7 @@ marketplace:
   documentation:
     chap: https://chap.dhis2.org
     # Only chapkit model services are supported. Every listed model is a
-    # chapkit 2 service published as a container image, installed into a
+    # chapkit service published as a container image, installed into a
     # running Chap with `chap-admin install <id>`.
     install: https://chap.dhis2.org/chap-modeling-platform/chap-cli/chap-core-cli-setup/#running-marketplace-models
     # How Chap talks to a running chapkit service over HTTP.
@@ -44,7 +44,7 @@ review_policy:
     repository and must be approved by three maintainers before merge.
 
 # Ordered list of whitelisted models. Each entry is a standalone YAML file;
-# whether it is a forecasting model or a template to copy is declared inside
+# whether it is a forecasting model or a starter to copy is declared inside
 # the file as `kind`.
 models:
   # Forecasting models.
@@ -52,6 +52,6 @@ models:
   - models/chapkit_simple_multistep_model.yaml
   - models/auto_arima_chapkit.yaml
   - models/chapkit_ghr_model.yaml
-  # Templates — scaffolding for model authors, not models.
+  # Starters — scaffolding for model authors, not models.
   - models/chapkit_minimalist_example_py.yaml
   - models/chapkit_minimalist_example_r.yaml

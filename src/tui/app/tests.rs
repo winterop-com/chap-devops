@@ -7,20 +7,20 @@ mod components;
 
 const EWARS: &str = "chapkit_ewars_model";
 const ARIMA: &str = "auto_arima_chapkit";
-const TEMPLATE: &str = "chapkit_minimalist_example_py";
+const STARTER: &str = "chapkit_minimalist_example_py";
 
 fn registry() -> Registry {
     load_embedded().expect("embedded snapshot parses")
 }
 
 /// Entries in the embedded snapshot, and how many of those are models
-/// rather than templates. Read off the snapshot so a marketplace refresh
+/// rather than starters. Read off the snapshot so a marketplace refresh
 /// moves the counts below with it.
 fn total(registry: &Registry) -> usize {
     registry.models.len()
 }
 
-fn without_templates(registry: &Registry) -> usize {
+fn without_starters(registry: &Registry) -> usize {
     registry.deployable().count()
 }
 
@@ -98,16 +98,16 @@ fn focus(app: &mut App, id: &str) {
 }
 
 #[test]
-fn a_fresh_browser_shows_models_but_not_templates() {
+fn a_fresh_browser_shows_models_but_not_starters() {
     let registry = registry();
     let app = App::new(&registry, &empty_state());
     assert_eq!(app.rows.len(), total(&registry));
     assert_eq!(
         app.visible.len(),
-        without_templates(&registry),
-        "the two templates are hidden"
+        without_starters(&registry),
+        "the two starters are hidden"
     );
-    assert!(!app.show_templates);
+    assert!(!app.show_starters);
     assert_eq!(app.mode, Mode::Browse);
     assert!(!app.dirty);
     assert_eq!(
@@ -121,14 +121,14 @@ fn a_fresh_browser_shows_models_but_not_templates() {
 }
 
 #[test]
-fn templates_appear_after_toggling_them_on() {
+fn starters_appear_after_toggling_them_on() {
     let registry = registry();
     let mut app = App::new(&registry, &empty_state());
-    assert!(app.reduce(Action::ToggleTemplates).is_none());
-    assert!(app.show_templates);
+    assert!(app.reduce(Action::ToggleStarters).is_none());
+    assert!(app.show_starters);
     assert_eq!(app.visible.len(), total(&registry));
-    app.reduce(Action::ToggleTemplates);
-    assert_eq!(app.visible.len(), without_templates(&registry));
+    app.reduce(Action::ToggleStarters);
+    assert_eq!(app.visible.len(), without_starters(&registry));
 }
 
 #[test]
@@ -156,7 +156,7 @@ fn toggling_a_row_marks_the_browser_dirty_and_enables_it() {
         "a fresh row publishes nothing, which is apply's default"
     );
     assert!(!app.selected().unwrap().publishes());
-    assert!(!request.allow_template);
+    assert!(!request.allow_starter);
     assert_eq!(app.counts().pending, 1);
 }
 
@@ -604,7 +604,7 @@ fn escaping_the_filter_clears_it() {
     app.reduce(Action::FilterCancel);
     assert_eq!(app.mode, Mode::Browse);
     assert!(app.filter.is_empty());
-    assert_eq!(app.visible.len(), without_templates(&registry));
+    assert_eq!(app.visible.len(), without_starters(&registry));
 }
 
 #[test]
@@ -627,28 +627,28 @@ fn a_filter_that_matches_nothing_leaves_no_selection() {
 }
 
 #[test]
-fn enabling_a_template_warns_and_allows_it() {
+fn enabling_a_starter_warns_and_allows_it() {
     let registry = registry();
     let mut app = App::new(&registry, &empty_state());
-    app.reduce(Action::ToggleTemplates);
-    focus(&mut app, TEMPLATE);
+    app.reduce(Action::ToggleStarters);
+    focus(&mut app, STARTER);
     app.reduce(Action::Toggle);
 
-    assert_eq!(app.message.as_deref(), Some(TEMPLATE_WARNING));
+    assert_eq!(app.message.as_deref(), Some(STARTER_WARNING));
     let selection = app.selection();
     assert_eq!(selection.enable.len(), 1);
     assert!(
-        selection.enable[0].allow_template,
-        "apply must accept the template the browser showed"
+        selection.enable[0].allow_starter,
+        "apply must accept the starter the browser showed"
     );
 }
 
 #[test]
-fn a_project_running_a_template_shows_templates_from_the_start() {
+fn a_project_running_a_starter_shows_starters_from_the_start() {
     let registry = registry();
-    let state = state_with(&registry, TEMPLATE, Some(Channel::Stable));
+    let state = state_with(&registry, STARTER, Some(Channel::Stable));
     let app = App::new(&registry, &state);
-    assert!(app.show_templates);
+    assert!(app.show_starters);
     assert_eq!(app.visible.len(), total(&registry));
 }
 
@@ -727,8 +727,8 @@ fn help_swallows_everything_until_it_closes() {
 fn the_footer_note_clears_on_the_next_action() {
     let registry = registry();
     let mut app = App::new(&registry, &empty_state());
-    app.reduce(Action::ToggleTemplates);
-    focus(&mut app, TEMPLATE);
+    app.reduce(Action::ToggleStarters);
+    focus(&mut app, STARTER);
     app.reduce(Action::Toggle);
     assert!(app.message.is_some());
     app.reduce(Action::Down);
@@ -978,7 +978,7 @@ fn esc_clears_a_filter_before_it_quits() {
 
     assert!(app.reduce(Action::ClearFilterOrQuit).is_none());
     assert!(app.filter.is_empty());
-    assert_eq!(app.visible.len(), without_templates(&registry));
+    assert_eq!(app.visible.len(), without_starters(&registry));
 
     assert_eq!(
         app.reduce(Action::ClearFilterOrQuit),
@@ -1071,18 +1071,18 @@ fn the_list_is_ordered_by_maturity_then_by_name() {
         );
     }
 
-    // Templates are scaffolding, so they follow the models whatever
+    // Starters are scaffolding, so they follow the models whatever
     // their own assessment says.
-    app.reduce(Action::ToggleTemplates);
+    app.reduce(Action::ToggleStarters);
     let shown = names(&app);
-    let first_template = shown
+    let first_starter = shown
         .iter()
         .position(|name| name.contains("Minimalist"))
-        .expect("the templates are listed");
-    assert!(first_template >= 5, "templates come last: {shown:?}");
+        .expect("the starters are listed");
+    assert!(first_starter >= 5, "starters come last: {shown:?}");
 
     // A filter narrows the list; it does not reorder it.
-    app.reduce(Action::ToggleTemplates);
+    app.reduce(Action::ToggleStarters);
     app.reduce(Action::StartFilter);
     for c in "model".chars() {
         app.reduce(Action::FilterChar(c));
@@ -1135,21 +1135,21 @@ fn the_screenshot_command_asks_the_caller_to_take_one() {
 }
 
 #[test]
-fn toggling_a_hidden_template_only_hints() {
+fn toggling_a_hidden_starter_only_hints() {
     let registry = registry();
     let mut app = App::new(&registry, &empty_state());
-    // Force a template row under the cursor without showing templates, the
+    // Force a starter row under the cursor without showing starters, the
     // way a stale cursor could.
-    let template_row = app
+    let starter_row = app
         .rows
         .iter()
-        .position(|r| app.model(r).id == TEMPLATE)
+        .position(|r| app.model(r).id == STARTER)
         .unwrap();
-    app.visible.push(template_row);
+    app.visible.push(starter_row);
     app.cursor = app.visible.len() - 1;
 
     app.reduce(Action::Toggle);
-    assert_eq!(app.message.as_deref(), Some(TEMPLATE_HIDDEN_HINT));
+    assert_eq!(app.message.as_deref(), Some(STARTER_HIDDEN_HINT));
     assert!(!app.has_changes());
 }
 

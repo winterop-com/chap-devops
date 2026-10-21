@@ -60,7 +60,7 @@ pub(crate) fn enable_in(
                 data_dir: args.data_dir.clone(),
                 user: args.user.clone(),
                 user_from: None,
-                allow_template: args.allow_template,
+                allow_starter: args.allow_starter,
                 // `models enable` is where a version is decided, so it
                 // always resolves: that is what `--version` and `--channel`
                 // are for, and a bare run follows the stable channel.

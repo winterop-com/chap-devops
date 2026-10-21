@@ -465,7 +465,7 @@ fn the_palette_follows_the_page_it_was_opened_from() {
         "{labels:?}"
     );
     for gone in [
-        "Show or hide templates",
+        "Show or hide starters",
         "Filter the model list",
         "Open the repository of CHAP-EWARS",
     ] {
@@ -711,14 +711,14 @@ fn the_model_only_keys_are_inert_on_the_components_page() {
     for action in [
         Action::ChannelPrompt,
         Action::StartFilter,
-        Action::ToggleTemplates,
+        Action::ToggleStarters,
         Action::ImageRef,
     ] {
         app.reduce(action.clone());
         assert_eq!(app.mode, Mode::Browse, "{action:?} opened something");
         assert!(app.take_effect().is_none(), "{action:?} left the terminal");
     }
-    assert!(!app.show_templates);
+    assert!(!app.show_starters);
     assert!(app.filter.is_empty());
     assert!(!app.has_changes());
 

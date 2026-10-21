@@ -239,7 +239,7 @@ pub(crate) fn create(ctx: &Ctx, args: &InitArgs, report_it: bool) -> Result<()> 
         parse_models(&args.models, &registry)?
     };
     // The whole selection is checked against the registry here, before a file
-    // is deleted or written: a template id, a model the marketplace does not
+    // is deleted or written: a starter id, a model the marketplace does not
     // list or a version that was yanked must leave an existing deployment
     // exactly as it was, rather than taking its overlays with it on the way
     // out. apply() checks again; this is the run that has something to lose.
@@ -560,12 +560,12 @@ fn parse_models(spec: &str, registry: &Registry) -> Result<Selection> {
     let spec = spec.trim();
     let ids: Vec<String> = match spec {
         "none" | "" => Vec::new(),
-        // Every model the catalogue lists, templates aside: those are
+        // Every model the catalogue lists, starters aside: those are
         // scaffolding to copy, not models to run.
         "all" => registry
             .models
             .iter()
-            .filter(|model| !model.is_template())
+            .filter(|model| !model.is_starter())
             .map(|model| model.id.clone())
             .collect(),
         list => list

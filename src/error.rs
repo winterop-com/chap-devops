@@ -28,9 +28,9 @@ pub enum ChapError {
     UnknownComponent(String),
 
     #[error(
-        "`{0}` is a template, not a deployable model; pass `--allow-template` to enable it anyway"
+        "`{0}` is a starter, not a deployable model; pass `--allow-starter` to enable it anyway"
     )]
-    IsTemplate(String),
+    IsStarter(String),
 
     #[error("model `{id}` has no version `{version}`")]
     UnknownVersion { id: String, version: String },

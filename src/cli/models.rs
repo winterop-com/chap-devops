@@ -54,13 +54,13 @@ pub enum ModelsCmd {
 /// List marketplace models
 #[derive(Debug, Clone, Args)]
 pub struct ModelsListArgs {
-    /// Include every entry, templates as well as models
+    /// Include every entry, starters as well as models
     #[arg(long)]
     pub all: bool,
 
-    /// List only templates
+    /// List only starters
     #[arg(long)]
-    pub templates: bool,
+    pub starters: bool,
 
     /// List only the models enabled in this deployment
     #[arg(long)]
@@ -365,9 +365,9 @@ pub struct ModelsEnableArgs {
     #[arg(long, value_name = "USER")]
     pub user: Option<String>,
 
-    /// Enable a template even though it is not a model
+    /// Enable a starter even though it is not a model
     #[arg(long)]
-    pub allow_template: bool,
+    pub allow_starter: bool,
 }
 
 /// Disable a model and remove its compose overlay

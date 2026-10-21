@@ -9,7 +9,7 @@ use crate::tui::app::Action;
 fn what_is_carried_over_a_refresh_survives_a_new_catalogue() {
     let registry = load_embedded().expect("embedded snapshot parses");
     let mut app = App::new(&registry, &ProjectState::default());
-    app.reduce(Action::ToggleTemplates);
+    app.reduce(Action::ToggleStarters);
     app.reduce(Action::Toggle);
     let toggled = app.selected_model().expect("a row is selected").id.clone();
     let carry = Carry::of(&app);
@@ -21,7 +21,7 @@ fn what_is_carried_over_a_refresh_survives_a_new_catalogue() {
     assert!(!fresh.has_changes());
     carry.restore(&mut fresh);
     assert!(fresh.has_changes());
-    assert!(fresh.show_templates);
+    assert!(fresh.show_starters);
     assert_eq!(fresh.selection().enable[0].id, toggled);
     assert_eq!(
         fresh.selected_model().map(|m| m.id.clone()),

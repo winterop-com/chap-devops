@@ -33,17 +33,35 @@ compatibility:
 
 covariates:
   required: []
-  defaults:
-    - rainfall
-    - mean_temperature
-    - mean_relative_humidity
+  defaults: []
   allow_free_additional: true
 
 channels:
-  stable: 0.1.2
-  latest: 0.1.2
+  stable: 0.1.4
+  latest: 0.1.4
 
 versions:
+  - version: 0.1.4
+    commit: 82dbe6a84dee44e1e84f2bbc5d2f2360ae4f516f
+    image_tag: sha-82dbe6a
+    chapkit: ">=2.2.0,<3"
+    status: verified
+    # Pinned by the maintainers without the three-approval round.
+    verified_by: []
+    changelog: >-
+      Fits on lagged case history by default instead of demanding rainfall,
+      mean_temperature and mean_relative_humidity, which the service never
+      declared as required. A configuration now names the covariates it wants,
+      and a missing configured column fails with a message that names it.
+  - version: 0.1.3
+    commit: 99a8586f0d741c278b89b8caa301a651184bc188
+    image_tag: sha-99a8586
+    chapkit: ">=2.2.0,<3"
+    status: verified
+    # Pinned by the maintainers without the three-approval round (security fix).
+    verified_by: []
+    changelog: >-
+      Upgrades certifi to 2026.10.19, which drops trust in the compromised eMudhra intermediate CAs, and builds on the chapkit-py base with uv 0.13.4. No change to the model.
   - version: 0.1.2
     commit: 10b2bc7c7d66e825f382c002e56f7a38c5ca9293
     image_tag: sha-10b2bc7
@@ -72,9 +90,10 @@ versions:
 configurations:
   monthly_climate:
     description: >-
-      Climate-driven configuration: the service's own default covariates and
-      hyperparameters, at the marketplace's reference three-period horizon
-      (the service itself defaults to twelve). Six target lags give the
+      Climate-driven configuration: names rainfall, mean_temperature and
+      mean_relative_humidity itself (the service defaults to none) and keeps
+      the service's default hyperparameters, at the marketplace's reference
+      three-period horizon (the service itself defaults to twelve). Six target lags give the
       one-step regressor half a year of history per location.
     config:
       prediction_periods: 3

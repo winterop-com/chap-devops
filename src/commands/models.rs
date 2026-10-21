@@ -63,7 +63,7 @@ struct ModelDetail<'a> {
     needs_amd64: bool,
 }
 
-/// List marketplace models, filtered by the `--all`, `--templates` and
+/// List marketplace models, filtered by the `--all`, `--starters` and
 /// `--enabled` flags.
 pub fn list(ctx: &Ctx, args: &ModelsListArgs) -> Result<()> {
     // The project is opened before the registry so `--enabled` outside a
@@ -77,10 +77,10 @@ pub fn list(ctx: &Ctx, args: &ModelsListArgs) -> Result<()> {
         .filter(|m| {
             if args.all {
                 true
-            } else if args.templates {
-                m.is_template()
+            } else if args.starters {
+                m.is_starter()
             } else {
-                !m.is_template()
+                !m.is_starter()
             }
         })
         .collect();
@@ -99,7 +99,7 @@ pub fn list(ctx: &Ctx, args: &ModelsListArgs) -> Result<()> {
         .collect();
     // The kind column is what tells a manually added model from a
     // marketplace one, so it appears whenever there is one to tell apart.
-    let with_kind = args.all || args.templates || rows.iter().any(|r| r.manual);
+    let with_kind = args.all || args.starters || rows.iter().any(|r| r.manual);
 
     if !ctx.out.json && !rows.is_empty() {
         println!("{}", table(&ctx.out, &rows, with_kind));
@@ -139,7 +139,7 @@ pub fn search(ctx: &Ctx, args: &ModelsSearchArgs) -> Result<()> {
         .map(|m| row(m, enabled_entry(project.as_ref(), m)))
         .collect();
 
-    // A search can turn up templates, so their kind is always shown.
+    // A search can turn up starters, so their kind is always shown.
     if !ctx.out.json && !rows.is_empty() {
         println!("{}", table(&ctx.out, &rows, true));
     }
@@ -614,7 +614,7 @@ const MANUAL_KIND: &str = "manual";
 fn kind_label(kind: Kind) -> &'static str {
     match kind {
         Kind::Model => "model",
-        Kind::Template => "template",
+        Kind::Starter => "starter",
     }
 }
 

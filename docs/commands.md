@@ -12,7 +12,7 @@ lists every command, every flag and every default.
 
 | Command | What it does |
 | --- | --- |
-| `chap-devops run MODEL [--port N\|auto] [--bind ADDR] [--group NAME] [--allow-template] [--no-wait] [--timeout S] [-a [--rm]] [--chap-core URL]` | Start one model - a marketplace id, a GitHub repository URL, a ghcr image or a local image - and print where it answers, once it does. Outside a deployment it runs in a `chap-devops run` group under the data directory, on `127.0.0.1`; inside one, in that deployment. `-a` keeps it in the foreground with its log, and Ctrl-C then stops the model and keeps its data (`--rm` removes it). `--chap-core URL` makes the group's models register with a chap-core that runs elsewhere. |
+| `chap-devops run MODEL [--port N\|auto] [--bind ADDR] [--group NAME] [--allow-starter] [--no-wait] [--timeout S] [-a [--rm]] [--chap-core URL]` | Start one model - a marketplace id, a GitHub repository URL, a ghcr image or a local image - and print where it answers, once it does. Outside a deployment it runs in a `chap-devops run` group under the data directory, on `127.0.0.1`; inside one, in that deployment. `-a` keeps it in the foreground with its log, and Ctrl-C then stops the model and keeps its data (`--rm` removes it). `--chap-core URL` makes the group's models register with a chap-core that runs elsewhere. |
 | `chap-devops ps [--group NAME]` | Every model in every group (or in the deployment the command is inside), with its state and URL. |
 | `chap-devops stop ID\|--all\|--group NAME [--purge]` | Stop a model, in whichever group has it, or every model in a group, and remove its compose overlay; the data stays unless `--purge`, which also removes a group left empty. |
 | `chap-devops top [--interval S]` | Every chap-devops deployment on the machine as a live tree - `init` deployments and `run` groups, every service with its state, CPU, memory and URL - with logs and stop on a key. One snapshot off a terminal. See [chap-devops top](./top.md). |
@@ -71,7 +71,7 @@ that reaches the passthrough (`chap-devops down -- -v`) is refused and told to u
 
 | Command | What it does |
 | --- | --- |
-| `chap-devops models list` | List marketplace models (`--all`, `--templates`, `--enabled`). |
+| `chap-devops models list` | List marketplace models (`--all`, `--starters`, `--enabled`). |
 | `chap-devops models search QUERY` | Search id, name and summary. |
 | `chap-devops models info ID` | Everything known about one model. |
 | `chap-devops models test [ID..] [--all]` | Make each model train and predict, and say whether it could: `chapkit test` in its own container, or `--backtest` for the whole way round through chap-core (`--config NAME`, `--seed`, `--timeout`, `--keep`). With `--backtest`, the line under each row names the configured model it used. |
@@ -84,7 +84,7 @@ that reaches the passthrough (`chap-devops down -- -v`) is refused and told to u
 | `chap-devops models new DIR` | Create a model project from a template (`--template`, `--with-validation`): a chapkit service or an MLproject, in Python or R. The build runs in Docker, so Python and chapkit are not necessary. See [A new model project](./models.md#a-new-model-project). |
 | `chap-devops models add SOURCE` | Add a model the marketplace does not list, from a GitHub repository URL or a ghcr image reference, and enable it (`--id`, `--service-id`, `--name`, `--port`, `--bind`, `--data-dir`, `--user`, `--runtime-amd64`). A source the marketplace lists is enabled as that marketplace model unless `--id` is given; `--id auto` picks a free id. |
 | `chap-devops models remove ID [--purge] [--keep-in-chap]` | Disable such a model if it is on, drop its definition from `.chap-devops/models-manual.yaml`, and retire it in chap-core; `--purge` removes its data volume too, `--keep-in-chap` leaves chap-core alone. |
-| `chap-devops models enable ID [ID..]` | Record each model in `.chap-devops/models.yaml` and write its overlay (`--channel`, `--version`, `--port`, `--bind`, `--data-dir`, `--user`, `--allow-template`). |
+| `chap-devops models enable ID [ID..]` | Record each model in `.chap-devops/models.yaml` and write its overlay (`--channel`, `--version`, `--port`, `--bind`, `--data-dir`, `--user`, `--allow-starter`). |
 | `chap-devops models disable ID [--purge] [--retire]` | Drop the model from `.chap-devops/models.yaml` and remove its overlay, keeping its data volume and naming it; `--purge` removes that volume too, `--retire` retires the model in chap-core. |
 | `chap-devops models expose ID [--port N\|auto] [--bind ADDR]` | Publish a host port for an enabled model, without touching the version it is pinned to; `--bind 127.0.0.1` keeps it on this machine. See [Ports](./ports.md#which-address-a-model-port-is-published-on). |
 | `chap-devops models unexpose ID` | Remove the host port of an enabled model. |

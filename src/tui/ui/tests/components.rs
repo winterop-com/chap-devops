@@ -86,7 +86,7 @@ fn the_components_page_draws_the_columns_components_list_prints() {
     assert!(screen.contains("i for details"), "{screen}");
     assert!(screen.contains("[tab] page"), "{screen}");
     assert!(!screen.contains("[v] channel"), "{screen}");
-    assert!(!screen.contains("[t] templates"), "{screen}");
+    assert!(!screen.contains("[t] starters"), "{screen}");
 }
 
 /// A pending component change is marked before it is saved, exactly as a

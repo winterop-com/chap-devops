@@ -51,7 +51,7 @@ run `chap-devops up` to start the model.
 
 ## Every model in the marketplace
 
-`all` is every model the marketplace lists (templates aside), and a list of
+`all` is every model the marketplace lists (starters aside), and a list of
 ids picks some. `chap-devops models list` prints them. Without `--models`, `init`
 enables no model.
 

@@ -134,12 +134,12 @@ fn a_forced_init_that_cannot_apply_leaves_the_deployment_it_found_alone() {
     let state_before = read(&dir.join(".chap-devops").join("models.yaml"));
     let umbrella_before = read(&dir.join("compose.marketplace.yml"));
 
-    // A template is scaffolding to copy, not something to deploy.
+    // A starter is scaffolding to copy, not something to deploy.
     sandbox
         .init(&["--force", "--models", "chapkit_minimalist_example_py"])
         .assert()
         .failure()
-        .stderr(predicates::str::contains("template"));
+        .stderr(predicates::str::contains("is a starter"));
 
     assert!(
         overlay.is_file(),

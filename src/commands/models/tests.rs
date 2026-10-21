@@ -75,14 +75,14 @@ fn the_kind_column_is_optional_and_last() {
         plain.lines().next().unwrap().split_whitespace().last(),
         Some("PORT")
     );
-    assert!(!plain.contains("template"));
+    assert!(!plain.contains("starter"));
 
     let with_kind = table(&out, &rows, true);
     assert_eq!(
         with_kind.lines().next().unwrap().split_whitespace().last(),
         Some("KIND")
     );
-    assert!(with_kind.lines().nth(1).unwrap().ends_with("template"));
+    assert!(with_kind.lines().nth(1).unwrap().ends_with("starter"));
     assert!(with_kind.lines().all(|l| !l.ends_with(' ')));
 }
 
@@ -95,7 +95,7 @@ fn a_listing_is_ordered_by_maturity_then_by_name() {
     listed.sort_by_key(|m| m.order_key());
     let rows: Vec<ModelRow> = listed
         .iter()
-        .filter(|m| !m.is_template())
+        .filter(|m| !m.is_starter())
         .map(|m| row(m, None))
         .collect();
     assert_eq!(
@@ -118,7 +118,7 @@ fn a_listing_is_ordered_by_maturity_then_by_name() {
     with_manual.sort_by_key(|m| m.order_key());
     let names: Vec<&str> = with_manual
         .iter()
-        .filter(|m| !m.is_template())
+        .filter(|m| !m.is_starter())
         .map(|m| m.display_name.as_str())
         .collect();
     assert!(
@@ -460,7 +460,7 @@ fn a_dangling_channel_pointer_does_not_panic() {
 #[test]
 fn labels_match_the_yaml_spelling() {
     assert_eq!(AssessedStatus::Gray.colour(), "gray");
-    assert_eq!(kind_label(Kind::Template), "template");
+    assert_eq!(kind_label(Kind::Starter), "starter");
     assert_eq!(first_line(Some("first\nsecond")), "first");
     assert_eq!(first_line(None), "");
     assert_eq!(indent_block("a\nb", 2), "  a\n  b\n");

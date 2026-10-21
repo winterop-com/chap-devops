@@ -9,7 +9,7 @@ fn the_default_palette_is_ansi_16_so_it_follows_the_terminal() {
         theme.warn,
         theme.bad,
         theme.dim,
-        theme.template,
+        theme.starter,
         theme.selection_bg,
         theme.selection_fg,
     ] {
@@ -30,7 +30,7 @@ fn monochrome_paints_nothing_and_still_tells_things_apart() {
         theme.warn_style(),
         theme.bad_style(),
         theme.dim_style(),
-        theme.template_style(),
+        theme.starter_style(),
         theme.column_style(),
         theme.chip_style(),
         theme.selection_style(),

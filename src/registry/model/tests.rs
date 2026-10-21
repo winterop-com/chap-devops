@@ -52,7 +52,7 @@ fn the_catalogue_is_ordered_by_maturity_then_by_name() {
     models.sort_by_key(Model::order_key);
     let listed: Vec<&str> = models
         .iter()
-        .filter(|m| !m.is_template())
+        .filter(|m| !m.is_starter())
         .map(|m| m.display_name.as_str())
         .collect();
     assert_eq!(
@@ -68,8 +68,8 @@ fn the_catalogue_is_ordered_by_maturity_then_by_name() {
     // Scaffolding is not a forecasting model, so it comes after every
     // one of them however its own author assessed it.
     assert!(
-        models.iter().rev().take(2).all(Model::is_template),
-        "the templates are last"
+        models.iter().rev().take(2).all(Model::is_starter),
+        "the starters are last"
     );
 }
 
@@ -85,7 +85,7 @@ fn every_vendored_model_parses() {
         assert!(m.version(&m.channels.stable).is_some(), "{}", m.id);
         assert!(m.version(&m.channels.latest).is_some(), "{}", m.id);
     }
-    assert_eq!(models.iter().filter(|m| m.is_template()).count(), 2);
+    assert_eq!(models.iter().filter(|m| m.is_starter()).count(), 2);
 }
 
 #[test]

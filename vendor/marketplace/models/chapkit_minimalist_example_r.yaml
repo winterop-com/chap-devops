@@ -3,11 +3,11 @@ schema_version: 2
 id: chapkit_minimalist_example_r
 service_id: chapkit-minimalist-example-r
 display_name: Minimalist Example (R)
-kind: template
+kind: starter
 
 # The author's own chapkit AssessedStatus, copied from the service — not a
 # marketplace verdict. red = highly experimental prototype, not validated.
-# For a template that is the honest reading: it is scaffolding, and its lm()
+# For a starter that is the honest reading: it is scaffolding, and its lm()
 # is a placeholder for a real model.
 assessed_status: red
 
@@ -19,7 +19,7 @@ summary: >-
 source:
   repository: https://github.com/chap-models/chapkit_minimalist_example_r
   image: ghcr.io/chap-models/chapkit_minimalist_example_r
-  # R on the chapkit R-INLA base, so a copied template can reach for INLA
+  # R on the chapkit R-INLA base, so a copied starter can reach for INLA
   # without swapping the base image first. amd64 only.
   runtime_image: ghcr.io/dhis2-chap/chapkit-r-inla
 
@@ -36,17 +36,26 @@ compatibility:
 covariates:
   # The service declares no required covariates and refuses free-form extras.
   # Its scripts do read rainfall and mean_temperature when the columns are
-  # present — a template under-declaring its inputs is exactly the kind of
+  # present — a starter under-declaring its inputs is exactly the kind of
   # thing to fix when you copy it.
   required: []
   defaults: []
   allow_free_additional: false
 
 channels:
-  stable: 1.0.2
-  latest: 1.0.2
+  stable: 1.0.3
+  latest: 1.0.3
 
 versions:
+  - version: 1.0.3
+    commit: 1abf9887fe4c624b43fdead8b79b1b0f362542c1
+    image_tag: sha-1abf988
+    chapkit: ">=2.2.0,<3"
+    status: verified
+    # Pinned by the maintainers without the three-approval round (security fix).
+    verified_by: []
+    changelog: >-
+      Upgrades certifi to 2026.10.19, which drops trust in the compromised eMudhra intermediate CAs, and builds on the chapkit-r-inla base with uv 0.13.4. No change to the model.
   - version: 1.0.2
     commit: 4349892df6986a7943f2804e6c14801b865ba96a
     image_tag: sha-4349892
@@ -74,7 +83,7 @@ versions:
 configurations:
   monthly:
     description: >-
-      The only configuration the template exposes. Add your own options to
+      The only configuration the starter exposes. Add your own options to
       the config class in main.py as you replace the model.
     config:
       prediction_periods: 3

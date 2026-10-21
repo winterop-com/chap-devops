@@ -16,6 +16,11 @@ summary: >-
   running one user-specified configuration with selectable spatial, seasonal
   and interannual random effects and lagged or rolling climate covariates.
 
+developed_for: >-
+  Dengue. The Chap version was checked against BSC's reference pipeline on
+  Laos dengue data, and ships with dengue data from 11 Brazilian
+  microregions as its example.
+
 source:
   repository: https://github.com/chap-models/chapkit_ghr_model
   image: ghcr.io/chap-models/chapkit_ghr_model
@@ -30,6 +35,7 @@ attribution:
     hydrometeorological hazards and urbanisation on dengue risk in Brazil: a
     spatiotemporal modelling study. The Lancet Planetary Health.
     https://doi.org/10.1016/S2542-5196(20)30292-8
+  original_source: https://gitlab.earth.bsc.es/ghr/ghrmodel
 
 compatibility:
   period_types: [monthly]
@@ -51,10 +57,30 @@ covariates:
   allow_free_additional: true
 
 channels:
-  stable: 0.1.6
-  latest: 0.1.6
+  stable: 0.1.8
+  latest: 0.1.8
 
 versions:
+  - version: 0.1.8
+    commit: 84fbe77734f51a592a215f34b2b8731c3acbed2f
+    image_tag: sha-84fbe77
+    chapkit: ">=2.4.0,<3"
+    status: verified
+    # Pinned by the maintainers without the three-approval round (security fix).
+    verified_by: []
+    changelog: >-
+      Upgrades certifi to 2026.10.19, which drops trust in the compromised eMudhra intermediate CAs, and builds on the chapkit-r-inla base with uv 0.13.4. The image now installs its R packages from renv.lock (GHRmodel at the same commit as 0.1.7). No change to the model.
+  - version: 0.1.7
+    commit: 1748a6462eda57b9d68f7e0344ade727b975b481
+    image_tag: sha-1748a64
+    chapkit: ">=2.4.0,<3"
+    status: verified
+    # Pinned by the maintainers without the three-approval round.
+    verified_by: []
+    changelog: >-
+      Fits the rows in time, then location order, which avoids an INLA crash
+      on the iid year effect seen on one Vietnam backtest window. The rows are
+      independent in the likelihood, so the model's results are unchanged.
   - version: 0.1.6
     commit: 1a7f8e4d1ad761acb9bdacbfb90208d98fc1aab3
     image_tag: sha-1a7f8e4

@@ -87,25 +87,24 @@ has published is what [`chap-devops doctor`](./doctor.md#project-checks) reports
 one `registry pin <id>` line per enabled model, because a pin that lags is for
 the marketplace to move and not something a deployment can fix.
 
-## Templates
+## Starters
 
-Entries with `kind: template` are scaffolding for writing your own model, not
+Entries with `kind: starter` are scaffolding for writing your own model, not
 forecasting models. They are hidden from `chap-devops models list` and from the
-browser by default, `--templates` and `--all` show them, and enabling one needs
-`--allow-template`.
+browser by default, `--starters` and `--all` show them, and enabling one needs
+`--allow-starter`.
 
-These are chapkit templates: the same word as in `chapkit init --template`,
-which starts a new model from one of them. They are not the "model templates"
-of chap-core, which is what a model service registers as. The `--template` of
-`chap-devops models new` is a third meaning: the type of a new model project, as in
-[A new model project](#a-new-model-project).
+The marketplace calls them starters, not templates, because a model template
+is something else in chap-core: what a model service registers as. The
+`--template` of `chap-devops models new` is another meaning again: the type of
+a new model project, as in [A new model project](#a-new-model-project).
 
 ## Looking at the catalogue
 
 ```sh
 chap-devops models list                 # models enabled in this deployment are marked
 chap-devops models list --enabled       # only this deployment's
-chap-devops models list --all           # templates too
+chap-devops models list --all           # starters too
 chap-devops models search malaria
 chap-devops models info chapkit_simple_multistep_model
 ```
@@ -122,7 +121,7 @@ chapkit_rwanda_malaria_bym_model  chapkit-rwanda-malaria-bym-model  Rwanda Malar
 
 Every listing is in the same order: by `STATUS`, from the models that have
 been validated down to the ones nobody should run, and by name inside each
-step of that scale. Templates come after models when `--all` or `--templates`
+step of that scale. Starters come after models when `--all` or `--starters`
 asks for them, and a search narrows the catalogue without reordering it.
 
 The `PORT` column is the host port a model publishes, `via chap-core` for one
@@ -171,7 +170,7 @@ and the DNS name).
 ```sh
 chap-devops models enable ID [ID..] [--channel stable|latest | --version X]
                        [--port N|auto] [--bind ADDR] [--data-dir PATH]
-                       [--user USER:GROUP] [--allow-template]
+                       [--user USER:GROUP] [--allow-starter]
 chap-devops models disable ID [--purge] [--retire]
 chap-devops models expose ID [--port N|auto] [--bind ADDR]
 chap-devops models unexpose ID
@@ -180,7 +179,7 @@ chap-devops up                            # apply any of them
 
 `models enable` takes several ids, separated by spaces or commas, as
 `chap-devops init --models` does. `--channel`, `--port auto`, `--bind` and
-`--allow-template` then apply to each model. `--version`, `--port N`,
+`--allow-starter` then apply to each model. `--version`, `--port N`,
 `--data-dir` and `--user` are for one model, and `enable` refuses them with
 more than one id.
 
@@ -1309,8 +1308,8 @@ have switched off. `STATUS` is the author's own chapkit assessment, the same
 five words [the table above](#what-the-status-column-means) explains; `VERSION`
 is what the row's channel resolves to; and `PORT` is how the model is reached.
 A `KIND` column appears when the list holds something that is not a plain
-marketplace model: a template, or an entry `chap-devops models add` created. The
-rows are in the same maturity order `chap-devops models list` uses, with templates
+marketplace model: a starter, or an entry `chap-devops models add` created. The
+rows are in the same maturity order `chap-devops models list` uses, with starters
 last when `t` shows them; nothing done in the browser reorders them, so the
 cursor stays on the row it was on.
 
@@ -1322,7 +1321,7 @@ g / G              first / last    i / Enter        the full details
 PageUp / PageDown  jump a page     p                publish a host port: a number, auto, or none
 ctrl-u / ctrl-d    jump a page     P                take the host port away
 Tab / shift-Tab    change page     v                pick the channel (stable, latest)
-s                  save            t                show or hide templates
+s                  save            t                show or hide starters
 u                  discard         /                filter (Enter keeps, Esc clears)
 q                  quit            Esc              clear the filter, or quit
 ?                  help            ctrl-k / ctrl-p  the command palette
@@ -1651,7 +1650,7 @@ other page - `Go to the components page`, or `Go to the models page` - and the
 rest follow whichever page you are on, so on the components page it offers
 `Enable or disable the ocs component`, `Set a host port for the ocs component`
 and `Open the web interface of the ocs component` where the models page offers
-the channel, the template filter and `Open the repository of <model>`.
+the channel, the starter filter and `Open the repository of <model>`.
 
 It offers everything the keys do, plus three the keys do not: refreshing the
 catalogue from the marketplace without leaving the browser, the way

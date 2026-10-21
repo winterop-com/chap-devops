@@ -27,9 +27,9 @@ pub struct ModelRunArgs {
     #[arg(long, value_name = "NAME")]
     pub group: Option<String>,
 
-    /// Start a marketplace template, which is not a deployable model
+    /// Start a marketplace starter, which is not a deployable model
     #[arg(long)]
-    pub allow_template: bool,
+    pub allow_starter: bool,
 
     /// Return once the container started, without waiting for it to answer
     #[arg(long)]

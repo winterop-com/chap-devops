@@ -334,7 +334,7 @@ fn resolve_model(
         bind: None,
         id: None,
         group: args.group.clone(),
-        allow_template: false,
+        allow_starter: false,
         no_wait: false,
         attach: false,
         rm: false,

@@ -151,8 +151,8 @@ Usage: chap-devops models list [OPTIONS]
 
 | Argument | Description |
 | --- | --- |
-| `--all` | Include every entry, templates as well as models. |
-| `--templates` | List only templates. |
+| `--all` | Include every entry, starters as well as models. |
+| `--starters` | List only starters. |
 | `--enabled` | List only the models enabled in this deployment. |
 
 Registry options: `--registry-url <URL>`, `--offline`, `--cache-dir <DIR>` (see [chap-devops](#chap-devops)).
@@ -390,7 +390,7 @@ Usage: chap-devops models enable [OPTIONS] <ID>...
 | `--bind <ADDR>` | Host address to publish the port on, e.g. 127.0.0.1 for this machine. |
 | `--data-dir <PATH>` | Data directory inside the container. |
 | `--user <USER>` | User the container runs as, as user:group. |
-| `--allow-template` | Enable a template even though it is not a model. |
+| `--allow-starter` | Enable a starter even though it is not a model. |
 
 Registry options: `--registry-url <URL>`, `--offline`, `--cache-dir <DIR>` (see [chap-devops](#chap-devops)).
 
@@ -777,7 +777,7 @@ Usage: chap-devops run [OPTIONS] <MODEL>
 | `--bind <ADDR>` | Host address to publish the port on, e.g. 0.0.0.0 for the network. |
 | `--id <ID\|auto>` | Identifier to record an added model under, or auto for a free one. |
 | `--group <NAME>` | Group to start it in, outside a deployment; ps and stop take it too. |
-| `--allow-template` | Start a marketplace template, which is not a deployable model. |
+| `--allow-starter` | Start a marketplace starter, which is not a deployable model. |
 | `--no-wait` | Return once the container started, without waiting for it to answer. |
 | `-a, --attach, --foreground` | Run in the foreground and stream its log (Ctrl-C stops the model). |
 | `--rm` | With --attach, Ctrl-C also removes the model's data volume. |

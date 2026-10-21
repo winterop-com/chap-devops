@@ -299,7 +299,7 @@ fn enable_parses_every_override() {
         "/app/data",
         "--user",
         "chap:chap",
-        "--allow-template",
+        "--allow-starter",
     ])
     .unwrap();
     let Command::Models(m) = cli.command else {
@@ -311,7 +311,7 @@ fn enable_parses_every_override() {
     assert_eq!(args.port, Some(PortArg(PortRequest::Fixed(5010))));
     assert_eq!(args.data_dir.as_deref(), Some("/app/data"));
     assert_eq!(args.user.as_deref(), Some("chap:chap"));
-    assert!(args.allow_template);
+    assert!(args.allow_starter);
     assert_eq!(args.channel, None);
 }
 

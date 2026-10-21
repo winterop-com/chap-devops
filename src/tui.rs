@@ -197,7 +197,7 @@ struct Carry {
     edited: Vec<(String, app::Row)>,
     cursor_id: Option<String>,
     filter: String,
-    show_templates: bool,
+    show_starters: bool,
     message: Option<String>,
     /// The component set the session wants. A new catalogue says nothing about
     /// components, so it comes back whole - and a refresh that dropped it would
@@ -226,7 +226,7 @@ impl Carry {
             edited,
             cursor_id: app.selected().map(|row| app.model(row).id.clone()),
             filter: app.filter.clone(),
-            show_templates: app.show_templates,
+            show_starters: app.show_starters,
             message: app.message.clone(),
             components: app.components.clone(),
             page: app.page,
@@ -246,7 +246,7 @@ impl Carry {
                 };
             }
         }
-        app.show_templates = self.show_templates;
+        app.show_starters = self.show_starters;
         app.filter = self.filter;
         app.message = self.message;
         app.components = self.components;

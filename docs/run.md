@@ -111,8 +111,8 @@ second copy beside it.
 
 A word with no `:`, `/` or `@` is a marketplace id, never a local image (a local
 image always carries a tag), so `chap-devops run does_not_exist` says there is no such
-model and names `chap-devops models search`. A marketplace template is refused like it
-is on `models enable`; `--allow-template` starts it anyway.
+model and names `chap-devops models search`. A marketplace starter is refused like it
+is on `models enable`; `--allow-starter` starts it anyway.
 
 When the container cannot be started - the image does not exist, the pull is
 denied, the port is taken - `run` says what compose said and takes the model it

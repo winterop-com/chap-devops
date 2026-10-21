@@ -29,10 +29,10 @@ fn a_deployment_without_chap_core_is_told_its_models_run_on_their_own() {
 }
 
 #[test]
-fn models_all_enables_every_model_but_the_templates() {
+fn models_all_enables_every_model_but_the_starters() {
     let registry = load_embedded().unwrap();
     let all = parse_models("all", &registry).unwrap();
-    let expected = registry.models.iter().filter(|m| !m.is_template()).count();
+    let expected = registry.models.iter().filter(|m| !m.is_starter()).count();
     assert_eq!(all.enable.len(), expected);
     assert!(all.enable.len() > 1);
     assert!(all.enable.iter().any(|r| r.id == "chapkit_ewars_model"));

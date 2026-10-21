@@ -67,7 +67,7 @@ fn every_mode_has_a_key_bar_that_names_its_way_out() {
     assert_eq!(
         bar(Mode::Browse, 0, false),
         "j/k move   tab page   space toggle   i info   m configs   p port   v channel   \
-             t templates   / filter   s save   ctrl+k commands   ? help   q quit"
+             t starters   / filter   s save   ctrl+k commands   ? help   q quit"
     );
     // The components page drops the keys a component has no use for and
     // gains the one that opens its web interface.
@@ -162,7 +162,7 @@ fn browse_editing_keys() {
     assert_eq!(browse_action(KeyCode::Char('p')), Action::PortPrompt);
     assert_eq!(browse_action(KeyCode::Char('P')), Action::RemovePort);
     assert_eq!(browse_action(KeyCode::Char('v')), Action::ChannelPrompt);
-    assert_eq!(browse_action(KeyCode::Char('t')), Action::ToggleTemplates);
+    assert_eq!(browse_action(KeyCode::Char('t')), Action::ToggleStarters);
     assert_eq!(browse_action(KeyCode::Char('/')), Action::StartFilter);
     assert_eq!(browse_action(KeyCode::Char('s')), Action::Save);
     assert_eq!(browse_action(KeyCode::Char('u')), Action::Discard);

@@ -1623,7 +1623,7 @@ Run the `chap-devops api` command in the warning when chap-core answers again.
 ## `left out models/ID.yaml of the marketplace registry`
 
 ```text
-warning: left out models/chapkit_minimalist_example_py.yaml of the marketplace registry: kind: unknown variant `starter`, expected `model` or `template` at line 6 column 7; this chap-devops may be older than the registry, so run `chap-devops self update`
+warning: left out models/chapkit_minimalist_example_py.yaml of the marketplace registry: kind: unknown variant `notebook`, expected `model` or `starter` at line 6 column 7; this chap-devops may be older than the registry, so run `chap-devops self update`
 ```
 
 chap-devops could not read one model file of the marketplace registry. The

@@ -3,7 +3,7 @@ schema_version: 2
 id: chapkit_minimalist_example_py
 service_id: chapkit-minimalist-example-py
 display_name: Minimalist Example (Python)
-kind: template
+kind: starter
 
 # The author's own chapkit AssessedStatus, copied from the service — not a
 # marketplace verdict. red = highly experimental prototype, not validated.

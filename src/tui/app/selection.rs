@@ -223,7 +223,7 @@ fn request(model: &Model, selector: VersionSelector, port: Option<PortRequest>) 
         data_dir: None,
         user: None,
         user_from: None,
-        allow_template: model.is_template(),
+        allow_starter: model.is_starter(),
         // The caller decides: a row the user toggled or re-channelled resolves
         // the registry again, a row that only changed its port does not.
         keep_version: false,

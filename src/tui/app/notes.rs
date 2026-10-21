@@ -1,10 +1,10 @@
 //! The footer notes the reducer shows, kept apart so the tests can name them.
 
-/// Footer note shown after enabling a template.
-pub const TEMPLATE_WARNING: &str = "templates are not for real forecasts";
+/// Footer note shown after enabling a starter.
+pub const STARTER_WARNING: &str = "starters are not for real forecasts";
 
-/// Footer note shown when a template row is toggled while templates are hidden.
-pub const TEMPLATE_HIDDEN_HINT: &str = "press t to show templates first";
+/// Footer note shown when a starter row is toggled while starters are hidden.
+pub const STARTER_HIDDEN_HINT: &str = "press t to show starters first";
 
 /// Footer note shown when `p` is pressed on a row that is not enabled.
 pub const PUBLISH_NEEDS_ENABLED_HINT: &str = "enable the model first (space), then press p";

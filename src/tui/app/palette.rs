@@ -17,8 +17,8 @@ impl App<'_> {
             CommandId::RemovePort => self.remove_port(),
             CommandId::SetChannel => self.open_channel_prompt(),
             CommandId::Configs => self.open_configs(),
-            CommandId::Templates => {
-                self.show_templates = !self.show_templates;
+            CommandId::Starters => {
+                self.show_starters = !self.show_starters;
                 self.refilter();
             }
             CommandId::Filter => self.mode = Mode::Filter,
@@ -114,10 +114,10 @@ impl App<'_> {
                         "Configs",
                     ),
                     entry(
-                        CommandId::Templates,
-                        "Show or hide templates".to_string(),
+                        CommandId::Starters,
+                        "Show or hide starters".to_string(),
                         "t",
-                        "Templates",
+                        "Starters",
                     ),
                     entry(
                         CommandId::Filter,

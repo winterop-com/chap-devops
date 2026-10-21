@@ -123,7 +123,7 @@ pub enum Action {
     ChannelChar(char),
     /// Follow the channel the dialog's cursor is on.
     ChannelApply,
-    ToggleTemplates,
+    ToggleStarters,
     StartFilter,
     FilterChar(char),
     FilterBackspace,
@@ -318,7 +318,7 @@ pub enum CommandId {
     SetChannel,
     /// Open the configured models of the selected model.
     Configs,
-    Templates,
+    Starters,
     Filter,
     /// Go to the other page.
     Page,
@@ -371,7 +371,7 @@ pub struct App<'a> {
     pub initial_components: Components,
     /// Index into [`Component::ALL`], the components page's cursor.
     pub component_cursor: usize,
-    pub show_templates: bool,
+    pub show_starters: bool,
     /// `.chap-devops/models.yaml` as it was when the browser opened; the selection is the
     /// diff against this.
     pub initial: BTreeMap<String, EnabledModel>,
@@ -430,10 +430,10 @@ impl<'a> App<'a> {
         // holds for the whole session and a toggle never moves the cursor.
         rows.sort_by_key(|row| registry.models[row.model_idx].order_key());
 
-        // A project that already runs a template should not hide it.
-        let show_templates = rows
+        // A project that already runs a starter should not hide it.
+        let show_starters = rows
             .iter()
-            .any(|r| r.enabled && registry.models[r.model_idx].is_template());
+            .any(|r| r.enabled && registry.models[r.model_idx].is_starter());
 
         let mut app = App {
             registry,
@@ -446,7 +446,7 @@ impl<'a> App<'a> {
             components: state.components.clone(),
             initial_components: state.components.clone(),
             component_cursor: 0,
-            show_templates,
+            show_starters,
             initial: state.models.clone(),
             port_range: state.port_range,
             api_port: state.api_port,

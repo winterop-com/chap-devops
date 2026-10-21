@@ -41,7 +41,7 @@ fn the_vendored_snapshot_parses_into_a_registry() {
     )
     .expect("the vendored snapshot parses");
     assert_eq!(r.models.len(), index.models.len());
-    assert!(r.models.iter().any(|m| !m.is_template()));
+    assert!(r.models.iter().any(|m| !m.is_starter()));
 }
 
 /// The fields the configured models of a model are made from: the
