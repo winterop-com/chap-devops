@@ -35,7 +35,7 @@ for the deployments that want one alongside.
 | Service | What it is |
 | --- | --- |
 | `dhis2` | DHIS2 itself, from `dhis2/core`, published on 8780 by default. Multi-arch since 2.39.1-rc, so nothing pins a platform for it. |
-| `dhis2-db` | Its PostgreSQL, from `ghcr.io/baosystems/postgis:16-3.5`. `expose`d on 5432 and never published. |
+| `dhis2-db` | Its PostgreSQL, from `postgis/postgis:16-3.5`. The image is amd64-only, so the service pins `linux/amd64`. `expose`d on 5432 and never published. |
 | `dhis2-dump` | A one-shot that prepares the [seed dump](#the-seed) and exits. Not rendered at all for a deployment that starts empty. |
 | `dhis2-prep` | A one-shot that runs on every start, after the database is healthy and before DHIS2 boots. |
 
@@ -65,8 +65,7 @@ Three reasons, and the first is enough on its own.
 
 1. **DHIS2 needs PostGIS.** Its own startup check throws without the `postgis`,
    `pg_trgm` and `btree_gin` extensions, so the image is a PostGIS one rather
-   than plain PostgreSQL. `ghcr.io/baosystems/postgis:16-3.5` is the tag
-   `dhis2-core`'s own compose file uses.
+   than plain PostgreSQL: `postgis/postgis:16-3.5`, from the PostGIS project.
 2. **chap-core deploys `postgres:17`**, which has none of the three.
 3. **A component could not reach it anyway.** Upstream's `compose.yml` puts the
    database on a second network, off the compose default one, which is exactly

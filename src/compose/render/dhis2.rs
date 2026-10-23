@@ -305,9 +305,9 @@ fn db_health_test(seeded: bool) -> String {
 pub const DHIS2_CONTAINER_PORT: u16 = 8080;
 /// Database image the component runs. PostGIS is not an optimisation here:
 /// DHIS2's own startup check throws without the `postgis`, `pg_trgm` and
-/// `btree_gin` extensions. This is the tag both `dhis2-core`'s own compose file
-/// and the Chap team's DHIS2 deployment use.
-pub const DHIS2_DB_IMAGE: &str = "ghcr.io/baosystems/postgis:16-3.5";
+/// `btree_gin` extensions. The image is the PostGIS project's own, which is
+/// amd64-only, so the service pins `linux/amd64` like a model overlay does.
+pub const DHIS2_DB_IMAGE: &str = "postgis/postgis:16-3.5";
 /// Image the seed-dump one-shot runs: it needs `wget`, `gzip` and `sed -E` and
 /// nothing else.
 pub const DHIS2_DUMP_IMAGE: &str = "alpine:3.24";
@@ -363,8 +363,8 @@ pub const DHIS2_DEFAULT_SEED_URL: &str =
 ///
 /// The host port is published only when the component records one, as with
 /// `ocs`: an instance behind a reverse proxy is `expose`d on the compose network
-/// and nowhere else. There is no `platform:` line anywhere in the file - both
-/// images are multi-arch, unlike the model images every overlay has to pin.
+/// and nowhere else. `dhis2-db` is the one service with a `platform:` line:
+/// `dhis2/core` and `alpine` are multi-arch, the PostGIS image is not.
 pub fn render_dhis2(spec: &Dhis2Spec) -> String {
     let labels = labels_block(ROLE_DHIS2, None, spec.group.as_deref());
     let mut port_lines = format!("    expose:\n      - \"{DHIS2_CONTAINER_PORT}\"\n");

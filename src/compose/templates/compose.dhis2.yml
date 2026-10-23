@@ -49,6 +49,7 @@ services:
     # PostGIS rather than plain postgres, and not as an optimisation: DHIS2's own
     # startup check throws without the postgis, pg_trgm and btree_gin extensions.
     image: @DB_IMAGE@
+    platform: linux/amd64
     environment:
       POSTGRES_DB: ${DHIS2_DB_NAME:-dhis}
       POSTGRES_USER: ${DHIS2_DB_USER:-dhis}
